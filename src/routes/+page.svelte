@@ -5,41 +5,41 @@
 
     async function login(email, password) {
         try {
-            console.log("Attempting login...");
+            // console.log("Attempting login...");
             await account.createEmailPasswordSession(email, password);
-            console.log("Session created. Getting user...");
+            // console.log("Session created. Getting user...");
             const user = await account.get();
-            console.log("User fetched:", user);
+            // console.log("User fetched:", user);
             currentUser.set(user);
-            console.log("currentUser store set. User ID: ", user.$id);
-            alert(`Login successful for ${user.email}. Will attempt to navigate to dashboard.`); // TEMPORARY DEBUG ALERT
-            console.log("Navigating to /dashboard...");
+            // console.log("currentUser store set. User ID: ", user.$id);
+            // alert(`Login successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
+            // console.log("Navigating to /dashboard...");
             goto('/dashboard');
-            console.log("goto('/dashboard') called."); // This might not show if navigation is immediate
+            // console.log("goto('/dashboard') called."); 
         } catch (error) {
             console.error("Login failed:", error);
-            alert("Login failed: " + error.message);
+            alert("Login failed: " + error.message); // Keep this error alert for actual failures
         }
     }
 
     async function register(email, password) {
         try {
-            console.log("Attempting registration...");
+            // console.log("Attempting registration...");
             await account.create(ID.unique(), email, password);
-            console.log("User account created. Creating session...");
+            // console.log("User account created. Creating session...");
             await account.createEmailPasswordSession(email, password);
-            console.log("Session created after registration. Getting user...");
+            // console.log("Session created after registration. Getting user...");
             const user = await account.get();
-            console.log("User fetched post-registration:", user);
+            // console.log("User fetched post-registration:", user);
             currentUser.set(user);
-            console.log("currentUser store set post-registration. User ID: ", user.$id);
-            alert(`Registration successful for ${user.email}. Will attempt to navigate to dashboard.`); // TEMPORARY DEBUG ALERT
-            console.log("Navigating to /dashboard post-registration...");
+            // console.log("currentUser store set post-registration. User ID: ", user.$id);
+            // alert(`Registration successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
+            // console.log("Navigating to /dashboard post-registration...");
             goto('/dashboard');
-            console.log("goto('/dashboard') called post-registration.");
+            // console.log("goto('/dashboard') called post-registration.");
         } catch (error) {
             console.error("Registration failed:", error);
-            alert("Registration failed: " + error.message);
+            alert("Registration failed: " + error.message); // Keep this error alert for actual failures
         }
     }
 

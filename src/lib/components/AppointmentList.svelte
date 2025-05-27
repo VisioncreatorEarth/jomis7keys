@@ -44,18 +44,23 @@
                         <button on:click={() => handleBook(appt.$id)}>Book This Appointment</button>
                     {/if}
 
-                    {#if listType === 'hostedByMe' && appt.hostUserId === currentUserId && !appt.isBooked}
-                        <!-- Only allow deletion if not booked; editing can be more complex -->
-                        <button on:click={() => handleDelete(appt.$id)} class="delete-button">Delete My Appointment</button>
+                    {#if listType === 'hostedByMe'}
+                        {#if appt.isBooked}
+                            <p class="booked-info"><em>Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</em></p>
+                        {:else}
+                            <p class="available-info"><em>This appointment is currently available.</em></p>
+                            {#if appt.hostUserId === currentUserId}
+                                <button on:click={() => handleDelete(appt.$id)} class="delete-button">Delete My Appointment</button>
+                            {/if}
+                        {/if}
                     {/if}
 
                     {#if listType === 'bookedByMe' && appt.bookedByUserId === currentUserId}
                         <p><em>You have booked this appointment.</em></p>
-                        <p>Booked by: {appt.bookedByUserName} (That's you!)</p>
                         <p>Booked on: {formatDate(appt.bookedAt)}</p>
                     {/if}
 
-                    {#if appt.isBooked && listType !== 'bookedByMe'}
+                    {#if listType !== 'hostedByMe' && listType !== 'bookedByMe' && appt.isBooked }
                         <p><em>This appointment is booked.</em></p>
                         {#if appt.bookedByUserName}
                             <p>Booked by: {appt.bookedByUserName}</p>
@@ -89,6 +94,14 @@
     p {
         margin: 0.5rem 0;
         color: #555;
+    }
+    .booked-info {
+        color: #28a745; /* Green for booked */
+        font-style: italic;
+    }
+    .available-info {
+        color: #17a2b8; /* Info blue for available */
+        font-style: italic;
     }
     button {
         padding: 0.5rem 1rem;
