@@ -13,90 +13,122 @@
         deleteAppointment
     } from '$lib/appwrite_db.js';
 
-    let showAppointmentForm = true;
-    let creationStatus = '';
-
     let myHostedAppointments = [];
     let availableAppointments = [];
     let myBookedAppointments = [];
     let fetchError = '';
+    let creationStatus = '';
+    let showAppointmentForm = true;
+
+    let dataLoaded = false; // Flag to track if initial data for the current user has been loaded
+    let isLoadingPage = true; // To manage the visibility of the 'Loading user...' message
 
     async function fetchAllAppointments() {
-        if (!$currentUser || !$currentUser.$id) return;
+        if (!$currentUser || !$currentUser.$id) {
+            dataLoaded = false; // No user, so no data loaded for a user
+            return;
+        }
+        // console.log("Dashboard: Attempting to fetch all appointments for user: ", $currentUser.$id);
         fetchError = '';
         try {
             // Fetch in parallel
             const [hosted, available, booked] = await Promise.all([
                 getAppointmentsHostedBy($currentUser.$id),
-                getAvailableAppointments(),
+                getAvailableAppointments(), // Available appointments are not user-specific in query
                 getAppointmentsBookedBy($currentUser.$id)
             ]);
             myHostedAppointments = hosted;
             availableAppointments = available;
             myBookedAppointments = booked;
+            dataLoaded = true; // Mark data as loaded for this user session
         } catch (err) {
             console.error("Error fetching appointments:", err);
-            fetchError = "Failed to load some appointment lists. " + err.message;
+            fetchError = "Failed to load appointment lists: " + err.message;
+            dataLoaded = false; // Data loading failed
         }
     }
 
     onMount(() => {
-        if (!$currentUser) {
+        // This logic runs once when the component mounts.
+        // +layout.svelte is responsible for trying to populate $currentUser.
+        if ($currentUser && $currentUser.$id) {
+            // User is already available from the store (layout likely finished quickly)
+            // console.log("Dashboard onMount: User found, fetching appointments.");
+            isLoadingPage = false;
+            if (!dataLoaded) { // Fetch only if we haven't loaded data for this user yet
+                fetchAllAppointments();
+            }
+        } else if ($currentUser === null) {
+            // Layout has determined there's no user (e.g. account.get() failed or no session)
+            // console.log("Dashboard onMount: No user (currentUser is null), redirecting to /.");
             goto('/');
-        } else {
-            fetchAllAppointments();
         }
+        // If $currentUser is still its initial store value (e.g. undefined, if store was init with that),
+        // the reactive block below will handle it when layout updates the store.
+        // However, our store is init with null, so this case is covered by $currentUser === null.
+        // We set isLoadingPage to false later if not set by user found case.
     });
 
-    // Reactive check for user and fetch appointments if user logs in after page load
-    $: if ($currentUser && $currentUser.$id && (myHostedAppointments.length === 0 && availableAppointments.length === 0 && myBookedAppointments.length === 0)) {
-        // Avoid re-fetching if lists are already populated, unless a refresh mechanism is added
-        fetchAllAppointments();
-    } else if (!$currentUser && typeof window !== 'undefined') {
-        goto('/');
+    // Reactive statement for when $currentUser changes
+    $: {
+        if (typeof window !== 'undefined') { // Ensure this runs only client-side
+            if ($currentUser && $currentUser.$id) {
+                isLoadingPage = false; // We have a user, so not in the initial 'page loading' state
+                if (!dataLoaded) {
+                    // console.log("Dashboard reactive: User became available, fetching appointments.");
+                    fetchAllAppointments();
+                }
+            } else if ($currentUser === null && window.location.pathname === '/dashboard'){
+                // $currentUser explicitly became null (e.g., after logout or session expiry confirmed by layout)
+                // and we are still on the dashboard path (e.g. direct navigation attempt without session)
+                // console.log("Dashboard reactive: currentUser is null, redirecting to /.");
+                goto('/');
+            }
+        }
+    }
+
+    // Reset dataLoaded flag if the user logs out (currentUser becomes null)
+    // This ensures that if a new user logs in, data will be fetched for them.
+    $: if (!$currentUser) {
+        dataLoaded = false;
+        myHostedAppointments = [];
+        availableAppointments = [];
+        myBookedAppointments = [];
+        // isLoadingPage = true; // Reset to true if navigating away or expecting redirect
     }
 
     async function handleAppointmentSubmit(event) {
-        let userInfoForDebug = "User info was not available or $currentUser was null.";
-        if ($currentUser) {
-            userInfoForDebug = `User ID: ${$currentUser.$id}, User Name: ${$currentUser.name}, User Email: ${$currentUser.email}. Full $currentUser object: ${JSON.stringify($currentUser)}`;
-        }
-        creationStatus = `DEBUG INFO --- ${userInfoForDebug} --- END DEBUG INFO`;
-        await new Promise(resolve => setTimeout(resolve, 50)); 
-
-        if (!$currentUser || !$currentUser.$id) { 
-            creationStatus = 'Error: Current user ID is not available. Please try logging out and back in. DEBUG: ' + userInfoForDebug;
-            console.error("User data issue in handleAppointmentSubmit (missing ID):", $currentUser);
+        if (!$currentUser || !$currentUser.$id) {
+            creationStatus = 'Error: Current user ID is not available. Please log in again.';
             return;
         }
+        creationStatus = 'Creating appointment...';
         try {
-            creationStatus = 'Creating appointment...';
             const appointmentDetails = event.detail;
             const newAppointment = await createAppointment(appointmentDetails, $currentUser);
-            creationStatus = `Successfully created appointment: ${newAppointment.title || 'Untitled'} (ID: ${newAppointment.$id})`;
-            fetchAllAppointments(); // Refresh lists after creating a new one
+            creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
+            await fetchAllAppointments(); // Refresh lists
         } catch (error) {
             console.error("Error creating appointment:", error);
             creationStatus = `Error creating appointment: ${error.message}`;
         }
     }
 
-    // Handlers for booking/deleting - will be implemented in Milestone 5
     async function handleBookAppointment(event) {
         const appointmentId = event.detail;
         if (!$currentUser || !$currentUser.$id) {
             alert('You must be logged in to book an appointment.');
             return;
         }
+        creationStatus = `Booking appointment ${appointmentId}...`;
         try {
-            creationStatus = `Booking appointment ${appointmentId}...`; // Use creationStatus for feedback
             await bookAppointment(appointmentId, $currentUser);
             creationStatus = `Successfully booked appointment ${appointmentId}!`;
-            fetchAllAppointments(); // Refresh all lists
+            await fetchAllAppointments(); // Refresh all lists
         } catch (error) {
             console.error("Error booking appointment:", error);
             creationStatus = `Error booking appointment: ${error.message}`;
-            alert(`Error booking appointment: ${error.message}`); // Also alert for more immediate feedback
+            alert(`Error booking: ${error.message}`);
         }
     }
 
@@ -109,19 +141,15 @@
             alert('Error: User not identified. Cannot delete.');
             return;
         }
-
+        creationStatus = `Deleting appointment ${appointmentId}...`;
         try {
-            creationStatus = `Deleting appointment ${appointmentId}...`;
-            // Note: We are not re-fetching the appointment here to double-check hostUserId against $currentUser.$id
-            // The AppointmentList component should only show the delete button if appt.hostUserId === currentUserId
-            // And if it's not booked. For more security, this check could be done server-side or here before calling Appwrite.
             await deleteAppointment(appointmentId);
             creationStatus = `Successfully deleted appointment ${appointmentId}.`;
-            fetchAllAppointments(); // Refresh all lists
+            await fetchAllAppointments(); // Refresh all lists
         } catch (error) {
             console.error("Error deleting appointment:", error);
-            creationStatus = `Error deleting appointment: ${error.message}`;
-            alert(`Error deleting appointment: ${error.message}`);
+            creationStatus = `Error deleting: ${error.message}`;
+            alert(`Error deleting: ${error.message}`);
         }
     }
 
@@ -131,10 +159,13 @@
     <title>Dashboard - JOMA</title>
 </svelte:head>
 
-{#if $currentUser}
+{#if isLoadingPage && !$currentUser}
+    <!-- This is the initial state if currentUser is not yet determined by layout -->
+    <p>Loading user information or redirecting...</p>
+{:else if $currentUser}
+    <!-- User is confirmed, show dashboard content -->
     <h1>Welcome to your Dashboard, {$currentUser.name || $currentUser.email.split('@')[0]}!</h1>
     <p>Your User ID is: {$currentUser.$id}</p>
-    <!-- <p>Your Email is: {$currentUser.email}</p> -->
 
     <hr />
 
@@ -151,38 +182,30 @@
     <hr />
     {#if fetchError}<p class="status-message error">{fetchError}</p>{/if}
 
-    <div>
-        <h2>My Hosted Appointments</h2>
-        <AppointmentList 
-            appointments={myHostedAppointments} 
-            listType='hostedByMe' 
-            currentUserId={$currentUser.$id}
-            on:deleteAppointment={handleDeleteAppointment} />
-    </div>
-
-    <hr />
-
-    <div>
-        <h2>Available Appointments</h2>
-        <AppointmentList 
-            appointments={availableAppointments} 
-            listType='available' 
-            currentUserId={$currentUser.$id}
-            on:bookAppointment={handleBookAppointment} />
-    </div>
-
-    <hr />
-
-    <div>
-        <h2>My Booked Appointments</h2>
-        <AppointmentList 
-            appointments={myBookedAppointments} 
-            listType='bookedByMe' 
-            currentUserId={$currentUser.$id} />
-    </div>
-
+    {#if !dataLoaded && !fetchError}
+        <p>Loading appointments...</p>
+    {:else if fetchError}
+        <!-- Fetch error is already shown above, so this specific part might be redundant -->
+    {:else}
+        <div>
+            <h2>My Hosted Appointments</h2>
+            <AppointmentList appointments={myHostedAppointments} listType='hostedByMe' currentUserId={$currentUser.$id} on:deleteAppointment={handleDeleteAppointment} />
+        </div>
+        <hr />
+        <div>
+            <h2>Available Appointments</h2>
+            <AppointmentList appointments={availableAppointments} listType='available' currentUserId={$currentUser.$id} on:bookAppointment={handleBookAppointment} />
+        </div>
+        <hr />
+        <div>
+            <h2>My Booked Appointments</h2>
+            <AppointmentList appointments={myBookedAppointments} listType='bookedByMe' currentUserId={$currentUser.$id} />
+        </div>
+    {/if}
 {:else}
-    <p>Loading user information or redirecting...</p>
+    <!-- Fallback: $currentUser is null, and isLoadingPage is false (meaning layout confirmed no user or redirect should have happened) -->
+    <!-- This state should ideally be very transient as goto('/') would be called. -->
+    <p>No active session. Redirecting to login...</p>
 {/if}
 
 <style>

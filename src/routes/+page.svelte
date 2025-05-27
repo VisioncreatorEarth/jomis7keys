@@ -1,32 +1,31 @@
 <script>
-    import { account, ID } from '$lib/appwrite';
+    import { account, ID, logoutUser } from '$lib/appwrite';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
-
-    onMount(() => {
-        if ($currentUser) {
-            goto('/dashboard');
-        }
-    });
-
-    currentUser.subscribe(value => {
-        if (value) {
-            goto('/dashboard');
-        }
-    });
 
     async function login(email, password) {
-        await account.createEmailPasswordSession(email, password);
-        const user = await account.get();
-        currentUser.set(user);
+        try {
+            await account.createEmailPasswordSession(email, password);
+            const user = await account.get();
+            currentUser.set(user);
+            goto('/dashboard');
+        } catch (error) {
+            console.error("Login failed:", error);
+            alert("Login failed: " + error.message);
+        }
     }
 
     async function register(email, password) {
-        await account.create(ID.unique(), email, password);
-        await account.createEmailPasswordSession(email, password);
-        const user = await account.get();
-        currentUser.set(user);
+        try {
+            await account.create(ID.unique(), email, password);
+            await account.createEmailPasswordSession(email, password);
+            const user = await account.get();
+            currentUser.set(user);
+            goto('/dashboard');
+        } catch (error) {
+            console.error("Registration failed:", error);
+            alert("Registration failed: " + error.message);
+        }
     }
 
     function submit(e) {
@@ -40,22 +39,14 @@
             register(formData.get('email'), formData.get('password'));
         }
     }
-
-    async function logout() {
-        await account.deleteSession('current');
-        currentUser.set(null);
-    }
 </script>
 
 <svelte:head>
 	<title>JOMA - Welcome</title>
 </svelte:head>
 
-{#if !$currentUser}
 <div class="container">
-	<p>
-		Not logged in
-	</p>
+    <p>Please log in or register.</p>
 
 	<form on:submit={submit}>
 		<input type="email" placeholder="Email" name="email" required />
@@ -66,20 +57,11 @@
 			<button type="submit" data-type="register">Register</button>
 		</div>
 	</form>
-
-	<button class="logout-button" on:click={logout}>Logout</button>
 </div>
-{:else}
-    <p>Loading dashboard...</p>
-{/if}
 
 <style>
 	:global(body) {
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
 		margin: 0;
 		background-color: #f0f2f5;
 	}
@@ -92,6 +74,7 @@
 		text-align: center;
 		width: 100%;
 		max-width: 400px;
+		margin: 4rem auto;
 	}
 
 	p {
@@ -144,17 +127,6 @@
 
 	button[type="submit"]:hover {
 		background-color: #0056b3;
-	}
-
-	.logout-button {
-		background-color: #dc3545;
-		color: white;
-		width: 100%;
-		margin-top: 0.5rem;
-	}
-
-	.logout-button:hover {
-		background-color: #c82333;
 	}
 
 	form .button-group button {
