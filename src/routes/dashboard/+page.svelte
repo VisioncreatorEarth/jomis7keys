@@ -28,7 +28,7 @@
             dataLoaded = false; // No user, so no data loaded for a user
             return;
         }
-        // console.log("Dashboard: Attempting to fetch all appointments for user: ", $currentUser.$id);
+        console.log("Dashboard: Attempting to fetch all appointments for user: ", $currentUser.$id);
         fetchError = '';
         try {
             // Fetch in parallel
@@ -42,47 +42,55 @@
             myBookedAppointments = booked;
             dataLoaded = true; // Mark data as loaded for this user session
         } catch (err) {
-            console.error("Error fetching appointments:", err);
+            console.error("Dashboard: Error fetching appointments:", err);
             fetchError = "Failed to load appointment lists: " + err.message;
             dataLoaded = false; // Data loading failed
         }
     }
 
     onMount(() => {
-        // This logic runs once when the component mounts.
-        // +layout.svelte is responsible for trying to populate $currentUser.
         if ($currentUser && $currentUser.$id) {
-            // User is already available from the store (layout likely finished quickly)
-            // console.log("Dashboard onMount: User found, fetching appointments.");
+            console.log("Dashboard onMount: User found ($currentUser.$id), isLoadingPage=false. Fetching appointments if not loaded.");
             isLoadingPage = false;
-            if (!dataLoaded) { // Fetch only if we haven't loaded data for this user yet
+            if (!dataLoaded) { 
                 fetchAllAppointments();
             }
         } else if ($currentUser === null) {
-            // Layout has determined there's no user (e.g. account.get() failed or no session)
-            // console.log("Dashboard onMount: No user (currentUser is null), redirecting to /.");
+            console.log("Dashboard onMount: No user (currentUser is null), redirecting to /.");
             goto('/');
+        } else {
+            console.log("Dashboard onMount: currentUser is in an intermediate state. Waiting for reactive block.");
+            // isLoadingPage remains true, reactive block should handle it
         }
-        // If $currentUser is still its initial store value (e.g. undefined, if store was init with that),
-        // the reactive block below will handle it when layout updates the store.
-        // However, our store is init with null, so this case is covered by $currentUser === null.
-        // We set isLoadingPage to false later if not set by user found case.
     });
 
     // Reactive statement for when $currentUser changes
     $: {
         if (typeof window !== 'undefined') { // Ensure this runs only client-side
             if ($currentUser && $currentUser.$id) {
-                isLoadingPage = false; // We have a user, so not in the initial 'page loading' state
+                // console.log("Dashboard reactive: $currentUser became available with ID: ", $currentUser.$id);
+                if (isLoadingPage) {
+                    console.log("Dashboard reactive: User resolved, was loading page. Setting isLoadingPage=false.");
+                    isLoadingPage = false;
+                }
                 if (!dataLoaded) {
-                    // console.log("Dashboard reactive: User became available, fetching appointments.");
+                    console.log("Dashboard reactive: User available and data not loaded, fetching appointments.");
                     fetchAllAppointments();
                 }
-            } else if ($currentUser === null && window.location.pathname === '/dashboard'){
-                // $currentUser explicitly became null (e.g., after logout or session expiry confirmed by layout)
-                // and we are still on the dashboard path (e.g. direct navigation attempt without session)
-                // console.log("Dashboard reactive: currentUser is null, redirecting to /.");
-                goto('/');
+            } else if ($currentUser === null){
+                console.log("Dashboard reactive: currentUser became null.");
+                if (window.location.pathname === '/dashboard') {
+                    console.log("Dashboard reactive: Still on /dashboard and currentUser is null, redirecting to /.");
+                    goto('/');
+                } else {
+                     // console.log("Dashboard reactive: currentUser is null, but not on /dashboard path. Path: ", window.location.pathname);
+                }
+            } else {
+                // console.log("Dashboard reactive: $currentUser is in an indeterminate state (not null, but no .$id?), or initial undefined from store before layout hydration ", $currentUser);
+                // If $currentUser is undefined (initial state before layout sets it to user object or null), isLoadingPage should remain true.
+                // if ($currentUser === undefined && isLoadingPage) {
+                    // console.log("Dashboard reactive: currentUser is undefined, page is still loading.");
+                // }
             }
         }
     }
@@ -90,11 +98,12 @@
     // Reset dataLoaded flag if the user logs out (currentUser becomes null)
     // This ensures that if a new user logs in, data will be fetched for them.
     $: if (!$currentUser) {
+        // console.log("Dashboard reactive: $currentUser is now falsy. Resetting dataLoaded and lists.");
         dataLoaded = false;
         myHostedAppointments = [];
         availableAppointments = [];
         myBookedAppointments = [];
-        // isLoadingPage = true; // Reset to true if navigating away or expecting redirect
+        // isLoadingPage = true; // Reconsider if this should always be true - might cause flicker on logout then redirect
     }
 
     async function handleAppointmentSubmit(event) {
@@ -109,7 +118,7 @@
             creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
             await fetchAllAppointments(); // Refresh lists
         } catch (error) {
-            console.error("Error creating appointment:", error);
+            console.error("Dashboard: Error creating appointment:", error);
             creationStatus = `Error creating appointment: ${error.message}`;
         }
     }
@@ -126,7 +135,7 @@
             creationStatus = `Successfully booked appointment ${appointmentId}!`;
             await fetchAllAppointments(); // Refresh all lists
         } catch (error) {
-            console.error("Error booking appointment:", error);
+            console.error("Dashboard: Error booking appointment:", error);
             creationStatus = `Error booking appointment: ${error.message}`;
             alert(`Error booking: ${error.message}`);
         }
@@ -147,7 +156,7 @@
             creationStatus = `Successfully deleted appointment ${appointmentId}.`;
             await fetchAllAppointments(); // Refresh all lists
         } catch (error) {
-            console.error("Error deleting appointment:", error);
+            console.error("Dashboard: Error deleting appointment:", error);
             creationStatus = `Error deleting: ${error.message}`;
             alert(`Error deleting: ${error.message}`);
         }

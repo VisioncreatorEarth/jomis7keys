@@ -13,19 +13,19 @@ This plan outlines the steps to transform the current login page (`src/routes/+p
 
 ## Milestone 1: Homepage Structure & Login Form Integration
 
-- [ ] **Task 1.1: Restructure `src/routes/+page.svelte` for Homepage Content**
-    - [ ] Keep the existing `<script>` section containing login/registration logic.
-    - [ ] Wrap the existing login form (`<div class="container">...</div>`) in a specific section (e.g., `<section id="auth-section">`).
-    - [ ] Add new HTML sections above and/or below the auth section to serve as placeholders for typical homepage content:
-        - Example: `<section id="hero"><h1>Welcome to JOMA Appointments!</h1>...</section>`
-        - Example: `<section id="features"><p>Placeholder for features...</p></section>`
-        - Example: `<section id="about"><p>Placeholder for about us...</p></section>`
-    - [ ] Remove the standalone paragraph `<p>Please log in or register.</p>` as the form's context will be part of the larger page.
-- [ ] **Task 1.2: Initial Styling for New Homepage Layout**
-    - [ ] In `<style>` of `src/routes/+page.svelte`:
-        - Adjust existing styles for `.container` (now within `#auth-section`) if needed, or make them specific to `#auth-section .container`.
-        - Remove or adjust `:global(body)` styles from `+page.svelte` if they are overly restrictive for a multi-section homepage (e.g., `display:flex` on body). The `margin: 0; background-color: #f0f2f5;` from the old `:global(body)` is likely fine to keep if applied generally in `app.html` or `+layout.svelte`, or can be scoped locally. For now, we'll assume the one in `+page.svelte` might need to be less specific.
-        - Add basic placeholder styling for new sections (`#hero`, `#features`, `#about`) for visual separation (e.g., padding, background colors).
+- [x] **Task 1.1: Restructure `src/routes/+page.svelte` for Homepage Content**
+    - [x] Keep the existing `<script>` section containing login/registration logic.
+    - [x] Wrap the existing login form (`<div class="container">...</div>`) in a specific section (e.g., `<section id="auth-section">`).
+    - [x] Add new HTML sections above and/or below the auth section to serve as placeholders for typical homepage content:
+        - [x] Example: `<section id="hero"><h1>Welcome to JOMA Appointments!</h1>...</section>`
+        - [x] Example: `<section id="features"><p>Placeholder for features...</p></section>`
+        - [x] Example: `<section id="about"><p>Placeholder for about us...</p></section>`
+    - [x] Remove the standalone paragraph `<p>Please log in or register.</p>` as the form's context will be part of the larger page.
+- [x] **Task 1.2: Initial Styling for New Homepage Layout**
+    - [x] In `<style>` of `src/routes/+page.svelte`:
+        - [x] Adjust existing styles for `.container` (now within `#auth-section`) if needed, or make them specific to `#auth-section .container`.
+        - [x] Remove or adjust `:global(body)` styles from `+page.svelte` if they are overly restrictive for a multi-section homepage (e.g., `display:flex` on body). The `margin: 0; background-color: #f0f2f5;` from the old `:global(body)` is likely fine to keep if applied generally in `app.html` or `+layout.svelte`, or can be scoped locally. For now, we'll assume the one in `+page.svelte` might need to be less specific.
+        - [x] Add basic placeholder styling for new sections (`#hero`, `#features`, `#about`) for visual separation (e.g., padding, background colors).
 
 ---
 

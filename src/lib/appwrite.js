@@ -1,4 +1,4 @@
-import { Client, Account } from 'appwrite';
+import { Client, Account, ID } from 'appwrite';
 
 export const client = new Client();
 
@@ -7,4 +7,14 @@ client
     .setProject('68357409002d8b46f512');
 
 export const account = new Account(client);
-export { ID } from 'appwrite'; 
+
+export async function logoutUser() {
+    try {
+        await account.deleteSession('current');
+    } catch (error) {
+        console.error("Failed to delete session:", error);
+        throw error;
+    }
+}
+
+export { ID }; 
