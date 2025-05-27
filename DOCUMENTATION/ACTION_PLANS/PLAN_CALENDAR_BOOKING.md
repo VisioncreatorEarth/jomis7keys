@@ -104,48 +104,48 @@ Implement and test core Appwrite interactions: storing/retrieving appointments, 
 
 ## Milestone 4: Viewing Appointments
 
-- [ ] **Task 4.1: Create `src/lib/components/AppointmentList.svelte`**
-    - [ ] Prop: `appointments` (array of appointment documents).
-    - [ ] Prop: `listType` (e.g., "available", "bookedByMe", "hostedByMe", "all") to conditionally render action buttons or details.
-    - [ ] Displays appointments in a list or cards.
-    - [ ] For "available" appointments, show a "Book" button.
-    - [ ] For "hostedByMe" appointments, show "Edit"/"Delete" buttons (Delete for this phase).
-    - [ ] For "bookedByMe" appointments, show details and maybe a "Cancel Booking" button (future).
-- [ ] **Task 4.2: Implement Appointment Fetching Logic in `appwrite_db.js`**
-    - [ ] `getAvailableAppointments()`:
+- [x] **Task 4.1: Create `src/lib/components/AppointmentList.svelte`**
+    - [x] Prop: `appointments` (array of appointment documents).
+    - [x] Prop: `listType` (e.g., "available", "bookedByMe", "hostedByMe", "all") to conditionally render action buttons or details.
+    - [x] Displays appointments in a list or cards.
+    - [x] For "available" appointments, show a "Book" button.
+    - [x] For "hostedByMe" appointments, show "Edit"/"Delete" buttons (Delete for this phase).
+    - [x] For "bookedByMe" appointments, show details and maybe a "Cancel Booking" button (future).
+- [x] **Task 4.2: Implement Appointment Fetching Logic in `appwrite_db.js`**
+    - [x] `getAvailableAppointments()`:
         - `databases.listDocuments(...)` with `Query.equal('isBooked', false)`, `Query.orderDesc('appointmentDateTime')`.
-    - [ ] `getAppointmentsHostedBy(userId)`:
+    - [x] `getAppointmentsHostedBy(userId)`:
         - `databases.listDocuments(...)` with `Query.equal('hostUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
-    - [ ] `getAppointmentsBookedBy(userId)`:
+    - [x] `getAppointmentsBookedBy(userId)`:
         - `databases.listDocuments(...)` with `Query.equal('bookedByUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
-- [ ] **Task 4.3: Display Appointments in `dashboard/+page.svelte`**
-    - [ ] On page load (e.g., in `onMount`), fetch different lists of appointments using functions from `appwrite_db.js`.
+- [x] **Task 4.3: Display Appointments in `dashboard/+page.svelte`**
+    - [x] On page load (e.g., in `onMount`), fetch different lists of appointments using functions from `appwrite_db.js`.
         - Need `currentUser.$id` for hosted/booked lists.
-    - [ ] Store these lists in local Svelte state (e.g., `availableAppointments`, `myHostedAppointments`, `myBookedAppointments`).
-    - [ ] Pass these lists to instances of `AppointmentList.svelte`.
+    - [x] Store these lists in local Svelte state (e.g., `availableAppointments`, `myHostedAppointments`, `myBookedAppointments`).
+    - [x] Pass these lists to instances of `AppointmentList.svelte`.
 
 ---
 
 ## Milestone 5: Booking Appointments ("Booker" Functionality)
 
-- [ ] **Task 5.1: Implement Appointment Booking Logic in `appwrite_db.js`**
-    - [ ] `bookAppointment(appointmentId, bookerUser)` function:
+- [x] **Task 5.1: Implement Appointment Booking Logic in `appwrite_db.js`**
+    - [x] `bookAppointment(appointmentId, bookerUser)` function:
         - Takes `appointmentId` and `bookerUser` (from `currentUser` store).
         - Data to update: `isBooked: true`, `bookedByUserId: bookerUser.$id`, `bookedByUserName: bookerUser.name`, `bookedAt: new Date().toISOString()`.
         - Calls `databases.updateDocument(...)`.
         - Ensure it only books if `isBooked` is currently `false` (either via Appwrite security rules later or a read-before-write check, though the latter has race conditions. For now, a simple update).
-- [ ] **Task 5.2: Add "Book" Functionality to `AppointmentList.svelte`**
-    - When `listType` is "available", the "Book" button for an appointment should:
+- [x] **Task 5.2: Add "Book" Functionality to `AppointmentList.svelte`**
+    - [x] When `listType` is "available", the "Book" button for an appointment should:
         - Get current user from `currentUser` store.
         - Call `bookAppointment(appointment.$id, currentUser)`.
         - Provide user feedback.
         - Refresh relevant appointment lists (available, my booked).
-- [ ] **Task 5.3: Implement Appointment Deletion Logic (for "Host") in `appwrite_db.js`**
-    - [ ] `deleteAppointment(appointmentId, hostUserId)`:
+- [x] **Task 5.3: Implement Appointment Deletion Logic (for "Host") in `appwrite_db.js`**
+    - [x] `deleteAppointment(appointmentId, hostUserId)`:
         - Before calling `databases.deleteDocument(...)`, ideally verify `hostUserId` matches the document's `hostUserId`. For this phase, ensure the call is made from a context where `hostUserId` is confirmed.
         - (Future: Appwrite document-level security can enforce this).
-- [ ] **Task 5.4: Add "Delete" Functionality to `AppointmentList.svelte`**
-    - When `listType` is "hostedByMe" and appointment is NOT booked:
+- [x] **Task 5.4: Add "Delete" Functionality to `AppointmentList.svelte`**
+    - [x] When `listType` is "hostedByMe" and appointment is NOT booked:
         - "Delete" button calls `deleteAppointment(appointment.$id, currentUser.$id)`.
         - Provide user feedback.
         - Refresh hosted appointments list.
