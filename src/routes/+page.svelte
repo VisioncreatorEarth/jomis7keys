@@ -2,6 +2,7 @@
     import { account, ID } from '$lib/appwrite';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
+    import backgroundImage from '$lib/images/background.png'; // Import the background image
 
     async function login(email, password) {
         try {
@@ -57,171 +58,57 @@
 </script>
 
 <svelte:head>
-	<title>JOMA Appointments - Welcome</title>
+	<title>Network 3.0 - Coming Soon</title>
 </svelte:head>
 
-<div class="homepage-container">
-    <section id="hero">
-        <h1>Welcome to JOMA Appointments!</h1>
-        <p>Your easy solution for scheduling and managing appointments.</p>
-        {#if !$currentUser}
-            <p>Please log in or register below to get started.</p>
-        {:else}
-            <p>Access your <a href="/dashboard">dashboard</a> to manage your appointments.</p>
-        {/if}
-    </section>
+<div class="relative min-h-screen w-full">
+    <!-- Background Image -->
+    <div 
+        class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0"
+        style="background-image: url({backgroundImage});"
+        data-testid="background-image-div"
+    ></div>
+    
+    <!-- Overlay -->
+    <div class="absolute inset-0 w-full h-full bg-black opacity-60 z-10"></div>
 
-    <section id="features">
-        <h2>Features</h2>
-        <ul>
-            <li>Easy Appointment Scheduling</li>
-            <li>Organized Dashboard View</li>
-            <li>User-Friendly Interface</li>
-            <li>Secure & Reliable</li>
-        </ul>
-    </section>
+    <!-- Content (centered and on top) -->
+    <div class="relative z-20 min-h-screen w-full flex flex-col items-center justify-center p-4 space-y-10">
+        
+        <div class="text-center">
+            <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold mb-4 text-white drop-shadow-lg">Network 3.0</h1>
+            <p class="text-2xl sm:text-3xl md:text-4xl text-white drop-shadow-md">Coming soon...</p>
+        </div>
 
-    <section id="auth-section">
-        <h2>Get Started</h2>
-        {#if !$currentUser}    
-            <div class="auth-form-container">
-                <form on:submit={submit}>
-                    <input type="email" placeholder="Email" name="email" required />
-                    <input type="password" placeholder="Password" name="password" required />
-                    <div class="button-group">
-                        <button type="submit" data-type="login">Login</button>
-                        <button type="submit" data-type="register">Register</button>
-                    </div>
-                </form>
-            </div>
-        {:else}
-            <p>You are currently logged in as {$currentUser.name || $currentUser.email}.</p>
-        {/if}
-    </section>
-
-    <section id="about">
-        <h2>About JOMA</h2>
-        <p>We aim to simplify appointment booking for everyone. More placeholder text here.</p>
-    </section>
-
-    <footer>
-        <p>&copy; 2024 JOMA Appointments. All rights reserved.</p>
-    </footer>
+        <!-- Auth Section - Reusing existing form structure with Tailwind styling -->
+        <section id="cta-auth" class="w-full max-w-md">
+            {#if !$currentUser}    
+                <div class="bg-white bg-opacity-90 p-6 sm:p-8 rounded-lg shadow-xl">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6 text-center text-gray-900">Login or Register</h2>
+                    <form on:submit={submit} class="space-y-5 sm:space-y-6">
+                        <div>
+                            <label for="email-cs" class="block text-sm font-medium text-gray-700 sr-only">Email</label>
+                            <input id="email-cs" type="email" placeholder="Email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900" />
+                        </div>
+                        <div>
+                            <label for="password-cs" class="block text-sm font-medium text-gray-700 sr-only">Password</label>
+                            <input id="password-cs" type="password" placeholder="Password" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900" />
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                            <button type="submit" data-type="login" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+                            <button type="submit" data-type="register" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Register</button>
+                        </div>
+                    </form>
+                </div>
+            {:else}
+                <div class="text-center bg-black bg-opacity-75 p-6 sm:p-8 rounded-lg drop-shadow-lg">
+                    <p class="text-lg sm:text-xl mb-4 text-white">Willkommen zurück, {$currentUser.name || $currentUser.email}!</p>
+                    <p class="mb-4 text-base sm:text-lg text-white">Network 3.0 is launching soon. We'll keep you updated!</p>
+                    <a href="/dashboard" class="bg-indigo-600 text-white font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-lg hover:bg-indigo-700 transition duration-300 text-sm sm:text-base">Gehe zum Dashboard</a>
+                </div>
+            {/if}
+        </section>
+    </div>
 </div>
 
-<style>
-    /* Remove or significantly reduce specificity of :global(body) here */
-    /* General body styles should be in app.html or +layout.svelte if needed globally */
-	:global(body) {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-		margin: 0;
-		background-color: #f9f9f9; /* Lighter overall background for homepage */
-	}
-
-    .homepage-container {
-        /* No specific layout for homepage-container itself, sections will flow block */
-    }
-
-    section {
-        padding: 2rem 1rem;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-    }
-
-    #hero {
-        background-color: #e0f2f7;
-        color: #333;
-    }
-
-    #hero h1 {
-        margin-bottom: 0.5rem;
-    }
-
-    #features ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    #features li {
-        margin-bottom: 0.5rem;
-        font-size: 1.1em;
-    }
-    
-    #auth-section {
-        background-color: #fff; /* Keep auth form background white */
-    }
-
-	.auth-form-container { /* This was previously .container */
-		background-color: #fff;
-		padding: 2rem;
-		border-radius: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		text-align: center;
-		width: 100%;
-		max-width: 400px;
-		margin: 1rem auto; /* Centering the form container */
-	}
-
-	p {
-		color: #555; /* Slightly softer text color for general paragraphs */
-		font-size: 1.1em;
-		margin-bottom: 1.5rem;
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	input[type="email"],
-	input[type="password"] {
-		padding: 0.75rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1em;
-	}
-
-	input[type="email"]:focus,
-	input[type="password"]:focus {
-		border-color: #007bff;
-		outline: none;
-		box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-	}
-
-	.button-group {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	button {
-		padding: 0.75rem;
-		border: none;
-		border-radius: 4px;
-		font-size: 1em;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-		flex-grow: 1;
-	}
-
-	button[type="submit"] {
-		background-color: #007bff;
-		color: white;
-	}
-
-	button[type="submit"]:hover {
-		background-color: #0056b3;
-	}
-
-	form .button-group button {
-	}
-
-    footer {
-        text-align: center;
-        padding: 2rem 1rem;
-        background-color: #333;
-        color: #f0f0f0;
-        font-size: 0.9em;
-    }
-</style> 
+<!-- Removed the entire <style> block that was previously here --> 

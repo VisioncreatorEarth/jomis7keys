@@ -1,0 +1,1880 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+.cursor/
+  rules/
+    geminimasterprompt.mdc
+DOCUMENTATION/
+  ACTION_PLANS/
+    PLAN_CALENDAR_BOOKING.md
+    PLAN_HOMEPAGE_REDESIGN.md
+    PLAN_ROLE_BASED_DASHBOARD.md
+src/
+  lib/
+    components/
+      AppointmentForm.svelte
+      AppointmentList.svelte
+    stores/
+      userStore.js
+    appwrite_db.js
+    appwrite.js
+  routes/
+    dashboard/
+      +page.svelte
+    +layout.svelte
+    +page.svelte
+  app.css
+  app.html
+static/
+  robots.txt
+.gitignore
+.npmrc
+.prettierignore
+.prettierrc
+eslint.config.js
+jsconfig.json
+package.json
+README.md
+svelte.config.js
+vite.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".cursor/rules/geminimasterprompt.mdc">
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+You are a hyper-rational, first-principles problem solver with:
+- You are the best software architect and product owner of the world.
+- Zero tolerance for excuses, rationalizations or bullshit
+- Pure focus on deconstructing problems to fundamental truths 
+- Relentless drive for actionable solutions and results
+- No regard for conventional wisdom or "common knowledge"
+- Absolute commitment to intellectual honesty
+
+ INTERACTION RULES WITH THE USER
+- Never console or sympathize
+- Cut off excuses instantly  
+- Redirect all complaints to solutions
+- Challenge limiting beliefs aggressively
+- Push for better when given weak plans
+
+DELIVERY PROTOCOL  
+- Call out fuzzy thinking immediately
+- Demand specificity in all things
+- Push back on vague goals/metrics
+- Force clarity through pointed questions
+- Insist on concrete next actions
+
+
+!!! FOLLOW THOSE 4 ACTION STEPS CONSITENTLY !!!
+
+1. DECONTRUCT PROBLEM
+Analyse the current status quo of the implementation at hand and define all its problematic week points.
+
+- Break everything down to foundational truths
+- Challenge ALL assumptions ruthlessly
+- Identify core variables and dependencies  
+- Map causal relationships explicitly
+- Find the smallest actionable units
+
+2. SOLUTION ENGINEERING
+
+Brainstorm with the user the wanted final product / architecture / solution, the want to achieve, if needed ask further questions back to the user for better clarification. 
+
+- Design interventions at leverage points
+- Prioritize by impact-to-effort ratio
+- Create specific, measurable action steps
+- Build feedback loops into every plan
+- Focus on speed of execution
+
+
+3. WRITTEN RESPONSE FORMAT:
+
+if step 1 and step 2 are done, write out a detail execution plan, how to get from state 1 to state 2, includuing referncing all the files, that need change or need to be delted or cretated. 
+
+Also write down and or requetst further documentiation refrences from the user, that is helpfull to execute better. 
+
+Maker sure that you strucute the exceution plan as testable milestones, whre the user can test and give feedback along the way if it works. also add to each subtask of every milestone markdown checkmarks. 
+
+Write all of this into our /DOCUMENTATION/ACTION_PLANS folder (at repository root) into a new PLAN_{short product / feature / bug title with max 3 words}.md file. 
+
+During execution always come back to this document and udpate along the way your progress, by checkmarking each task. 
+
+First write the document out, and dont start to code yet or execute, only when the user reuqests it explicitly.
+
+
+4. SPOKEN RESPONSE FORMAT:
+
+1. SITUATION ANALYSIS
+- Core problem statement
+- Key assumptions identified  
+- First principles breakdown
+- Critical variables isolated
+
+1. SOLUTION ARCHITECTURE
+- Strategic intervention points
+- Specific action steps
+- Success metrics
+- Risk mitigation
+
+1. EXECUTION FRAMEWORK  
+- Immediate next actions
+- Progress tracking method
+- Course correction triggers
+- Accountability measures
+
+VOICE CHARACTERISTICS:
+- Direct and unsparing
+- Intellectually ruthless
+- Solutions-obsessed
+- Zero fluff or padding
+- Pushes for excellence
+
+KEY PHRASES:
+"Let's break this down to first principles..."
+"Your actual problem is..."
+"That's an excuse. Here's what you need to do..."
+"Be more specific. What exactly do you mean by..."
+"Your plan is weak because..."
+"Here's your action plan, starting now..."
+"Let's identify your real constraints..."
+"That assumption is flawed because..."
+
+CONSTRAINTS:
+- No motivational fluff
+- No vague advice
+- No social niceties
+- No unnecessary context
+- No theoretical discussions without immediate application
+
+OBJECTIVE:
+Transform any problem, goal or desire into:
+1. Clear fundamental truths
+2. Specific action steps  
+3. Measurable outcomes
+4. Immediate next actions
+</file>
+
+<file path="DOCUMENTATION/ACTION_PLANS/PLAN_ROLE_BASED_DASHBOARD.md">
+# ACTION PLAN: Role-Based Dashboard (Admin/Client vs. Regular User)
+
+This plan outlines the steps to differentiate the dashboard experience for a "main user" (admin/client) who hosts appointments and regular users who book them.
+
+## Goal
+
+- Identify a "main user" (admin/client) via their Appwrite User ID.
+- **Main User Dashboard:**
+    - Can create new appointments.
+    - Sees a comprehensive list of **all appointments they host**, indicating if they are booked (and by whom) or available.
+    - Can delete their own unbooked appointments.
+- **Regular User Dashboard:**
+    - Cannot create appointments.
+    - Sees a list of **available appointments** to book.
+    - Sees a list of **their own booked appointments**.
+- Update UI components and data fetching logic accordingly.
+
+## Prerequisites
+
+- Need the Appwrite User ID of the "main user" (admin/client).
+    - Provided: `6835776c00327c1049fe`
+
+---
+
+## Milestone 1: Main User Identification & Basic Dashboard Logic
+
+- [x] **Task 1.1: Define Main User ID Constant**
+    - [x] In `src/routes/dashboard/+page.svelte` (or a new config file if preferred, e.g., `src/lib/config.js`), define a constant for the main user's Appwrite ID. 
+    - [x] Example: `const MAIN_HOST_USER_ID = '6835776c00327c1049fe';`
+- [x] **Task 1.2: Conditional Logic in Dashboard Page**
+    - [x] In `src/routes/dashboard/+page.svelte`:
+        - [x] Create a reactive variable `isMainUser` based on whether `$currentUser.$id === MAIN_HOST_USER_ID`.
+        - [x] Conditionally show/hide the `AppointmentForm` based on `isMainUser`.
+- [x] **Task 1.3: Adapt `AppointmentList.svelte` for Admin View of Hosted Appointments**
+    - [x] Modify `AppointmentList.svelte` when `listType` is `'hostedByMe'`:
+        - [x] If an appointment `appt` is booked (`appt.isBooked`), display who it was booked by (`appt.bookedByUserName`) and when (`appt.bookedAt`).
+        - [x] The delete button for `hostedByMe` should still only appear if `!appt.isBooked`.
+
+---
+
+## Milestone 2: Data Fetching and Display for Roles
+
+- [x] **Task 2.1: Main User - Fetching Hosted Appointments**
+    - [x] In `src/routes/dashboard/+page.svelte`:
+        - [x] If `isMainUser` is true, the primary list to fetch and display will be `getAppointmentsHostedBy(MAIN_HOST_USER_ID)`. This list will be passed to an `AppointmentList` instance with `listType='hostedByMe'`.
+        - [x] For the main user, the sections for "Available Appointments" (as a separate query) and "My Booked Appointments" (as a booker) might be hidden or not fetched to simplify their view, as their `hostedByMe` list will show availability and booking status of their own appointments.
+- [x] **Task 2.2: Regular User - Fetching Relevant Appointments**
+    - [x] In `src/routes/dashboard/+page.svelte`:
+        - [x] If `isMainUser` is false, continue to fetch and display:
+            - [x] `getAvailableAppointments()` passed to `AppointmentList` with `listType='available'`.
+            - [x] `getAppointmentsBookedBy($currentUser.$id)` passed to `AppointmentList` with `listType='bookedByMe'`.
+        - [x] The "My Hosted Appointments" section should be hidden for regular users if they are not intended to create appointments.
+- [x] **Task 2.3: Adjust Dashboard Template Structure**
+    - [x] In `src/routes/dashboard/+page.svelte`'s template:
+        - [x] Use `{#if isMainUser}` and `{:else}` blocks to render different sets of `AppointmentList` components and section titles based on the user role.
+
+---
+
+## Milestone 3: Testing and Refinement
+
+- [ ] **Task 3.1: Test Main User View**
+    - [ ] Log in as the main user.
+    - [ ] Verify the "Create Appointment" form is visible.
+    - [ ] Verify the list shows all appointments hosted by the main user, with correct booking status and booker details displayed.
+    - [ ] Verify delete functionality for unbooked appointments.
+- [ ] **Task 3.2: Test Regular User View**
+    - [ ] Log in as a regular user.
+    - [ ] Verify the "Create Appointment" form is NOT visible.
+    - [ ] Verify the "My Hosted Appointments" list is NOT visible.
+    - [ ] Verify "Available Appointments" list shows correctly.
+    - [ ] Verify "My Booked Appointments" list shows correctly.
+    - [ ] Test booking an appointment and see it move to "My Booked Appointments" and disappear from "Available."
+- [ ] **Task 3.3: Code Cleanup and Review**
+    - [ ] Remove any temporary debug alerts/logs (like the one in `src/routes/+page.svelte`'s login function).
+    - [ ] Review for clarity and efficiency.
+
+---
+</file>
+
+<file path="src/lib/components/AppointmentForm.svelte">
+<script>
+    import { createEventDispatcher } from 'svelte';
+
+    export let title = '';
+    export let description = '';
+    export let appointmentDateTime = ''; // Expected format: YYYY-MM-DDTHH:mm
+    export let durationMinutes = 30;
+    export let isEditing = false; // To change button text, etc.
+
+    const dispatch = createEventDispatcher();
+
+    function handleSubmit() {
+        // Basic validation (can be enhanced)
+        if (!appointmentDateTime || !durationMinutes) {
+            alert('Please provide a valid date/time and duration.');
+            return;
+        }
+        dispatch('submitAppointment', {
+            title,
+            description,
+            appointmentDateTime,
+            durationMinutes: parseInt(durationMinutes, 10)
+        });
+    }
+</script>
+
+<form on:submit|preventDefault={handleSubmit}>
+    <div>
+        <label for="title">Title (Optional):</label>
+        <input type="text" id="title" bind:value={title} maxlength="255" />
+    </div>
+    <div>
+        <label for="description">Description (Optional):</label>
+        <textarea id="description" bind:value={description} maxlength="10000"></textarea>
+    </div>
+    <div>
+        <label for="appointmentDateTime">Date and Time:</label>
+        <input type="datetime-local" id="appointmentDateTime" bind:value={appointmentDateTime} required />
+    </div>
+    <div>
+        <label for="durationMinutes">Duration (minutes):</label>
+        <input type="number" id="durationMinutes" bind:value={durationMinutes} min="15" step="15" required />
+    </div>
+    <button type="submit">{isEditing ? 'Update' : 'Create'} Appointment</button>
+</form>
+
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        max-width: 500px;
+        margin: 1rem auto; /* Center form if used standalone */
+    }
+    div {
+        display: flex;
+        flex-direction: column;
+    }
+    label {
+        margin-bottom: 0.25rem;
+        font-weight: bold;
+    }
+    input[type="text"],
+    input[type="datetime-local"],
+    input[type="number"],
+    textarea {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+    }
+    textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+    button[type="submit"] {
+        padding: 0.75rem;
+        border: none;
+        border-radius: 4px;
+        background-color: #28a745; /* Green for create/update */
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    button[type="submit"]:hover {
+        background-color: #218838;
+    }
+</style>
+</file>
+
+<file path="src/lib/stores/userStore.js">
+import { writable } from 'svelte/store';
+
+export const currentUser = writable(null); // Initialize with null (no user logged in)
+</file>
+
+<file path="src/app.css">
+@import 'tailwindcss';
+@import '@fontsource/fira-mono';
+
+:root {
+	--font-body:
+		Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+		'Open Sans', 'Helvetica Neue', sans-serif;
+	--font-mono: 'Fira Mono', monospace;
+	--color-bg-0: rgb(202, 216, 228);
+	--color-bg-1: hsl(209, 36%, 86%);
+	--color-bg-2: hsl(224, 44%, 95%);
+	--color-theme-1: #ff3e00;
+	--color-theme-2: #4075a6;
+	--color-text: rgba(0, 0, 0, 0.7);
+	--column-width: 42rem;
+	--column-margin-top: 4rem;
+	font-family: var(--font-body);
+	color: var(--color-text);
+}
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	background-attachment: fixed;
+	background-color: var(--color-bg-1);
+	background-size: 100vw 100vh;
+	background-image:
+		radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 100%),
+		linear-gradient(180deg, var(--color-bg-0) 0%, var(--color-bg-1) 15%, var(--color-bg-2) 50%);
+}
+
+h1,
+h2,
+p {
+	font-weight: 400;
+}
+
+p {
+	line-height: 1.5;
+}
+
+a {
+	color: var(--color-theme-1);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 2rem;
+	text-align: center;
+}
+
+h2 {
+	font-size: 1rem;
+}
+
+pre {
+	font-size: 16px;
+	font-family: var(--font-mono);
+	background-color: rgba(255, 255, 255, 0.45);
+	border-radius: 3px;
+	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
+	padding: 0.5em;
+	overflow-x: auto;
+	color: var(--color-text);
+}
+
+.text-column {
+	display: flex;
+	max-width: 48rem;
+	flex: 0.6;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 auto;
+}
+
+input,
+button {
+	font-size: inherit;
+	font-family: inherit;
+}
+
+button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+@media (min-width: 720px) {
+	h1 {
+		font-size: 2.4rem;
+	}
+}
+
+.visually-hidden {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: auto;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
+</file>
+
+<file path="src/app.html">
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
+</file>
+
+<file path="static/robots.txt">
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow:
+</file>
+
+<file path=".gitignore">
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+</file>
+
+<file path=".npmrc">
+engine-strict=true
+</file>
+
+<file path=".prettierignore">
+# Package Managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+</file>
+
+<file path=".prettierrc">
+{
+	"useTabs": true,
+	"singleQuote": true,
+	"trailingComma": "none",
+	"printWidth": 100,
+	"plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+	"overrides": [
+		{
+			"files": "*.svelte",
+			"options": {
+				"parser": "svelte"
+			}
+		}
+	]
+}
+</file>
+
+<file path="eslint.config.js">
+import prettier from 'eslint-config-prettier';
+import js from '@eslint/js';
+import { includeIgnoreFile } from '@eslint/compat';
+import svelte from 'eslint-plugin-svelte';
+import globals from 'globals';
+import { fileURLToPath } from 'node:url';
+import svelteConfig from './svelte.config.js';
+
+const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
+
+export default [
+	includeIgnoreFile(gitignorePath),
+	js.configs.recommended,
+	...svelte.configs.recommended,
+	prettier,
+	...svelte.configs.prettier,
+	{
+		languageOptions: {
+			globals: { ...globals.browser, ...globals.node }
+		}
+	},
+	{
+		files: ['**/*.svelte', '**/*.svelte.js'],
+		languageOptions: { parserOptions: { svelteConfig } }
+	}
+];
+</file>
+
+<file path="jsconfig.json">
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": false,
+		"moduleResolution": "bundler"
+	}
+	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+	//
+	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+	// from the referenced tsconfig.json - TypeScript does not merge them in
+}
+</file>
+
+<file path="svelte.config.js">
+import adapter from '@sveltejs/adapter-auto';
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	kit: {
+		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
+		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
+		adapter: adapter()
+	}
+};
+
+export default config;
+</file>
+
+<file path="vite.config.js">
+import tailwindcss from '@tailwindcss/vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+	plugins: [tailwindcss(), sveltekit()]
+});
+</file>
+
+<file path="DOCUMENTATION/ACTION_PLANS/PLAN_CALENDAR_BOOKING.md">
+# ACTION PLAN: Calendar & Appointment Booking System (Phase 1: Core Functionality)
+
+This document outlines the steps to implement the fundamental functionality of the calendar and appointment booking system using SvelteKit and Appwrite.
+
+## Goal
+
+Implement and test core Appwrite interactions: storing/retrieving appointments, user auth, hosts creating appointments, and bookers viewing/booking appointments. No external Zoom/email integration in this phase.
+
+## Appwrite Configuration Reference
+
+- **Project ID:** `68357409002d8b46f512`
+- **API Endpoint:** `https://fra.cloud.appwrite.io/v1`
+- **Database ID:** `68357c7b00070f3dbade`
+- **Appointments Collection ID:** `68357d08003a530aa17d`
+
+---
+
+## Milestone 1: Appwrite Backend Setup
+
+- [x] **Task 1.1: Create Appwrite Database**
+    - In the Appwrite Console, navigate to "Databases".
+    - Create a new database if you don't have one already. Record its ID as `YOUR_DATABASE_ID`.
+- [x] **Task 1.2: Create `appointments` Collection**
+    - Within your database, create a new collection named `appointments`. Record its ID as `appointments_collection`.
+    - Define Attributes:
+        - [x] `title`: String (size: 255, not required)
+        - [x] `description`: String (size: 10000, not required)
+        - [x] `appointmentDateTime`: Datetime (required)
+        - [x] `durationMinutes`: Integer (required)
+        - [x] `hostUserId`: String (size: 255, required)
+        - [x] `hostUserName`: String (size: 255, required)
+        - [x] `isBooked`: Boolean (required, default: `false`)
+        - [x] `bookedByUserId`: String (size: 255, not required)
+        - [x] `bookedByUserName`: String (size: 255, not required)
+        - [x] `bookedAt`: Datetime (not required)
+        - [x] `zoomMeetingId`: String (size: 255, not required)
+        - [x] `zoomJoinUrl`: String (size: 1024, not required)
+        - [x] `zoomStartUrl`: String (size: 1024, not required)
+    - Define Indexes (suggested for querying):
+        - [x] Index on `appointmentDateTime`
+        - [x] Index on `isBooked`
+        - [x] Index on `hostUserId`
+        - [x] Index on `bookedByUserId`
+- [x] **Task 1.3: Set Collection Permissions for `appointments`**
+    - Go to the "Settings" tab for the `appointments` collection.
+    - Permissions:
+        - Add Role: `users` (Authenticated Users)
+            - [x] Read Documents: Granted
+            - [x] Create Documents: Granted
+            - [x] Update Documents: Granted
+            - [x] Delete Documents: Granted (We will rely on document-level security or frontend logic to ensure users only delete/update their own items appropriately for this phase).
+
+---
+
+## Milestone 2: SvelteKit Frontend Setup for Appointments
+
+- [x] **Task 2.1: Create Appwrite Database Helper Module**
+    - Create `src/lib/appwrite_db.js`.
+    - This module will export functions for interacting with the `appointments` collection.
+    - [x] Add imports: `client` (from `../appwrite`), `Databases`, `ID`, `Query` from `appwrite`.
+    - [x] Initialize `Databases` service: `const databases = new Databases(client);`
+    - [x] Store `YOUR_DATABASE_ID` and `appointments_collection` ID (once known) as constants.
+- [x] **Task 2.2: Update `src/routes/+page.svelte` (Auth Page)**
+    - [x] Import `goto` from `$app/navigation`.
+    - [x] Import `account` and `client` (or a store for user session) to check login status. (Now uses `currentUser` store)
+    - [x] On successful login (in `login` function) and if user session is found on page load, redirect to `/dashboard` using `goto('/dashboard')`.
+    - [x] Ensure `currentUser` store is populated/cleared correctly.
+- [x] **Task 2.3: Create User Session Store**
+    - Create `src/lib/stores/userStore.js` (or similar).
+    - [x] Create a writable store `currentUser` initialized to `null`.
+    - [x] In `src/routes/+layout.svelte` (or `app.html` if preferred for initial load):
+        - Attempt to get the current Appwrite session (`account.get()`).
+        - If successful, set `currentUser.set(sessionData)`.
+        - If fails, set `currentUser.set(null)`.
+    - Update `src/routes/+page.svelte` to use this store. (Covered by 2.2 changes)
+
+---
+
+## Milestone 3: Appointment Creation ("Host" Functionality)
+
+- [x] **Task 3.1: Create `src/routes/dashboard/+page.svelte`**
+    - [x] Basic structure with a welcome message.
+    - [x] Placeholder sections for "Create Appointment", "Available Appointments", etc.
+    - [x] Subscribe to `currentUser` store to get user details.
+- [x] **Task 3.2: Create `src/lib/components/AppointmentForm.svelte`**
+    - [x] Form with inputs for: `title`, `description`, `appointmentDateTime` (use `<input type="datetime-local">`), `durationMinutes`.
+    - [x] "Create Appointment" button.
+    - [x] Emit an event or call a prop function on submit with form data.
+- [x] **Task 3.3: Implement Appointment Creation Logic in `appwrite_db.js`**
+    - [x] `createAppointment(appointmentData, hostUser)` function:
+        - Takes `appointmentData` (title, description, dateTime, duration) and `hostUser` (from `currentUser` store).
+        - Constructs the document payload including `hostUserId: hostUser.$id`, `hostUserName: hostUser.name`.
+        - Calls `databases.createDocument(...)` for the `appointments` collection.
+        - Returns the created document or throws an error.
+- [x] **Task 3.4: Integrate Form in `dashboard/+page.svelte`**
+    - [x] Import and use `AppointmentForm.svelte`.
+    - [x] Handle the submit event:
+        - Get current user from `currentUser` store.
+        - Call `createAppointment` from `appwrite_db.js`.
+        - Provide user feedback (success/error message).
+        - (Optional) Refresh list of hosted appointments.
+
+---
+
+## Milestone 4: Viewing Appointments
+
+- [x] **Task 4.1: Create `src/lib/components/AppointmentList.svelte`**
+    - [x] Prop: `appointments` (array of appointment documents).
+    - [x] Prop: `listType` (e.g., "available", "bookedByMe", "hostedByMe", "all") to conditionally render action buttons or details.
+    - [x] Displays appointments in a list or cards.
+    - [x] For "available" appointments, show a "Book" button.
+    - [x] For "hostedByMe" appointments, show "Edit"/"Delete" buttons (Delete for this phase).
+    - [x] For "bookedByMe" appointments, show details and maybe a "Cancel Booking" button (future).
+- [x] **Task 4.2: Implement Appointment Fetching Logic in `appwrite_db.js`**
+    - [x] `getAvailableAppointments()`:
+        - `databases.listDocuments(...)` with `Query.equal('isBooked', false)`, `Query.orderDesc('appointmentDateTime')`.
+    - [x] `getAppointmentsHostedBy(userId)`:
+        - `databases.listDocuments(...)` with `Query.equal('hostUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
+    - [x] `getAppointmentsBookedBy(userId)`:
+        - `databases.listDocuments(...)` with `Query.equal('bookedByUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
+- [x] **Task 4.3: Display Appointments in `dashboard/+page.svelte`**
+    - [x] On page load (e.g., in `onMount`), fetch different lists of appointments using functions from `appwrite_db.js`.
+        - Need `currentUser.$id` for hosted/booked lists.
+    - [x] Store these lists in local Svelte state (e.g., `availableAppointments`, `myHostedAppointments`, `myBookedAppointments`).
+    - [x] Pass these lists to instances of `AppointmentList.svelte`.
+
+---
+
+## Milestone 5: Booking Appointments ("Booker" Functionality)
+
+- [x] **Task 5.1: Implement Appointment Booking Logic in `appwrite_db.js`**
+    - [x] `bookAppointment(appointmentId, bookerUser)` function:
+        - Takes `appointmentId` and `bookerUser` (from `currentUser` store).
+        - Data to update: `isBooked: true`, `bookedByUserId: bookerUser.$id`, `bookedByUserName: bookerUser.name`, `bookedAt: new Date().toISOString()`.
+        - Calls `databases.updateDocument(...)`.
+        - Ensure it only books if `isBooked` is currently `false` (either via Appwrite security rules later or a read-before-write check, though the latter has race conditions. For now, a simple update).
+- [x] **Task 5.2: Add "Book" Functionality to `AppointmentList.svelte`**
+    - [x] When `listType` is "available", the "Book" button for an appointment should:
+        - Get current user from `currentUser` store.
+        - Call `bookAppointment(appointment.$id, currentUser)`.
+        - Provide user feedback.
+        - Refresh relevant appointment lists (available, my booked).
+- [x] **Task 5.3: Implement Appointment Deletion Logic (for "Host") in `appwrite_db.js`**
+    - [x] `deleteAppointment(appointmentId, hostUserId)`:
+        - Before calling `databases.deleteDocument(...)`, ideally verify `hostUserId` matches the document's `hostUserId`. For this phase, ensure the call is made from a context where `hostUserId` is confirmed.
+        - (Future: Appwrite document-level security can enforce this).
+- [x] **Task 5.4: Add "Delete" Functionality to `AppointmentList.svelte`**
+    - [x] When `listType` is "hostedByMe" and appointment is NOT booked:
+        - "Delete" button calls `deleteAppointment(appointment.$id, currentUser.$id)`.
+        - Provide user feedback.
+        - Refresh hosted appointments list.
+
+---
+
+## Documentation & Refinement
+
+- [ ] Review and refine Appwrite collection permissions for more granular security (post-Phase 1).
+- [ ] Add more robust error handling and user feedback.
+- [ ] Consider UI/UX improvements (styling, date/time pickers, calendar view components).
+
+Please provide your Appwrite **Database ID** when you're ready to start Milestone 1.
+This plan will be updated as we progress.
+</file>
+
+<file path="DOCUMENTATION/ACTION_PLANS/PLAN_HOMEPAGE_REDESIGN.md">
+# ACTION PLAN: Homepage Redesign & Enhanced User Experience
+
+This plan outlines the steps to transform the current login page (`src/routes/+page.svelte`) into a proper homepage with placeholder website content, integrate login/registration functionality smoothly, and ensure a clear user flow to the dashboard.
+
+## Goal
+
+- The route `/` will serve as a general website landing page with placeholder content.
+- Login/Registration functionality will be seamlessly integrated into the homepage design on `/`.
+- The global navigation bar (from `+layout.svelte`) will continue to be the primary indicator of login status and the gateway to the dashboard for logged-in users or the login section for logged-out users.
+- Ensure the homepage (`/`) loads its content immediately, without displaying "Loading user information..." messages. This message is acceptable only for protected routes like `/dashboard` if a session is being verified or before redirection.
+
+---
+
+## Milestone 1: Homepage Structure & Login Form Integration
+
+- [x] **Task 1.1: Restructure `src/routes/+page.svelte` for Homepage Content**
+    - [x] Keep the existing `<script>` section containing login/registration logic.
+    - [x] Wrap the existing login form (`<div class="container">...</div>`) in a specific section (e.g., `<section id="auth-section">`).
+    - [x] Add new HTML sections above and/or below the auth section to serve as placeholders for typical homepage content:
+        - [x] Example: `<section id="hero"><h1>Welcome to JOMA Appointments!</h1>...</section>`
+        - [x] Example: `<section id="features"><p>Placeholder for features...</p></section>`
+        - [x] Example: `<section id="about"><p>Placeholder for about us...</p></section>`
+    - [x] Remove the standalone paragraph `<p>Please log in or register.</p>` as the form's context will be part of the larger page.
+- [x] **Task 1.2: Initial Styling for New Homepage Layout**
+    - [x] In `<style>` of `src/routes/+page.svelte`:
+        - [x] Adjust existing styles for `.container` (now within `#auth-section`) if needed, or make them specific to `#auth-section .container`.
+        - [x] Remove or adjust `:global(body)` styles from `+page.svelte` if they are overly restrictive for a multi-section homepage (e.g., `display:flex` on body). The `margin: 0; background-color: #f0f2f5;` from the old `:global(body)` is likely fine to keep if applied generally in `app.html` or `+layout.svelte`, or can be scoped locally. For now, we'll assume the one in `+page.svelte` might need to be less specific.
+        - [x] Add basic placeholder styling for new sections (`#hero`, `#features`, `#about`) for visual separation (e.g., padding, background colors).
+
+---
+
+## Milestone 2: User Flow and Experience Refinement
+
+- [ ] **Task 2.1: Verify Homepage Content Visibility**
+    - [ ] Test loading `/` when logged out and logged in.
+    - [ ] Confirm that the new homepage sections (hero, features, etc.) are displayed immediately and are not hidden behind any "Loading user information..." messages.
+- [ ] **Task 2.2: Confirm Login/Registration Functionality**
+    - [ ] Test the login and registration process using the form now integrated into the homepage.
+    - [ ] Ensure successful login/registration still correctly redirects to `/dashboard`.
+    - [ ] Verify the global navigation bar in `+layout.svelte` updates the user's status and links correctly.
+- [ ] **Task 2.3: Verify Dashboard Loading Behavior**
+    - [ ] When logged out, attempting to access `/dashboard` directly should show the "Loading user information or redirecting..." message *briefly* before redirecting to `/` (the new homepage).
+    - [ ] When logged in, `/dashboard` should load, showing "Loading appointments..." if data fetching takes time, but not get stuck on "Loading user information...".
+
+---
+</file>
+
+<file path="src/lib/components/AppointmentList.svelte">
+<script>
+    export let appointments = [];
+    export let listType = 'all'; // 'all', 'available', 'bookedByMe', 'hostedByMe'
+    export let currentUserId = null; // Needed for some conditional rendering/actions
+
+    import { createEventDispatcher } from 'svelte';
+    const dispatch = createEventDispatcher();
+
+    function formatDate(dateTimeString) {
+        if (!dateTimeString) return 'N/A';
+        try {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateTimeString).toLocaleDateString(undefined, options);
+        } catch (e) {
+            return 'Invalid Date';
+        }
+    }
+
+    function handleBook(appointmentId) {
+        dispatch('bookAppointment', appointmentId);
+    }
+
+    function handleDelete(appointmentId) {
+        dispatch('deleteAppointment', appointmentId);
+    }
+</script>
+
+<div class="appointment-list-container">
+    {#if appointments.length === 0}
+        <p>No appointments to display in this list.</p>
+    {:else}
+        <ul>
+            {#each appointments as appt (appt.$id)}
+                <li>
+                    <strong>{appt.title || 'Appointment'}</strong>
+                    <p>Host: {appt.hostUserName || 'N/A'}</p>
+                    <p>When: {formatDate(appt.appointmentDateTime)}</p>
+                    <p>Duration: {appt.durationMinutes} minutes</p>
+                    {#if appt.description}
+                        <p>Description: {appt.description}</p>
+                    {/if}
+                    
+                    {#if listType === 'available' && !appt.isBooked}
+                        <button on:click={() => handleBook(appt.$id)}>Book This Appointment</button>
+                    {/if}
+
+                    {#if listType === 'hostedByMe'}
+                        {#if appt.isBooked}
+                            <p class="booked-info"><em>Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</em></p>
+                        {:else}
+                            <p class="available-info"><em>This appointment is currently available.</em></p>
+                            {#if appt.hostUserId === currentUserId}
+                                <button on:click={() => handleDelete(appt.$id)} class="delete-button">Delete My Appointment</button>
+                            {/if}
+                        {/if}
+                    {/if}
+
+                    {#if listType === 'bookedByMe' && appt.bookedByUserId === currentUserId}
+                        <p><em>You have booked this appointment.</em></p>
+                        <p>Booked on: {formatDate(appt.bookedAt)}</p>
+                    {/if}
+
+                    {#if listType !== 'hostedByMe' && listType !== 'bookedByMe' && appt.isBooked }
+                        <p><em>This appointment is booked.</em></p>
+                        {#if appt.bookedByUserName}
+                            <p>Booked by: {appt.bookedByUserName}</p>
+                        {/if}
+                    {/if}
+                </li>
+            {/each}
+        </ul>
+    {/if}
+</div>
+
+<style>
+    .appointment-list-container {
+        margin-top: 1rem;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        background-color: #f9f9f9;
+        border: 1px solid #eee;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+    li strong {
+        font-size: 1.2em;
+        color: #333;
+    }
+    p {
+        margin: 0.5rem 0;
+        color: #555;
+    }
+    .booked-info {
+        color: #28a745; /* Green for booked */
+        font-style: italic;
+    }
+    .available-info {
+        color: #17a2b8; /* Info blue for available */
+        font-style: italic;
+    }
+    button {
+        padding: 0.5rem 1rem;
+        margin-top: 0.5rem;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    .delete-button {
+        background-color: #dc3545;
+    }
+    .delete-button:hover {
+        background-color: #c82333;
+    }
+</style>
+</file>
+
+<file path="src/lib/appwrite_db.js">
+import { Client, Databases, ID, Query } from 'appwrite';
+import { client } from './appwrite'; // Assuming client is exported from appwrite.js
+
+export const DATABASE_ID = '68357c7b00070f3dbade';
+export const APPOINTMENTS_COLLECTION_ID = '68357d08003a530aa17d';
+
+export const databases = new Databases(client);
+
+export async function createAppointment(appointmentData, hostUser) {
+    // Allow empty name, but ID is critical.
+    if (!hostUser || !hostUser.$id) {
+        throw new Error("Valid host user ID is required to create an appointment.");
+    }
+    try {
+        const documentPayload = {
+            ...appointmentData, // Should contain title, description, appointmentDateTime, durationMinutes
+            hostUserId: hostUser.$id,
+            // Use user's name if available, otherwise part of email, or a default.
+            hostUserName: hostUser.name || hostUser.email.split('@')[0] || "User",
+            isBooked: false, // Default as per collection setup
+            // bookedByUserId, bookedByUserName, bookedAt, zoom fields will be null or not set initially
+        };
+
+        // Ensure appointmentDateTime is in ISO format if not already
+        // HTML datetime-local input usually provides it in a compatible format, but Appwrite expects strict ISO 8601.
+        // If appointmentData.appointmentDateTime is just a string, ensure it's correctly formatted.
+        // For simplicity, we assume it's correctly formatted by the input.
+
+        const response = await databases.createDocument(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            ID.unique(), // Generate a unique ID for the new document
+            documentPayload
+        );
+        return response; // Returns the newly created document
+    } catch (error) {
+        console.error("Failed to create appointment:", error);
+        // Consider how to propagate this error to the UI
+        // For now, re-throwing or returning a specific error structure might be good
+        throw error; // Re-throw the error to be caught by the calling UI component
+    }
+}
+
+export async function getAvailableAppointments() {
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            [
+                Query.equal('isBooked', false),
+                Query.orderDesc('appointmentDateTime') // Show soonest available first, or use orderAsc for further out
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch available appointments:", error);
+        throw error;
+    }
+}
+
+export async function getAppointmentsHostedBy(userId) {
+    if (!userId) throw new Error("User ID is required to fetch hosted appointments.");
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            [
+                Query.equal('hostUserId', userId),
+                Query.orderDesc('appointmentDateTime')
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch appointments hosted by user:", error);
+        throw error;
+    }
+}
+
+export async function getAppointmentsBookedBy(userId) {
+    if (!userId) throw new Error("User ID is required to fetch booked appointments.");
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            [
+                Query.equal('bookedByUserId', userId),
+                Query.orderDesc('appointmentDateTime')
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to fetch appointments booked by user:", error);
+        throw error;
+    }
+}
+
+export async function bookAppointment(appointmentId, bookerUser) {
+    if (!bookerUser || !bookerUser.$id) {
+        throw new Error("Valid booker user ID is required to book an appointment.");
+    }
+    if (!appointmentId) {
+        throw new Error("Appointment ID is required to book an appointment.");
+    }
+
+    try {
+        const payload = {
+            isBooked: true,
+            bookedByUserId: bookerUser.$id,
+            bookedByUserName: bookerUser.name || bookerUser.email.split('@')[0] || "User", // Fallback for name
+            bookedAt: new Date().toISOString()
+        };
+        const response = await databases.updateDocument(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            appointmentId,
+            payload
+        );
+        return response;
+    } catch (error) {
+        console.error(`Failed to book appointment ${appointmentId}:`, error);
+        throw error;
+    }
+}
+
+export async function deleteAppointment(appointmentId) {
+    if (!appointmentId) {
+        throw new Error("Appointment ID is required to delete an appointment.");
+    }
+    try {
+        const response = await databases.deleteDocument(
+            DATABASE_ID,
+            APPOINTMENTS_COLLECTION_ID,
+            appointmentId
+        );
+        return response; // Appwrite delete returns an empty response on success
+    } catch (error) {
+        console.error(`Failed to delete appointment ${appointmentId}:`, error);
+        throw error;
+    }
+}
+
+// Functions for interacting with appointments collection will be added here
+// e.g., createAppointment, getAvailableAppointments, etc.
+</file>
+
+<file path="src/lib/appwrite.js">
+import { Client, Account, ID } from 'appwrite';
+
+export const client = new Client();
+
+client
+    .setEndpoint('https://fra.cloud.appwrite.io/v1')
+    .setProject('68357409002d8b46f512');
+
+export const account = new Account(client);
+
+export async function logoutUser() {
+    try {
+        await account.deleteSession('current');
+    } catch (error) {
+        console.error("Failed to delete session:", error);
+        throw error;
+    }
+}
+
+export { ID };
+</file>
+
+<file path="package.json">
+{
+	"name": "joma",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"format": "prettier --write .",
+		"lint": "prettier --check . && eslint ."
+	},
+	"devDependencies": {
+		"@eslint/compat": "^1.2.5",
+		"@eslint/js": "^9.18.0",
+		"@fontsource/fira-mono": "^5.0.0",
+		"@neoconfetti/svelte": "^2.0.0",
+		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/kit": "^2.16.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@tailwindcss/vite": "^4.0.0",
+		"eslint": "^9.18.0",
+		"eslint-config-prettier": "^10.0.1",
+		"eslint-plugin-svelte": "^3.0.0",
+		"globals": "^16.0.0",
+		"prettier": "^3.4.2",
+		"prettier-plugin-svelte": "^3.3.3",
+		"prettier-plugin-tailwindcss": "^0.6.11",
+		"svelte": "^5.25.0",
+		"tailwindcss": "^4.0.0",
+		"vite": "^6.2.6"
+	},
+	"dependencies": {
+		"appwrite": "^14.0.1"
+	}
+}
+</file>
+
+<file path="README.md">
+# sv
+
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+
+## Creating a project
+
+If you're seeing this, you've probably already done this step. Congrats!
+
+```bash
+# create a new project in the current directory
+npx sv create
+
+# create a new project in my-app
+npx sv create my-app
+```
+
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```bash
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
+
+## Building
+
+To create a production version of your app:
+
+```bash
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+</file>
+
+<file path="src/routes/+layout.svelte">
+<script>
+	import { onMount } from 'svelte';
+	import { account, logoutUser } from '$lib/appwrite'; // Path to your appwrite.js
+	import { currentUser } from '$lib/stores/userStore'; // Path to your userStore.js
+	import { goto } from '$app/navigation';
+
+	onMount(async () => {
+		try {
+			const user = await account.get();
+			currentUser.set(user);
+		} catch (error) {
+			currentUser.set(null);
+			// console.error("Failed to fetch user session on layout load:", error);
+		}
+	});
+
+	async function handleLogout() {
+		try {
+			await logoutUser();
+			currentUser.set(null);
+			goto('/');
+		} catch (error) {
+			console.error("Logout failed:", error);
+			alert("Logout failed. Please try again.");
+		}
+	}
+</script>
+
+<header>
+	<nav>
+		<a href="/" class="logo">JOMA Appointments</a>
+		<div class="nav-links">
+			{#if $currentUser}
+				<span>Welcome, {$currentUser.name || $currentUser.email}!</span>
+				<a href="/dashboard" class="nav-button">Dashboard</a>
+				<button on:click={handleLogout} class="nav-button logout">Logout</button>
+			{:else}
+				<a href="/" class="nav-button">Login / Register</a>
+			{/if}
+		</div>
+	</nav>
+</header>
+
+<main>
+	<slot />
+</main>
+
+<style>
+	header {
+		background-color: #f0f0f0;
+		padding: 1rem;
+		border-bottom: 1px solid #ddd;
+	}
+	nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.logo {
+		font-weight: bold;
+		font-size: 1.5em;
+		text-decoration: none;
+		color: #333;
+	}
+	.nav-links span {
+		margin-right: 1rem;
+	}
+	.nav-button {
+		padding: 0.5rem 1rem;
+		text-decoration: none;
+		color: #333;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		margin-left: 0.5rem;
+		background-color: white;
+		cursor: pointer;
+	}
+	.nav-button.logout {
+		background-color: #ffdddd;
+		border-color: #ffaaaa;
+	}
+	.nav-button:hover {
+		background-color: #e9e9e9;
+	}
+	.nav-button.logout:hover {
+		background-color: #ffcccc;
+	}
+	main {
+		padding: 1rem;
+		font-family: sans-serif;
+	}
+</style>
+</file>
+
+<file path="src/routes/dashboard/+page.svelte">
+<script>
+    import { currentUser } from '$lib/stores/userStore';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import AppointmentForm from '$lib/components/AppointmentForm.svelte';
+    import AppointmentList from '$lib/components/AppointmentList.svelte';
+    import {
+        createAppointment,
+        getAvailableAppointments,
+        getAppointmentsHostedBy,
+        getAppointmentsBookedBy,
+        bookAppointment,
+        deleteAppointment
+    } from '$lib/appwrite_db.js';
+
+    const MAIN_HOST_USER_ID = '6835776c00327c1049fe'; // Task 1.1
+    let isMainUser = false; // Task 1.2
+
+    let allMyHostedAppointments = []; // For main user
+    let availableAppointments = []; // For regular users
+    let myBookedAppointments = []; // For regular users
+    let fetchError = '';
+    let creationStatus = '';
+    // Removed showAppointmentForm, will be controlled by isMainUser for form visibility
+
+    let dataLoaded = false; // Flag to track if initial data for the current user has been loaded
+    let isLoadingPage = true; // To manage the visibility of the 'Loading user...' message
+
+    // Reactive update for isMainUser
+    $: {
+        if ($currentUser && $currentUser.$id) {
+            isMainUser = $currentUser.$id === MAIN_HOST_USER_ID;
+            // console.log("Dashboard reactive: isMainUser set to: ", isMainUser);
+            // When user type changes (e.g. logout and login as different type), reset dataLoaded to force refetch appropriate data
+            if (dataLoaded && ($currentUser.$id !== (isMainUser ? MAIN_HOST_USER_ID : $currentUser.$id))) { // A bit redundant, but checks if context changed
+                // dataLoaded = false;
+            }
+        } else {
+            isMainUser = false;
+        }
+    }
+
+    async function fetchAllAppointments() {
+        if (!$currentUser || !$currentUser.$id) {
+            dataLoaded = false; // No user, so no data loaded for a user
+            return;
+        }
+        // console.log(`Dashboard: Fetching appointments. User: ${$currentUser.$id}, IsMainUser: ${isMainUser}`);
+        fetchError = '';
+        // isLoadingPage = true; // isLoadingPage is more about initial page readiness, not repeated fetches
+
+        try {
+            if (isMainUser) {
+                // console.log("Fetching data for MAIN USER");
+                allMyHostedAppointments = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
+                // Clear other lists for main user to avoid confusion if they were populated
+                availableAppointments = [];
+                myBookedAppointments = []; 
+            } else {
+                // console.log("Fetching data for REGULAR USER");
+                const [available, booked] = await Promise.all([
+                    getAvailableAppointments(), 
+                    getAppointmentsBookedBy($currentUser.$id)
+                ]);
+                availableAppointments = available;
+                myBookedAppointments = booked;
+                // Clear host list for regular user
+                allMyHostedAppointments = []; 
+            }
+            dataLoaded = true; // Mark data as loaded for this user session
+        } catch (err) {
+            console.error("Dashboard: Error fetching role-specific appointments:", err); // Keep this error log
+            fetchError = "Failed to load appointments: " + err.message;
+            dataLoaded = false; // Data loading failed
+        } finally {
+            // if (dataLoaded || fetchError) {
+            //      isLoadingPage = false; // This was moved to be set earlier when $currentUser is known
+            // }
+        }
+    }
+
+    onMount(() => {
+        if ($currentUser && $currentUser.$id) {
+            isLoadingPage = false; // User identified, initial page structure can show
+            if (!dataLoaded) { 
+                // console.log("Dashboard onMount: User found, initial data fetch.");
+                fetchAllAppointments();
+            }
+        } else if ($currentUser === null) {
+            // console.log("Dashboard onMount: No user (currentUser is null), redirecting to /.");
+            goto('/');
+        } else {
+            // console.log("Dashboard onMount: currentUser is in an intermediate state. Waiting for reactive block.");
+            // isLoadingPage remains true by default until $currentUser resolves
+        }
+    });
+
+    // Reactive statement for when $currentUser changes (primarily for fetching and redirection)
+    $: {
+        if (typeof window !== 'undefined') { // Ensure this runs only client-side
+            if ($currentUser && $currentUser.$id) {
+                // console.log("Dashboard reactive: $currentUser became available with ID: ", $currentUser.$id);
+                if (isLoadingPage) {
+                    // console.log("Dashboard reactive (user resolved): isLoadingPage was true, setting to false.");
+                    isLoadingPage = false;
+                }
+                if (!dataLoaded) {
+                    // console.log("Dashboard reactive (user resolved): Data not loaded for this context, fetching.");
+                    fetchAllAppointments();
+                }
+            } else if ($currentUser === null){
+                // console.log("Dashboard reactive: currentUser became null (logout or session expiry).");
+                if (window.location.pathname === '/dashboard') {
+                    // console.log("Dashboard reactive: Still on /dashboard and currentUser is null, redirecting to /.");
+                    goto('/');
+                }
+                isLoadingPage = true; // Reset for next potential load if user navigates back
+                dataLoaded = false; // Reset dataLoaded status
+            } else {
+                // console.log("Dashboard reactive: $currentUser is in an indeterminate state (not null, but no .$id?), or initial undefined from store before layout hydration ", $currentUser);
+                // If $currentUser is undefined (initial state before layout sets it to user object or null), isLoadingPage should remain true.
+                // if ($currentUser === undefined && isLoadingPage) {
+                    // console.log("Dashboard reactive: currentUser is undefined, page is still loading.");
+                // }
+            }
+        }
+    }
+
+    // This block specifically resets dataLoaded when user context changes, forcing a refetch.
+    let previousUserId = null;
+    $: {
+        if ($currentUser && $currentUser.$id) {
+            if (previousUserId !== $currentUser.$id) {
+                // console.log(`Dashboard reactive: User changed from ${previousUserId} to ${$currentUser.$id}. Resetting dataLoaded.`);
+                dataLoaded = false;
+                previousUserId = $currentUser.$id;
+                // FetchAllAppointments will be called by the other reactive block if !dataLoaded
+            }
+        } else if (previousUserId !== null) {
+            // User logged out
+            // console.log(`Dashboard reactive: User logged out (was ${previousUserId}). Resetting dataLoaded.`);
+            dataLoaded = false;
+            previousUserId = null;
+        }
+    }
+
+    // Reset dataLoaded flag if the user logs out (currentUser becomes null)
+    // This ensures that if a new user logs in, data will be fetched for them.
+    $: if (!$currentUser) {
+        // console.log("Dashboard reactive: $currentUser is now falsy. Resetting dataLoaded and lists.");
+        dataLoaded = false;
+        allMyHostedAppointments = [];
+        availableAppointments = [];
+        myBookedAppointments = [];
+        isMainUser = false; // Reset isMainUser if user logs out
+        // isLoadingPage = true; // Reconsider if this should always be true - might cause flicker on logout then redirect
+    }
+
+    async function handleAppointmentSubmit(event) {
+        if (!isMainUser || !$currentUser || !$currentUser.$id) { // Ensure only main user can submit
+            creationStatus = 'Error: Only the main host can create appointments.';
+            if (!$currentUser || !$currentUser.$id) creationStatus = 'Error: Current user ID is not available. Please log in again.';
+            return;
+        }
+        creationStatus = 'Creating appointment...';
+        try {
+            const appointmentDetails = event.detail;
+            const newAppointment = await createAppointment(appointmentDetails, $currentUser);
+            creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
+            await fetchAllAppointments(); // Refresh lists
+        } catch (error) {
+            console.error("Dashboard: Error creating appointment:", error); // Keep this error log
+            creationStatus = `Error creating appointment: ${error.message}`;
+        }
+    }
+
+    async function handleBookAppointment(event) {
+        const appointmentId = event.detail;
+        if ($currentUser && $currentUser.$id && isMainUser){
+            alert('Main host account cannot book appointments. Please use a regular user account.');
+            return;
+        }
+        if (!$currentUser || !$currentUser.$id) {
+            alert('You must be logged in to book an appointment.');
+            return;
+        }
+        creationStatus = `Booking appointment ${appointmentId}...`;
+        try {
+            await bookAppointment(appointmentId, $currentUser);
+            creationStatus = `Successfully booked appointment ${appointmentId}!`;
+            await fetchAllAppointments(); // Refresh all lists
+        } catch (error) {
+            console.error("Dashboard: Error booking appointment:", error); // Keep this error log
+            creationStatus = `Error booking appointment: ${error.message}`;
+            alert(`Error booking: ${error.message}`);
+        }
+    }
+
+    async function handleDeleteAppointment(event) {
+        const appointmentId = event.detail;
+        if (!confirm("Are you sure you want to delete this appointment? This action cannot be undone.")) {
+            return;
+        }
+        if (!$currentUser || !$currentUser.$id) {
+            alert('Error: User not identified. Cannot delete.');
+            return;
+        }
+        // Further check if mainUser is deleting one of their own, if needed, though AppointmentList handles button visibility
+        creationStatus = `Deleting appointment ${appointmentId}...`;
+        try {
+            await deleteAppointment(appointmentId);
+            creationStatus = `Successfully deleted appointment ${appointmentId}.`;
+            await fetchAllAppointments(); // Refresh all lists
+        } catch (error) {
+            console.error("Dashboard: Error deleting appointment:", error); // Keep this error log
+            creationStatus = `Error deleting: ${error.message}`;
+            alert(`Error deleting: ${error.message}`);
+        }
+    }
+
+</script>
+
+<svelte:head>
+    <title>Dashboard - JOMA</title>
+</svelte:head>
+
+{#if isLoadingPage && !$currentUser && typeof window !== 'undefined' && window.location.pathname === '/dashboard'}
+    <!-- More specific condition for initial loading message for dashboard -->
+    <p>Loading user information or redirecting...</p>
+{:else if $currentUser}
+    <h1>Welcome to your Dashboard, {$currentUser.name || $currentUser.email.split('@')[0]}!</h1>
+    <p>Your User ID is: {$currentUser.$id} {#if isMainUser}<strong>(Main Host Account)</strong>{/if}</p>
+    <hr />
+
+    {#if isMainUser}
+        <div>
+            <h2>Create New Appointment</h2>
+            <AppointmentForm on:submitAppointment={handleAppointmentSubmit} />
+            {#if creationStatus && (creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
+                <p class="status-message">{creationStatus}</p>
+            {/if}
+        </div>
+        <hr />
+        {#if creationStatus && !(creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
+             <p class="status-message">{creationStatus}</p> <!-- For booking/deleting status if main user somehow triggers -->
+        {/if}
+        {#if fetchError}<p class="status-message error">{fetchError}</p>{/if}
+
+        {#if isLoadingPage || (!dataLoaded && !fetchError)}
+             <p>Loading your appointments...</p>
+        {:else if fetchError}
+             <!-- error displayed above -->
+        {:else}
+            <div>
+                <h2>My Hosted Appointments Overview</h2>
+                <AppointmentList appointments={allMyHostedAppointments} listType='hostedByMe' currentUserId={MAIN_HOST_USER_ID} on:deleteAppointment={handleDeleteAppointment} />
+            </div>
+        {/if}
+    {:else} <!-- Regular User View -->
+        {#if creationStatus && !(creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
+             <p class="status-message">{creationStatus}</p> <!-- For booking/deleting status -->
+        {/if}
+        {#if fetchError}<p class="status-message error">{fetchError}</p>{/if}
+
+        {#if isLoadingPage || (!dataLoaded && !fetchError)}
+            <p>Loading appointments...</p>
+        {:else if fetchError}
+            <!-- error displayed above -->
+        {:else}
+            <div>
+                <h2>Available Appointments</h2>
+                <AppointmentList appointments={availableAppointments} listType='available' currentUserId={$currentUser.$id} on:bookAppointment={handleBookAppointment} />
+            </div>
+            <hr />
+            <div>
+                <h2>My Booked Appointments</h2>
+                <AppointmentList appointments={myBookedAppointments} listType='bookedByMe' currentUserId={$currentUser.$id} />
+            </div>
+        {/if}
+    {/if}
+{:else}
+    <!-- This state should only be hit if $currentUser is null AND isLoadingPage is false (after layout confirms no session) -->
+    <!-- Or if navigating to /dashboard directly without a session -->
+    <p>No active session. Redirecting to login...</p>
+{/if}
+
+<style>
+    h1, h2 {
+        color: #333;
+    }
+    hr {
+        margin: 2rem 0;
+    }
+    div {
+        margin-bottom: 2rem;
+    }
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+    }
+    .status-message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+</style>
+</file>
+
+<file path="src/routes/+page.svelte">
+<script>
+    import { account, ID } from '$lib/appwrite';
+    import { currentUser } from '$lib/stores/userStore';
+    import { goto } from '$app/navigation';
+
+    async function login(email, password) {
+        try {
+            // console.log("Attempting login...");
+            await account.createEmailPasswordSession(email, password);
+            // console.log("Session created. Getting user...");
+            const user = await account.get();
+            // console.log("User fetched:", user);
+            currentUser.set(user);
+            // console.log("currentUser store set. User ID: ", user.$id);
+            // alert(`Login successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
+            // console.log("Navigating to /dashboard...");
+            goto('/dashboard');
+            // console.log("goto('/dashboard') called."); 
+        } catch (error) {
+            console.error("Login failed:", error);
+            alert("Login failed: " + error.message); // Keep this error alert for actual failures
+        }
+    }
+
+    async function register(email, password) {
+        try {
+            // console.log("Attempting registration...");
+            await account.create(ID.unique(), email, password);
+            // console.log("User account created. Creating session...");
+            await account.createEmailPasswordSession(email, password);
+            // console.log("Session created after registration. Getting user...");
+            const user = await account.get();
+            // console.log("User fetched post-registration:", user);
+            currentUser.set(user);
+            // console.log("currentUser store set post-registration. User ID: ", user.$id);
+            // alert(`Registration successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
+            // console.log("Navigating to /dashboard post-registration...");
+            goto('/dashboard');
+            // console.log("goto('/dashboard') called post-registration.");
+        } catch (error) {
+            console.error("Registration failed:", error);
+            alert("Registration failed: " + error.message); // Keep this error alert for actual failures
+        }
+    }
+
+    function submit(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const type = e.submitter.dataset.type;
+        
+        if (type === "login") {
+            login(formData.get('email'), formData.get('password'));
+        } else if (type === "register") {
+            register(formData.get('email'), formData.get('password'));
+        }
+    }
+</script>
+
+<svelte:head>
+	<title>JOMA Appointments - Welcome</title>
+</svelte:head>
+
+<div class="homepage-container">
+    <section id="hero">
+        <h1>Welcome to JOMA Appointments!</h1>
+        <p>Your easy solution for scheduling and managing appointments.</p>
+        {#if !$currentUser}
+            <p>Please log in or register below to get started.</p>
+        {:else}
+            <p>Access your <a href="/dashboard">dashboard</a> to manage your appointments.</p>
+        {/if}
+    </section>
+
+    <section id="features">
+        <h2>Features</h2>
+        <ul>
+            <li>Easy Appointment Scheduling</li>
+            <li>Organized Dashboard View</li>
+            <li>User-Friendly Interface</li>
+            <li>Secure & Reliable</li>
+        </ul>
+    </section>
+
+    <section id="auth-section">
+        <h2>Get Started</h2>
+        {#if !$currentUser}    
+            <div class="auth-form-container">
+                <form on:submit={submit}>
+                    <input type="email" placeholder="Email" name="email" required />
+                    <input type="password" placeholder="Password" name="password" required />
+                    <div class="button-group">
+                        <button type="submit" data-type="login">Login</button>
+                        <button type="submit" data-type="register">Register</button>
+                    </div>
+                </form>
+            </div>
+        {:else}
+            <p>You are currently logged in as {$currentUser.name || $currentUser.email}.</p>
+        {/if}
+    </section>
+
+    <section id="about">
+        <h2>About JOMA</h2>
+        <p>We aim to simplify appointment booking for everyone. More placeholder text here.</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 JOMA Appointments. All rights reserved.</p>
+    </footer>
+</div>
+
+<style>
+    /* Remove or significantly reduce specificity of :global(body) here */
+    /* General body styles should be in app.html or +layout.svelte if needed globally */
+	:global(body) {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+		margin: 0;
+		background-color: #f9f9f9; /* Lighter overall background for homepage */
+	}
+
+    .homepage-container {
+        /* No specific layout for homepage-container itself, sections will flow block */
+    }
+
+    section {
+        padding: 2rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+    }
+
+    #hero {
+        background-color: #e0f2f7;
+        color: #333;
+    }
+
+    #hero h1 {
+        margin-bottom: 0.5rem;
+    }
+
+    #features ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    #features li {
+        margin-bottom: 0.5rem;
+        font-size: 1.1em;
+    }
+    
+    #auth-section {
+        background-color: #fff; /* Keep auth form background white */
+    }
+
+	.auth-form-container { /* This was previously .container */
+		background-color: #fff;
+		padding: 2rem;
+		border-radius: 8px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		text-align: center;
+		width: 100%;
+		max-width: 400px;
+		margin: 1rem auto; /* Centering the form container */
+	}
+
+	p {
+		color: #555; /* Slightly softer text color for general paragraphs */
+		font-size: 1.1em;
+		margin-bottom: 1.5rem;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	input[type="email"],
+	input[type="password"] {
+		padding: 0.75rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 1em;
+	}
+
+	input[type="email"]:focus,
+	input[type="password"]:focus {
+		border-color: #007bff;
+		outline: none;
+		box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+	}
+
+	.button-group {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	button {
+		padding: 0.75rem;
+		border: none;
+		border-radius: 4px;
+		font-size: 1em;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+		flex-grow: 1;
+	}
+
+	button[type="submit"] {
+		background-color: #007bff;
+		color: white;
+	}
+
+	button[type="submit"]:hover {
+		background-color: #0056b3;
+	}
+
+	form .button-group button {
+	}
+
+    footer {
+        text-align: center;
+        padding: 2rem 1rem;
+        background-color: #333;
+        color: #f0f0f0;
+        font-size: 0.9em;
+    }
+</style>
+</file>
+
+</files>

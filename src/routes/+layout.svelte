@@ -3,6 +3,7 @@
 	import { account, logoutUser } from '$lib/appwrite'; // Path to your appwrite.js
 	import { currentUser } from '$lib/stores/userStore'; // Path to your userStore.js
 	import { goto } from '$app/navigation';
+	import '../app.css'; // Import global stylesheet
 
 	onMount(async () => {
 		try {
@@ -26,67 +27,28 @@
 	}
 </script>
 
-<header>
-	<nav>
-		<a href="/" class="logo">JOMA Appointments</a>
-		<div class="nav-links">
+<header class="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg p-4 border-b border-white/20">
+	<nav class="flex justify-between items-center max-w-screen-xl mx-auto">
+		<a href="/" class="text-2xl font-bold text-white">Network 3.0</a>
+		<div class="flex items-center space-x-4">
 			{#if $currentUser}
-				<span>Welcome, {$currentUser.name || $currentUser.email}!</span>
-				<a href="/dashboard" class="nav-button">Dashboard</a>
-				<button on:click={handleLogout} class="nav-button logout">Logout</button>
+				<span class="text-gray-200">Welcome, {$currentUser.name || $currentUser.email}!</span>
+				<a href="/dashboard" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-white/50 transition-colors">Dashboard</a>
+				<button on:click={handleLogout} class="text-white bg-red-500/50 hover:bg-red-600/60 border border-red-400/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Logout</button>
 			{:else}
-				<a href="/" class="nav-button">Login / Register</a>
+				<a href="/#cta-auth" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-white/50 transition-colors">Login / Register</a>
 			{/if}
 		</div>
 	</nav>
 </header>
 
-<main>
+<main class="pt-20">
 	<slot />
 </main>
 
 <style>
-	header {
-		background-color: #f0f0f0;
-		padding: 1rem;
-		border-bottom: 1px solid #ddd;
-	}
-	nav {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.logo {
-		font-weight: bold;
-		font-size: 1.5em;
-		text-decoration: none;
-		color: #333;
-	}
-	.nav-links span {
-		margin-right: 1rem;
-	}
-	.nav-button {
-		padding: 0.5rem 1rem;
-		text-decoration: none;
-		color: #333;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		margin-left: 0.5rem;
-		background-color: white;
-		cursor: pointer;
-	}
-	.nav-button.logout {
-		background-color: #ffdddd;
-		border-color: #ffaaaa;
-	}
-	.nav-button:hover {
-		background-color: #e9e9e9;
-	}
-	.nav-button.logout:hover {
-		background-color: #ffcccc;
-	}
+	/* Keeping main minimal, specific component styles should be in those components or Tailwind */
 	main {
-		padding: 1rem;
 		font-family: sans-serif;
 	}
 </style> 
