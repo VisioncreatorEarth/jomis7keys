@@ -4,6 +4,7 @@
 	import { currentUser } from '$lib/stores/userStore'; // Path to your userStore.js
 	import { goto } from '$app/navigation';
 	import '../app.css'; // Import global stylesheet
+	// import '@fontsource/playfair-display'; // Removed Playfair Display font import
 
 	onMount(async () => {
 		try {
@@ -29,14 +30,14 @@
 
 <header class="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg p-4 border-b border-white/20">
 	<nav class="flex justify-between items-center max-w-screen-xl mx-auto">
-		<a href="/" class="text-2xl font-bold text-white">Network 3.0</a>
+		<a href="/" class="text-2xl font-bold !text-orange-100 hover:!text-orange-200">Network 3.0</a>
 		<div class="flex items-center space-x-4">
 			{#if $currentUser}
-				<span class="text-gray-200">Welcome, {$currentUser.name || $currentUser.email}!</span>
-				<a href="/dashboard" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-white/50 transition-colors">Dashboard</a>
-				<button on:click={handleLogout} class="text-white bg-red-500/50 hover:bg-red-600/60 border border-red-400/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Logout</button>
+				<span class="text-gray-300">Welcome, {$currentUser.name || $currentUser.email}!</span>
+				<a href="/dashboard" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Dashboard</a>
+				<button on:click={handleLogout} class="!text-orange-100 bg-red-500/50 hover:bg-red-600/60 border border-red-400/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Logout</button>
 			{:else}
-				<a href="/#cta-auth" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-white/50 transition-colors">Login / Register</a>
+				<a href="/#cta-auth" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Login / Register</a>
 			{/if}
 		</div>
 	</nav>
@@ -49,6 +50,6 @@
 <style>
 	/* Keeping main minimal, specific component styles should be in those components or Tailwind */
 	main {
-		font-family: sans-serif;
+		/* font-family: sans-serif; --- This is now handled by Tailwind or global app.css defaults */
 	}
 </style> 
