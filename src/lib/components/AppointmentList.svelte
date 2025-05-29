@@ -25,101 +25,57 @@
     }
 </script>
 
-<div class="appointment-list-container">
+<div class="mt-1">
     {#if appointments.length === 0}
-        <p>No appointments to display in this list.</p>
+        <p class="text-stone-500 text-sm italic">No appointments to display in this list.</p>
     {:else}
-        <ul>
+        <ul class="space-y-4">
             {#each appointments as appt (appt.$id)}
-                <li>
-                    <strong>{appt.title || 'Appointment'}</strong>
-                    <p>Host: {appt.hostUserName || 'N/A'}</p>
-                    <p>When: {formatDate(appt.appointmentDateTime)}</p>
-                    <p>Duration: {appt.durationMinutes} minutes</p>
+                <li class="bg-stone-50 border border-stone-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-150">
+                    <strong class="text-lg text-stone-700 font-semibold block mb-1">{appt.title || 'Appointment'}</strong>
+                    <p class="text-stone-600 text-sm my-1">Host: {appt.hostUserName || 'N/A'}</p>
+                    <p class="text-stone-600 text-sm my-1">When: {formatDate(appt.appointmentDateTime)}</p>
+                    <p class="text-stone-600 text-sm my-1">Duration: {appt.durationMinutes} minutes</p>
                     {#if appt.description}
-                        <p>Description: {appt.description}</p>
+                        <p class="text-stone-600 text-sm my-1 italic">Description: {appt.description}</p>
                     {/if}
                     
                     {#if listType === 'available' && !appt.isBooked}
-                        <button on:click={() => handleBook(appt.$id)}>Book This Appointment</button>
+                        <button 
+                            on:click={() => handleBook(appt.$id)} 
+                            class="px-3 py-1.5 mt-3 text-xs font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 ease-in-out bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 focus:ring-offset-stone-50">
+                            Book This Appointment
+                        </button>
                     {/if}
 
                     {#if listType === 'hostedByMe'}
                         {#if appt.isBooked}
-                            <p class="booked-info"><em>Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</em></p>
+                            <p class="text-green-600 italic text-sm my-1">Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</p>
                         {:else}
-                            <p class="available-info"><em>This appointment is currently available.</em></p>
+                            <p class="text-sky-600 italic text-sm my-1">This appointment is currently available.</p>
                             {#if appt.hostUserId === currentUserId}
-                                <button on:click={() => handleDelete(appt.$id)} class="delete-button">Delete My Appointment</button>
+                                <button 
+                                    on:click={() => handleDelete(appt.$id)} 
+                                    class="px-3 py-1.5 mt-3 text-xs font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 ease-in-out bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-stone-50">
+                                    Delete My Appointment
+                                </button>
                             {/if}
                         {/if}
                     {/if}
 
                     {#if listType === 'bookedByMe' && appt.bookedByUserId === currentUserId}
-                        <p><em>You have booked this appointment.</em></p>
-                        <p>Booked on: {formatDate(appt.bookedAt)}</p>
+                        <p class="text-emerald-700 font-medium text-sm my-1">You have booked this appointment.</p>
+                        <p class="text-stone-500 text-xs my-1">Booked on: {formatDate(appt.bookedAt)}</p>
                     {/if}
 
                     {#if listType !== 'hostedByMe' && listType !== 'bookedByMe' && appt.isBooked }
-                        <p><em>This appointment is booked.</em></p>
+                        <p class="text-orange-600 italic text-sm my-1">This appointment is booked.</p>
                         {#if appt.bookedByUserName}
-                            <p>Booked by: {appt.bookedByUserName}</p>
+                            <p class="text-stone-500 text-xs my-1">Booked by: {appt.bookedByUserName}</p>
                         {/if}
                     {/if}
                 </li>
             {/each}
         </ul>
     {/if}
-</div>
-
-<style>
-    .appointment-list-container {
-        margin-top: 1rem;
-    }
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-    li {
-        background-color: #f9f9f9;
-        border: 1px solid #eee;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-    }
-    li strong {
-        font-size: 1.2em;
-        color: #333;
-    }
-    p {
-        margin: 0.5rem 0;
-        color: #555;
-    }
-    .booked-info {
-        color: #28a745; /* Green for booked */
-        font-style: italic;
-    }
-    .available-info {
-        color: #17a2b8; /* Info blue for available */
-        font-style: italic;
-    }
-    button {
-        padding: 0.5rem 1rem;
-        margin-top: 0.5rem;
-        border: none;
-        border-radius: 4px;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-    .delete-button {
-        background-color: #dc3545;
-    }
-    .delete-button:hover {
-        background-color: #c82333;
-    }
-</style> 
+</div> 

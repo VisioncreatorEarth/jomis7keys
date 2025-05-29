@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import '@fontsource/fira-mono';
-@import '@fontsource/inter/variable.css';
+@import '@fontsource/inter/index.css';
 
 :root {
 	--font-body:

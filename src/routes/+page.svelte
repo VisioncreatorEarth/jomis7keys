@@ -2,7 +2,7 @@
     import { account, ID } from '$lib/appwrite';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
-    import backgroundImage from '$lib/images/backgroundstone.jpg'; // Updated image import
+    import backgroundImage from '$lib/images/earth.jpg'; // Updated image import
 
     async function login(email, password) {
         try {
