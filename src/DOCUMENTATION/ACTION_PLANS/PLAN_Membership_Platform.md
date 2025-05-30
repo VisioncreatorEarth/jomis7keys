@@ -66,6 +66,7 @@ Before starting Svelte development for new features, create the following collec
 ### Milestone 1: Refactor Dashboard & Core Structure
 
 **Goal:** Establish the component-driven pattern by refactoring the existing dashboard.
+**Status: [COMPLETED]** - All tasks finished, and critical 500 Internal Server Error on dashboard hard refresh resolved.
 
 *   **Task 1.1: Create Dashboard View Components**
     *   `[X]` Create `src/lib/components/dashboard/HostDashboardView.svelte`
@@ -441,7 +442,31 @@ Before starting Svelte development for new features, create the following collec
 ```
     *   `[ ]` Test thoroughly for both host and client users. Ensure all existing dashboard functionality works as before.
 
-### Milestone 2: Documentation Section
+### Milestone 2: Implement Service Layer for Appwrite Interactions
+
+**Goal:** Abstract Appwrite SDK calls into a reusable service layer.
+**Status: [COMPLETED]** - Core service created and existing codebase refactored.
+
+*   **Task 2.1: Create `src/lib/services/appwriteService.js`**
+    *   `[X]` Define Appwrite client, account, and databases instances using environment variables.
+    *   `[X]` Consolidate user authentication functions (login, logout, signup, getCurrentUser).
+    *   `[X]` Consolidate CRUD operations for Appointments.
+
+*   **Task 2.2: Update Codebase to Use `appwriteService`**
+    *   `[X]` Refactor `src/routes/+page.svelte` (Login/Registration) to use `appwriteService`.
+    *   `[X]` Refactor `src/routes/+layout.svelte` (User session) to use `appwriteService`.
+    *   `[X]` Refactor `src/routes/dashboard/+page.svelte` (Dashboard data fetching and actions) to use `appwriteService`.
+    *   `[X]` Verify and remove old imports from `appwrite.js` and `appwrite_db.js`.
+
+*   **Task 2.3: Delete Old Appwrite Files**
+    *   `[X]` Delete `src/lib/appwrite.js`.
+    *   `[X]` Delete `src/lib/appwrite_db.js`.
+
+*   **Task 2.4: Add Service Functions for New Collections (Future)**
+    *   `[ ]` Add functions for DocumentationArticles CRUD.
+    *   `[ ]` Add functions for Courses, CourseModules, CourseVideos CRUD.
+
+### Milestone 3: Implement Documentation Feature
 
 **Goal:** Implement the documentation knowledge base.
 

@@ -48,20 +48,35 @@ The content is organized as follows:
   rules/
     geminimasterprompt.mdc
 src/
+  DOCUMENTATION/
+    ACTION_PLANS/
+      PLAN_Membership_Platform.md
   lib/
     components/
       dashboard/
         AppointmentsCard.svelte
         BookingManagementCard.svelte
+        ClientDashboardView.svelte
+        HostDashboardView.svelte
         StatsHistoryCard.svelte
+      documentation/
+        ArticleListItem.svelte
+        ArticleView.svelte
+        DocumentationOverview.svelte
       AppointmentForm.svelte
       AppointmentList.svelte
+    services/
+      appwriteService.js
     stores/
       userStore.js
-    appwrite_db.js
-    appwrite.js
   routes/
     dashboard/
+      +page.svelte
+    documentation/
+      [slug]/
+        +page.server.js
+        +page.svelte
+      +page.server.js
       +page.svelte
     +layout.svelte
     +page.svelte
@@ -76,11 +91,1534 @@ jsconfig.json
 package.json
 README.md
 svelte.config.js
+tailwind.config.js
 vite.config.js
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/lib/services/appwriteService.js">
+import { Client, Account, Databases, ID, Query } from 'appwrite';
+
+// --- Start of dotenv configuration ---
+const IS_SERVER = typeof window === 'undefined';
+let VITE_APPWRITE_ENDPOINT, VITE_APPWRITE_PROJECT_ID, VITE_APPWRITE_DATABASE_ID, VITE_APPOINTMENTS_COLLECTION_ID, VITE_DOCS_ARTICLES_COLLECTION_ID;
+
+if (IS_SERVER) {
+    try {
+        const dotenv = require('dotenv'); // Using require for more synchronous-like behavior at module top level
+        dotenv.config();
+        console.log('[appwriteService.js] dotenv configured using require().');
+
+        VITE_APPWRITE_ENDPOINT = process.env.VITE_APPWRITE_ENDPOINT;
+        VITE_APPWRITE_PROJECT_ID = process.env.VITE_APPWRITE_PROJECT_ID;
+        VITE_APPWRITE_DATABASE_ID = process.env.VITE_APPWRITE_DATABASE_ID;
+        VITE_APPOINTMENTS_COLLECTION_ID = process.env.VITE_APPOINTMENTS_COLLECTION_ID;
+        VITE_DOCS_ARTICLES_COLLECTION_ID = process.env.VITE_DOCS_ARTICLES_COLLECTION_ID;
+
+    } catch (err) {
+        console.error('[appwriteService.js] Error configuring dotenv with require():', err);
+    }
+} else {
+    // Client-side: use import.meta.env
+    VITE_APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
+    VITE_APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+    VITE_APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+    VITE_APPOINTMENTS_COLLECTION_ID = import.meta.env.VITE_APPOINTMENTS_COLLECTION_ID;
+    VITE_DOCS_ARTICLES_COLLECTION_ID = import.meta.env.VITE_DOCS_ARTICLES_COLLECTION_ID;
+}
+// --- End of dotenv and variable initialization ---
+
+
+// Check variables
+if (!VITE_APPWRITE_ENDPOINT || !VITE_APPWRITE_PROJECT_ID || !VITE_APPWRITE_DATABASE_ID || !VITE_APPOINTMENTS_COLLECTION_ID || !VITE_DOCS_ARTICLES_COLLECTION_ID) {
+    console.error("[appwriteService.js] CRITICAL: Missing one or more Appwrite environment variables. Values after attempt:", 
+        {
+            endpoint: VITE_APPWRITE_ENDPOINT,
+            projectId: VITE_APPWRITE_PROJECT_ID,
+            dbId: VITE_APPWRITE_DATABASE_ID,
+            appointmentsId: VITE_APPOINTMENTS_COLLECTION_ID,
+            docsId: VITE_DOCS_ARTICLES_COLLECTION_ID
+        });
+} else {
+    console.log("[appwriteService.js] Appwrite environment variables seem to be loaded.");
+    console.log(`[appwriteService.js] Endpoint: ${VITE_APPWRITE_ENDPOINT}, DocsCollection: ${VITE_DOCS_ARTICLES_COLLECTION_ID}`);
+}
+
+const client = new Client();
+
+if (VITE_APPWRITE_ENDPOINT) {
+    client.setEndpoint(VITE_APPWRITE_ENDPOINT);
+} else {
+    // This should ideally not be hit if the check above is comprehensive
+    console.error("[appwriteService.js] Endpoint was undefined when setting up client.");
+}
+
+if (VITE_APPWRITE_PROJECT_ID) {
+    client.setProject(VITE_APPWRITE_PROJECT_ID);
+} else {
+    // This should ideally not be hit
+    console.error("[appwriteService.js] Project ID was undefined when setting up client.");
+}
+
+const account = new Account(client);
+const databases = new Databases(client);
+
+/**
+ * ========================================
+ * User Authentication Service Functions
+ * ========================================
+ */
+
+async function loginUser(email, password) {
+    try {
+        await account.createEmailSession(email, password);
+        return await getCurrentUser(); // Return user details on successful login
+    } catch (error) {
+        console.error("Failed to login:", error);
+        throw error;
+    }
+}
+
+async function signupUser(email, password, name) {
+    try {
+        await account.create(ID.unique(), email, password, name);
+        // Automatically log in the user after successful signup
+        return await loginUser(email, password);
+    } catch (error) {
+        console.error("Failed to signup:", error);
+        throw error;
+    }
+}
+
+async function logoutUser() {
+    try {
+        await account.deleteSession('current');
+    } catch (error) {
+        console.error("Failed to delete session:", error);
+        throw error;
+    }
+}
+
+async function getCurrentUser() {
+    try {
+        return await account.get();
+    } catch (error) {
+        // Appwrite throws an error if no session, which is normal, so don't log as error here
+        // console.info("No active user session or failed to get user:", error.message);
+        return null;
+    }
+}
+
+/**
+ * ========================================
+ * Appointment Service Functions
+ * ========================================
+ */
+
+async function createAppointment(appointmentData, hostUser) {
+    if (!hostUser || !hostUser.$id) {
+        throw new Error("Valid host user ID is required to create an appointment.");
+    }
+    try {
+        const documentPayload = {
+            ...appointmentData, 
+            hostUserId: hostUser.$id,
+            hostUserName: hostUser.name || hostUser.email.split('@')[0] || "User",
+            isBooked: false,
+        };
+        return await databases.createDocument(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            ID.unique(),
+            documentPayload
+        );
+    } catch (error) {
+        console.error("Service: Failed to create appointment:", error);
+        throw error;
+    }
+}
+
+async function getAvailableAppointments() {
+    try {
+        const response = await databases.listDocuments(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            [Query.equal('isBooked', false), Query.orderDesc('appointmentDateTime')]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Service: Failed to fetch available appointments:", error);
+        throw error;
+    }
+}
+
+async function getAppointmentsHostedBy(userId) {
+    if (!userId) throw new Error("User ID is required to fetch hosted appointments.");
+    try {
+        const response = await databases.listDocuments(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            [Query.equal('hostUserId', userId), Query.orderDesc('appointmentDateTime')]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Service: Failed to fetch appointments hosted by user:", error);
+        throw error;
+    }
+}
+
+async function getAppointmentsBookedBy(userId) {
+    if (!userId) throw new Error("User ID is required to fetch booked appointments.");
+    try {
+        const response = await databases.listDocuments(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            [Query.equal('bookedByUserId', userId), Query.orderDesc('appointmentDateTime')]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Service: Failed to fetch appointments booked by user:", error);
+        throw error;
+    }
+}
+
+async function bookAppointment(appointmentId, bookerUser) {
+    if (!bookerUser || !bookerUser.$id) {
+        throw new Error("Valid booker user ID is required to book an appointment.");
+    }
+    if (!appointmentId) {
+        throw new Error("Appointment ID is required to book an appointment.");
+    }
+    try {
+        const payload = {
+            isBooked: true,
+            bookedByUserId: bookerUser.$id,
+            bookedByUserName: bookerUser.name || bookerUser.email.split('@')[0] || "User",
+            bookedAt: new Date().toISOString()
+        };
+        return await databases.updateDocument(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            appointmentId,
+            payload
+        );
+    } catch (error) {
+        console.error(`Service: Failed to book appointment ${appointmentId}:`, error);
+        throw error;
+    }
+}
+
+async function deleteAppointment(appointmentId) {
+    if (!appointmentId) {
+        throw new Error("Appointment ID is required to delete an appointment.");
+    }
+    try {
+        return await databases.deleteDocument(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_APPOINTMENTS_COLLECTION_ID,
+            appointmentId
+        );
+    } catch (error) {
+        console.error(`Service: Failed to delete appointment ${appointmentId}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * ========================================
+ * Documentation Articles Service Functions
+ * ========================================
+ */
+
+async function listDocumentationArticles(limit = 25, offset = 0) {
+    if (!VITE_DOCS_ARTICLES_COLLECTION_ID) throw new Error("Documentation articles collection ID is not configured.");
+    try {
+        const response = await databases.listDocuments(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_DOCS_ARTICLES_COLLECTION_ID,
+            [
+                Query.equal('isPublished', true),
+                Query.orderDesc('publishedAt'), // or orderAsc by title, etc.
+                Query.limit(limit),
+                Query.offset(offset)
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Service: Failed to list documentation articles:", error);
+        throw error;
+    }
+}
+
+async function getDocumentationArticleBySlug(slug) {
+    if (!VITE_DOCS_ARTICLES_COLLECTION_ID) throw new Error("Documentation articles collection ID is not configured.");
+    try {
+        const response = await databases.listDocuments(
+            VITE_APPWRITE_DATABASE_ID,
+            VITE_DOCS_ARTICLES_COLLECTION_ID,
+            [
+                Query.equal("slug", slug),
+                Query.equal('isPublished', true),
+                Query.limit(1)
+            ]
+        );
+        if (response.documents.length > 0) {
+            return response.documents[0];
+        }
+        return null; // Return null if not found, let caller handle 404
+    } catch (error) {
+        console.error(`Service: Failed to get article by slug ${slug}:`, error);
+        throw error;
+    }
+}
+
+export const appwriteService = {
+    loginUser,
+    signupUser,
+    logoutUser,
+    getCurrentUser,
+    createAppointment,
+    getAvailableAppointments,
+    getAppointmentsHostedBy,
+    getAppointmentsBookedBy,
+    bookAppointment,
+    deleteAppointment,
+    listDocumentationArticles,
+    getDocumentationArticleBySlug,
+};
+</file>
+
+<file path=".cursor/rules/geminimasterprompt.mdc">
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+You are a hyper-rational, first-principles problem solver with:
+- You are the best software architect and product owner of the world.
+- Zero tolerance for excuses, rationalizations or bullshit
+- Pure focus on deconstructing problems to fundamental truths 
+- Relentless drive for actionable solutions and results
+- No regard for conventional wisdom or "common knowledge"
+- Absolute commitment to intellectual honesty
+
+ INTERACTION RULES WITH THE USER
+- Never console or sympathize
+- Cut off excuses instantly  
+- Redirect all complaints to solutions
+- Challenge limiting beliefs aggressively
+- Push for better when given weak plans
+
+DELIVERY PROTOCOL  
+- Call out fuzzy thinking immediately
+- Demand specificity in all things
+- Push back on vague goals/metrics
+- Force clarity through pointed questions
+- Insist on concrete next actions
+
+
+!!! FOLLOW THOSE 4 ACTION STEPS CONSITENTLY !!!
+
+1. DECONTRUCT PROBLEM
+Analyse the current status quo of the implementation at hand and define all its problematic week points.
+
+- Break everything down to foundational truths
+- Challenge ALL assumptions ruthlessly
+- Identify core variables and dependencies  
+- Map causal relationships explicitly
+- Find the smallest actionable units
+
+2. SOLUTION ENGINEERING
+
+Brainstorm with the user the wanted final product / architecture / solution, the want to achieve, if needed ask further questions back to the user for better clarification. 
+
+- Design interventions at leverage points
+- Prioritize by impact-to-effort ratio
+- Create specific, measurable action steps
+- Build feedback loops into every plan
+- Focus on speed of execution
+
+
+3. WRITTEN RESPONSE FORMAT:
+
+if step 1 and step 2 are done, write out a detail execution plan, how to get from state 1 to state 2, includuing referncing all the files, that need change or need to be delted or cretated. 
+
+Also write down and or requetst further documentiation refrences from the user, that is helpfull to execute better. 
+
+Maker sure that you strucute the exceution plan as testable milestones, whre the user can test and give feedback along the way if it works. also add to each subtask of every milestone markdown checkmarks. 
+
+Write all of this into our /DOCUMENTATION/ACTION_PLANS folder (at repository root) into a new PLAN_{short product / feature / bug title with max 3 words}.md file. 
+
+During execution always come back to this document and udpate along the way your progress, by checkmarking each task. 
+
+First write the document out, and dont start to code yet or execute, only when the user reuqests it explicitly.
+
+
+4. SPOKEN RESPONSE FORMAT:
+
+1. SITUATION ANALYSIS
+- Core problem statement
+- Key assumptions identified  
+- First principles breakdown
+- Critical variables isolated
+
+1. SOLUTION ARCHITECTURE
+- Strategic intervention points
+- Specific action steps
+- Success metrics
+- Risk mitigation
+
+1. EXECUTION FRAMEWORK  
+- Immediate next actions
+- Progress tracking method
+- Course correction triggers
+- Accountability measures
+
+VOICE CHARACTERISTICS:
+- Direct and unsparing
+- Intellectually ruthless
+- Solutions-obsessed
+- Zero fluff or padding
+- Pushes for excellence
+
+KEY PHRASES:
+"Let's break this down to first principles..."
+"Your actual problem is..."
+"That's an excuse. Here's what you need to do..."
+"Be more specific. What exactly do you mean by..."
+"Your plan is weak because..."
+"Here's your action plan, starting now..."
+"Let's identify your real constraints..."
+"That assumption is flawed because..."
+
+CONSTRAINTS:
+- No motivational fluff
+- No vague advice
+- No social niceties
+- No unnecessary context
+- No theoretical discussions without immediate application
+
+OBJECTIVE:
+Transform any problem, goal or desire into:
+1. Clear fundamental truths
+2. Specific action steps  
+3. Measurable outcomes
+4. Immediate next actions
+</file>
+
+<file path="src/DOCUMENTATION/ACTION_PLANS/PLAN_Membership_Platform.md">
+# Membership Platform Enhancement Plan
+
+## 1. Project Goal
+
+Transform the existing SvelteKit application into a comprehensive membership webpage with enhanced appointment booking, a dedicated documentation page, and an online course video section, all built upon a strict component-driven architecture.
+
+## 2. Current State Issues
+
+*   `+page.svelte` files (especially `dashboard/+page.svelte`) contain excessive logic and UI rendering, violating the component-driven principle.
+*   Lack of a clear structure for adding new, large features like documentation and courses in a modular way.
+
+## 3. Target State & Architecture
+
+*   `+page.svelte` files act as thin wrappers/routers.
+*   All significant UI and logic are encapsulated in `src/lib/components/`.
+*   Appwrite backend for new data models (documentation, courses).
+
+## 4. Appwrite Setup for New Features
+
+Before starting Svelte development for new features, create the following collections in your Appwrite project. Replace `YOUR_APPWRITE_DATABASE_ID` with your actual Database ID.
+
+**Important:** For each collection, define appropriate permissions.
+    *   **Public read access** is likely needed for articles and course lists/details.
+    *   **Admin/Host write access** for creating/updating content.
+
+1.  **Collection: `DocumentationArticles`**
+    *   Collection ID (e.g., `documentation_articles`): `YOUR_COLLECTION_ID_DOCS`
+    *   Attributes:
+        *   `title` (String, required)
+        *   `slug` (String, required, unique - e.g., "my-first-article")
+        *   `content` (String, required, Markdown or HTML)
+        *   `category` (String, optional)
+        *   `authorName` (String, optional)
+        *   `publishedAt` (Datetime, optional)
+        *   `isPublished` (Boolean, default: false)
+
+2.  **Collection: `Courses`**
+    *   Collection ID (e.g., `courses`): `YOUR_COLLECTION_ID_COURSES`
+    *   Attributes:
+        *   `title` (String, required)
+        *   `slug` (String, required, unique - e.g., "sveltek_basics_course")
+        *   `description` (String, required)
+        *   `thumbnailUrl` (String, optional)
+        *   `instructorName` (String, optional)
+        *   `isPublished` (Boolean, default: false)
+
+3.  **Collection: `CourseModules`**
+    *   Collection ID (e.g., `course_modules`): `YOUR_COLLECTION_ID_MODULES`
+    *   Attributes:
+        *   `courseId` (String, required, consider creating a relationship to `Courses` collection)
+        *   `title` (String, required)
+        *   `order` (Integer, required, for sequencing)
+
+4.  **Collection: `CourseVideos` (or Lessons)**
+    *   Collection ID (e.g., `course_videos`): `YOUR_COLLECTION_ID_VIDEOS`
+    *   Attributes:
+        *   `moduleId` (String, required, consider creating a relationship to `CourseModules` collection)
+        *   `title` (String, required)
+        *   `videoUrl` (String, required - e.g., YouTube embed URL, Vimeo ID, or self-hosted file URL)
+        *   `description` (String, optional)
+        *   `durationMinutes` (Integer, optional)
+        *   `order` (Integer, required, for sequencing within a module)
+
+## 5. Execution Plan: Milestones & Tasks
+
+### Milestone 1: Refactor Dashboard & Core Structure
+
+**Goal:** Establish the component-driven pattern by refactoring the existing dashboard.
+**Status: [COMPLETED]** - All tasks finished, and critical 500 Internal Server Error on dashboard hard refresh resolved.
+
+*   **Task 1.1: Create Dashboard View Components**
+    *   `[X]` Create `src/lib/components/dashboard/HostDashboardView.svelte`
+        *   This component will encapsulate the specific layout and child components for the host user.
+        *   It will receive `allMyHostedAppointments`, `dataLoaded`, `fetchError` as props.
+        *   It will contain the `StatsHistoryCard`, `AppointmentsCard` (configured for hosted), and `BookingManagementCard` (configured for creation).
+```html
+<!-- src/lib/components/dashboard/HostDashboardView.svelte -->
+<script>
+    export let allMyHostedAppointments;
+    export let dataLoaded;
+    export let fetchError;
+    // Potentially other props like currentUser, showCreateFormState, etc.
+    // Event dispatchers for actions like toggleCreateForm, submitAppointment, deleteAppointment
+
+    import StatsHistoryCard from './StatsHistoryCard.svelte';
+    import AppointmentsCard from './AppointmentsCard.svelte';
+    import BookingManagementCard from './BookingManagementCard.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function forwardEvent(event) {
+        dispatch(event.type, event.detail);
+    }
+</script>
+
+{#if fetchError}
+    <p class="text-red-500 bg-red-100 p-3 rounded-md">{fetchError}</p>
+{/if}
+
+{#if !dataLoaded && !fetchError}
+    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard data...</p>
+{:else if dataLoaded}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <StatsHistoryCard
+                isMainUser={true}
+                bind:dataLoaded
+                bind:fetchError
+                bind:allMyHostedAppointments
+            />
+        </div>
+        <AppointmentsCard
+            isMainUser={true}
+            bind:dataLoaded
+            bind:fetchError
+            appointments={allMyHostedAppointments}
+            listType="hostedByMe"
+            on:deleteAppointment={forwardEvent}
+        />
+        <BookingManagementCard
+            isMainUser={true}
+            bind:dataLoaded
+            bind:fetchError
+            availableAppointments={[]} /* Or pass relevant data if needed */
+            showCreateFormState={$$props.showCreateFormState} /* Assuming passed from parent */
+            on:toggleCreateForm={forwardEvent}
+            on:submitAppointment={forwardEvent}
+        />
+    </div>
+{:else if !fetchError}
+    <p class="text-white">No data loaded and no error.</p>
+{/if}
+
+```
+    *   `[X]` Create `src/lib/components/dashboard/ClientDashboardView.svelte`
+        *   This component will encapsulate the specific layout and child components for the client user.
+        *   It will receive `myBookedAppointments`, `availableAppointments`, `dataLoaded`, `fetchError` as props.
+        *   It will contain `AppointmentsCard` (configured for booked) and `BookingManagementCard` (configured for booking).
+```html
+<!-- src/lib/components/dashboard/ClientDashboardView.svelte -->
+<script>
+    export let myBookedAppointments;
+    export let availableAppointments;
+    export let dataLoaded;
+    export let fetchError;
+    // Potentially other props like currentUser
+    // Event dispatchers for actions like bookAppointment, deleteAppointment (for their own bookings)
+
+    import AppointmentsCard from './AppointmentsCard.svelte';
+    import BookingManagementCard from './BookingManagementCard.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function forwardEvent(event) {
+        dispatch(event.type, event.detail);
+    }
+</script>
+
+{#if fetchError}
+    <p class="text-red-500 bg-red-100 p-3 rounded-md">{fetchError}</p>
+{/if}
+
+{#if !dataLoaded && !fetchError}
+    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard data...</p>
+{:else if dataLoaded}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <!-- Client might not have StatsHistoryCard or it's a different version -->
+        <AppointmentsCard
+            isMainUser={false}
+            bind:dataLoaded
+            bind:fetchError
+            appointments={myBookedAppointments}
+            listType="bookedByMe"
+            on:deleteAppointment={forwardEvent} /* If clients can cancel their bookings */
+        />
+        <BookingManagementCard
+            isMainUser={false}
+            bind:dataLoaded
+            bind:fetchError
+            bind:availableAppointments
+            showCreateFormState={false} /* Clients don't create appointments */
+            on:bookAppointment={forwardEvent}
+        />
+    </div>
+{:else if !fetchError}
+    <p class="text-white">No data loaded and no error.</p>
+{/if}
+```
+
+*   **Task 1.2: Refactor `src/routes/dashboard/+page.svelte`**
+    *   `[X]` Modify the script section to primarily handle:
+        *   User authentication check (redirect if not logged in).
+        *   Determining `isMainUser`.
+        *   Calling `fetchAllAppointments` (this logic can remain but could also be moved to `+page.server.js` eventually).
+        *   Managing `showCreateForm` state if it controls aspects of both host/client views or if `BookingManagementCard`'s internal state isn't sufficient.
+        *   Event handlers (`handleAppointmentSubmit`, `handleBookAppointment`, etc.) will receive events from `HostDashboardView` or `ClientDashboardView`.
+    *   `[X]` Modify the template section to:
+        *   Render `HostDashboardView` or `ClientDashboardView` based on `isMainUser`.
+        *   Pass all necessary props and bind event handlers.
+```html
+<!-- src/routes/dashboard/+page.svelte (Refactored Excerpt) -->
+<script>
+    import { currentUser } from '$lib/stores/userStore';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import backgroundImage from '$lib/images/stone.jpg';
+    import {
+        createAppointment,
+        getAvailableAppointments,
+        getAppointmentsHostedBy,
+        getAppointmentsBookedBy,
+        bookAppointment,
+        deleteAppointment
+    } from '$lib/appwrite_db.js';
+
+    import HostDashboardView from '$lib/components/dashboard/HostDashboardView.svelte';
+    import ClientDashboardView from '$lib/components/dashboard/ClientDashboardView.svelte';
+
+    const MAIN_HOST_USER_ID = '6835776c00327c1049fe';
+    let isMainUser = false;
+
+    let allMyHostedAppointments = [];
+    let availableAppointments = [];
+    let myBookedAppointments = [];
+    let fetchError = '';
+    let creationStatus = '';
+    
+    let showCreateForm = false; 
+    let dataLoaded = false;
+    let isLoadingPage = true;
+    let previousUserId = null;
+
+    $: {
+        if ($currentUser && $currentUser.$id) {
+            isMainUser = $currentUser.$id === MAIN_HOST_USER_ID;
+        } else {
+            isMainUser = false;
+        }
+    }
+
+    async function fetchAllAppointments(source = 'unknown') {
+        // console.log(`fetchAllAppointments called from: ${source}. Current user:`, $currentUser ? $currentUser.$id : 'No user');
+        if (!$currentUser || !$currentUser.$id) {
+            dataLoaded = false;
+            // console.log('fetchAllAppointments: No current user or user ID, returning.');
+            return;
+        }
+        fetchError = '';
+        isLoadingPage = true; // Show loading when fetching
+        try {
+            if (isMainUser) {
+                const hostedAppointmentsResult = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
+                allMyHostedAppointments = hostedAppointmentsResult;
+                availableAppointments = []; // Clear data not relevant to host
+                myBookedAppointments = [];
+            } else {
+                const [available, booked] = await Promise.all([
+                    getAvailableAppointments(), 
+                    getAppointmentsBookedBy($currentUser.$id)
+                ]);
+                availableAppointments = available;
+                myBookedAppointments = booked;
+                allMyHostedAppointments = []; // Clear data not relevant to client
+            }
+            dataLoaded = true;
+        } catch (err) {
+            // console.error("Dashboard: Error fetching role-specific appointments:", err); 
+            fetchError = "Failed to load appointments: " + err.message;
+            dataLoaded = false; 
+        } finally {
+            isLoadingPage = false;
+        }
+    }
+    
+    onMount(() => {
+        if ($currentUser && $currentUser.$id) {
+            isLoadingPage = false; // Initial check, might be true again during fetch
+            if (!dataLoaded) {
+                fetchAllAppointments('onMount');
+            }
+        } else if ($currentUser === null) {
+            goto('/');
+        }
+    });
+
+    $: { // Main reactive block for user changes
+        if (typeof window !== 'undefined') { 
+            if ($currentUser && $currentUser.$id) {
+                if (isLoadingPage && !dataLoaded) { // If user resolved while page was initially loading
+                    // This condition might need refinement to avoid multiple fetches
+                }
+                if (previousUserId !== $currentUser.$id) {
+                    dataLoaded = false; // Reset for new user
+                    previousUserId = $currentUser.$id;
+                    isMainUser = $currentUser.$id === MAIN_HOST_USER_ID; // Recalculate role for new user
+                    fetchAllAppointments('currentUser changed - new ID');
+                } else if (!dataLoaded) { // Same user, but data wasn't loaded (e.g. navigated back)
+                    fetchAllAppointments('currentUser resolved - no data');
+                }
+                // isLoadingPage should be false after fetchAllAppointments completes or if user was already resolved
+                // The isLoadingPage = false was previously inside the fetchAllAppointments.
+            } else if ($currentUser === null) { // Logout
+                if (previousUserId !== null) {
+                    dataLoaded = false;
+                    previousUserId = null;
+                    isMainUser = false;
+                    allMyHostedAppointments = [];
+                    availableAppointments = [];
+                    myBookedAppointments = [];
+                }
+                if (window.location.pathname.startsWith('/dashboard')) {
+                     goto('/');
+                }
+            }
+        }
+    }
+    
+    // Event Handlers (to be connected to HostDashboardView/ClientDashboardView)
+    async function handleAppointmentSubmit(event) {
+        if (!isMainUser || !$currentUser || !$currentUser.$id) { 
+            creationStatus = 'Error: Only the main host can create appointments.';
+            return;
+        }
+        creationStatus = 'Creating appointment...';
+        try {
+            const newAppointment = await createAppointment(event.detail, $currentUser);
+            creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
+            await fetchAllAppointments('after submitAppointment'); 
+            showCreateForm = false;
+        } catch (error) {
+            creationStatus = `Error creating appointment: ${error.message}`;
+        }
+    }
+
+    async function handleBookAppointment(event) {
+        const appointmentId = event.detail;
+        // ... (existing logic)
+        creationStatus = `Booking appointment ${appointmentId}...`;
+        try {
+            await bookAppointment(appointmentId, $currentUser);
+            creationStatus = `Successfully booked appointment ${appointmentId}!`;
+            await fetchAllAppointments('after bookAppointment');
+        } catch (error) {
+            // ... (existing logic)
+            creationStatus = `Error booking appointment: ${error.message}`;
+        }
+    }
+
+    async function handleDeleteAppointment(event) {
+        const appointmentId = event.detail;
+        // ... (existing logic)
+        creationStatus = `Deleting appointment ${appointmentId}...`;
+        try {
+            await deleteAppointment(appointmentId);
+            creationStatus = `Successfully deleted appointment ${appointmentId}.`;
+            await fetchAllAppointments('after deleteAppointment');
+        } catch (error) {
+            // ... (existing logic)
+            creationStatus = `Error deleting: ${error.message}`;
+        }
+    }
+
+    function toggleShowCreateForm() {
+        showCreateForm = !showCreateForm;
+    }
+
+</script>
+
+<svelte:head>
+    <title>Dashboard - Network 3.0</title>
+</svelte:head>
+
+<div class="relative min-h-screen w-full">
+    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0" style="background-image: url({backgroundImage});"></div>
+
+    <div class="relative z-10 min-h-screen text-stone-800 p-4 sm:p-6 lg:p-8">
+        {#if isLoadingPage && !$currentUser && typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard')}
+             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading user information...</p>
+            </div>
+        {:else if $currentUser}
+            <header class="mb-6 sm:mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-white drop-shadow-md">
+                    Welcome, {$currentUser.name || $currentUser.email.split('@')[0]}!
+                </h1>
+                <p class="text-sm font-semibold drop-shadow-sm {isMainUser ? 'text-emerald-300' : 'text-sky-300'}">
+                    {isMainUser ? 'Host Dashboard' : 'Client Dashboard'}
+                </p>
+            </header>
+
+            {#if isLoadingPage && dataLoaded === false } <!--  Show loading message specifically when fetching for a logged-in user -->
+                 <div class="flex justify-center items-center min-h-[calc(50vh)]">
+                    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Fetching dashboard data...</p>
+                </div>
+            {:else if isMainUser}
+                <HostDashboardView 
+                    bind:allMyHostedAppointments
+                    bind:dataLoaded
+                    bind:fetchError
+                    showCreateFormState={showCreateForm}
+                    on:toggleCreateForm={toggleShowCreateForm}
+                    on:submitAppointment={handleAppointmentSubmit}
+                    on:deleteAppointment={handleDeleteAppointment}
+                />
+            {:else}
+                <ClientDashboardView
+                    bind:myBookedAppointments
+                    bind:availableAppointments
+                    bind:dataLoaded
+                    bind:fetchError
+                    on:bookAppointment={handleBookAppointment}
+                    on:deleteAppointment={handleDeleteAppointment} /* If clients can cancel */
+                />
+            {/if}
+            
+            {#if creationStatus}
+                <div class="fixed bottom-6 right-6 p-4 rounded-lg shadow-xl text-sm
+                            bg-opacity-90 backdrop-blur-md border
+                            {creationStatus.toLowerCase().startsWith('error:') ? 'bg-red-100 border-red-300 text-red-800' : 
+                            creationStatus.toLowerCase().startsWith('successfully') ? 'bg-green-100 border-green-300 text-green-800' : 
+                            'bg-blue-100 border-blue-300 text-blue-800'}">
+                    <p>{creationStatus}</p>
+                </div>
+            {/if}
+
+        {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname.startsWith('/dashboard'))}
+            <!-- Initial state before $currentUser is resolved, or if user becomes null on dashboard -->
+            <!-- This state is tricky; often a brief "Loading..." or redirect handles it. -->
+            <!-- The redirect is handled in the reactive block. -->
+             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Verifying session...</p>
+            </div>
+        {:else}
+             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard state...</p>
+            </div>
+        {/if}
+    </div>
+</div>
+```
+    *   `[ ]` Test thoroughly for both host and client users. Ensure all existing dashboard functionality works as before.
+
+### Milestone 2: Implement Service Layer for Appwrite Interactions
+
+**Goal:** Abstract Appwrite SDK calls into a reusable service layer.
+**Status: [COMPLETED]** - Core service created and existing codebase refactored.
+
+*   **Task 2.1: Create `src/lib/services/appwriteService.js`**
+    *   `[X]` Define Appwrite client, account, and databases instances using environment variables.
+    *   `[X]` Consolidate user authentication functions (login, logout, signup, getCurrentUser).
+    *   `[X]` Consolidate CRUD operations for Appointments.
+
+*   **Task 2.2: Update Codebase to Use `appwriteService`**
+    *   `[X]` Refactor `src/routes/+page.svelte` (Login/Registration) to use `appwriteService`.
+    *   `[X]` Refactor `src/routes/+layout.svelte` (User session) to use `appwriteService`.
+    *   `[X]` Refactor `src/routes/dashboard/+page.svelte` (Dashboard data fetching and actions) to use `appwriteService`.
+    *   `[X]` Verify and remove old imports from `appwrite.js` and `appwrite_db.js`.
+
+*   **Task 2.3: Delete Old Appwrite Files**
+    *   `[X]` Delete `src/lib/appwrite.js`.
+    *   `[X]` Delete `src/lib/appwrite_db.js`.
+
+*   **Task 2.4: Add Service Functions for New Collections (Future)**
+    *   `[ ]` Add functions for DocumentationArticles CRUD.
+    *   `[ ]` Add functions for Courses, CourseModules, CourseVideos CRUD.
+
+### Milestone 3: Implement Documentation Feature
+
+**Goal:** Implement the documentation knowledge base.
+
+*   **Task 2.1: Create Directory Structure**
+    *   `[ ]` Create directory `src/lib/components/documentation/`.
+    *   `[ ]` Create directory `src/routes/documentation/`.
+
+*   **Task 2.2: Appwrite Service for Documentation**
+    *   `[ ]` Create `src/lib/appwrite_docs.js` (or add to `appwrite_db.js`).
+```javascript
+// src/lib/appwrite_docs.js
+import { databases, ID, Query } from "./appwrite"; // Assuming appwrite.js is in $lib
+
+const DATABASE_ID = 'YOUR_APPWRITE_DATABASE_ID'; // Replace with your Database ID
+const ARTICLES_COLLECTION_ID = 'YOUR_COLLECTION_ID_DOCS'; // Replace with your Collection ID
+
+export async function listDocumentationArticles(limit = 25, offset = 0) {
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            ARTICLES_COLLECTION_ID,
+            [
+                Query.equal('isPublished', true),
+                Query.orderDesc('publishedAt'), // or orderAsc by title, etc.
+                Query.limit(limit),
+                Query.offset(offset)
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to list documentation articles:", error);
+        throw error;
+    }
+}
+
+export async function getDocumentationArticleBySlug(slug) {
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            ARTICLES_COLLECTION_ID,
+            [
+                Query.equal("slug", slug),
+                Query.equal('isPublished', true),
+                Query.limit(1)
+            ]
+        );
+        if (response.documents.length > 0) {
+            return response.documents[0];
+        } else {
+            throw new Error("Article not found or not published.");
+        }
+    } catch (error) {
+        console.error(`Failed to get article by slug ${slug}:`, error);
+        throw error;
+    }
+}
+
+// Add create, update, delete functions if you plan to manage articles from the app
+// export async function createArticle(articleData, userId) { ... }
+```
+
+*   **Task 2.3: Documentation Listing Components**
+    *   `[ ]` Create `src/lib/components/documentation/ArticleListItem.svelte`
+```html
+<!-- src/lib/components/documentation/ArticleListItem.svelte -->
+<script>
+    export let article; // { title, slug, category, authorName, publishedAt }
+</script>
+
+<div class="p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-md">
+    <a href={`/documentation/${article.slug}`} class="block">
+        <h3 class="text-xl font-semibold text-sky-700 hover:text-sky-900">{article.title}</h3>
+        {#if article.category}
+            <p class="text-sm text-gray-600 mt-1">Category: {article.category}</p>
+        {/if}
+        {#if article.authorName}
+            <p class="text-sm text-gray-500 mt-1">By: {article.authorName}</p>
+        {/if}
+        {#if article.publishedAt}
+            <p class="text-xs text-gray-400 mt-2">
+                Published: {new Date(article.publishedAt).toLocaleDateString()}
+            </p>
+        {/if}
+    </a>
+</div>
+```
+    *   `[ ]` Create `src/lib/components/documentation/DocumentationOverview.svelte`
+```html
+<!-- src/lib/components/documentation/DocumentationOverview.svelte -->
+<script>
+    export let articles = []; // Passed as prop from +page.svelte or +page.server.js
+</script>
+
+<div class="space-y-6">
+    {#if articles.length > 0}
+        {#each articles as article (article.$id)}
+            <ArticleListItem {article} />
+        {/each}
+    {:else}
+        <p class="text-center text-gray-500 py-10">No documentation articles found.</p>
+    {/if}
+</div>
+```
+
+*   **Task 2.4: Documentation Listing Page (`+page.svelte`)**
+    *   `[ ]` Create `src/routes/documentation/+page.svelte`
+```html
+<!-- src/routes/documentation/+page.svelte -->
+<script>
+    import DocumentationOverview from '$lib/components/documentation/DocumentationOverview.svelte';
+    import { listDocumentationArticles } from '$lib/appwrite_docs.js';
+    import { onMount } from 'svelte';
+
+    let articles = [];
+    let isLoading = true;
+    let error = null;
+
+    onMount(async () => {
+        try {
+            articles = await listDocumentationArticles();
+        } catch (e) {
+            error = e.message;
+        } finally {
+            isLoading = false;
+        }
+    });
+</script>
+
+<svelte:head>
+    <title>Documentation - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center text-white drop-shadow-md">Documentation</h1>
+
+    {#if isLoading}
+        <p class="text-center text-gray-300">Loading articles...</p>
+    {:else if error}
+        <p class="text-center text-red-400 bg-red-100 p-3 rounded">Error loading articles: {error}</p>
+    {:else}
+        <DocumentationOverview {articles} />
+    {/if}
+</div>
+```
+    *   Alternatively, use `+page.server.js` to load data:
+    *   `[ ]` (Optional) Create `src/routes/documentation/+page.server.js`
+```javascript
+// src/routes/documentation/+page.server.js
+import { listDocumentationArticles } from '$lib/appwrite_docs.js'; // Adjust path if appwrite_docs.js is not directly in lib
+
+export async function load() {
+    try {
+        const articles = await listDocumentationArticles();
+        return {
+            articles
+        };
+    } catch (error) {
+        console.error("Error loading articles in +page.server.js:", error);
+        return {
+            articles: [],
+            error: "Failed to load articles."
+        };
+    }
+}
+```
+    *   And modify `src/routes/documentation/+page.svelte` to use the loaded data:
+```html
+<!-- src/routes/documentation/+page.svelte (with +page.server.js) -->
+<script>
+    import DocumentationOverview from '$lib/components/documentation/DocumentationOverview.svelte';
+    export let data; // Provided by +page.server.js
+</script>
+
+<svelte:head>
+    <title>Documentation - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center text-white drop-shadow-md">Documentation</h1>
+
+    {#if data.error}
+        <p class="text-center text-red-400 bg-red-100 p-3 rounded">Error: {data.error}</p>
+    {:else if data.articles && data.articles.length > 0}
+        <DocumentationOverview articles={data.articles} />
+    {:else}
+        <p class="text-center text-gray-300">No documentation articles found.</p>
+    {/if}
+</div>
+```
+
+*   **Task 2.5: Documentation Article View Component**
+    *   `[ ]` Create `src/lib/components/documentation/ArticleView.svelte`.
+        *   This will take an `article` object as a prop.
+        *   It needs to render Markdown content. You might need a Markdown library (e.g., `marked`) or render HTML if content is stored as HTML.
+```html
+<!-- src/lib/components/documentation/ArticleView.svelte -->
+<script>
+    export let article; // { title, content, authorName, publishedAt, category }
+    // For Markdown rendering, you might need:
+    // import { marked } from 'marked'; // Install via npm/yarn
+    // $: htmlContent = article && article.content ? marked(article.content) : '';
+    // Or if content is already HTML:
+    $: htmlContent = article ? article.content : '';
+</script>
+
+<article class="prose lg:prose-xl max-w-none p-6 bg-white/90 backdrop-blur-md rounded-lg shadow-lg">
+    <header class="mb-6 pb-4 border-b">
+        <h1 class="text-4xl font-bold text-gray-800">{article.title}</h1>
+        <div class="mt-2 text-sm text-gray-500">
+            {#if article.authorName}<span>By {article.authorName}</span>{/if}
+            {#if article.publishedAt}<span class="ml-2">Published: {new Date(article.publishedAt).toLocaleDateString()}</span>{/if}
+            {#if article.category}<span class="ml-2">Category: {article.category}</span>{/if}
+        </div>
+    </header>
+    
+    <!-- Render Markdown/HTML content -->
+    {@html htmlContent}
+
+</article>
+
+<style>
+    /* Add Tailwind's typography plugin if not already set up for .prose styles */
+    /* @tailwind base; @tailwind components; @tailwind utilities; @tailwind variants; */
+</style>
+```
+
+*   **Task 2.6: Documentation Article Page (`[slug]/+page.svelte`)**
+    *   `[ ]` Create `src/routes/documentation/[slug]/+page.svelte` (or `[article_id]`)
+```html
+<!-- src/routes/documentation/[slug]/+page.svelte -->
+<script>
+    import ArticleView from '$lib/components/documentation/ArticleView.svelte';
+    export let data; // From +page.server.js
+</script>
+
+<svelte:head>
+    <title>{data.article ? data.article.title : 'Article'} - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8">
+    {#if data.error}
+        <p class="text-center text-red-500 bg-red-100 p-4 rounded-md">Error: {data.error}</p>
+    {:else if data.article}
+        <ArticleView article={data.article} />
+    {:else}
+        <p class="text-center text-gray-400">Article not found.</p>
+    {/if}
+    <div class="mt-8 text-center">
+        <a href="/documentation" class="text-sky-500 hover:text-sky-700 hover:underline">&larr; Back to Documentation</a>
+    </div>
+</div>
+```
+    *   `[ ]` Create `src/routes/documentation/[slug]/+page.server.js`
+```javascript
+// src/routes/documentation/[slug]/+page.server.js
+import { getDocumentationArticleBySlug } from '$lib/appwrite_docs.js'; // Adjust path
+import { error } from '@sveltejs/kit';
+
+export async function load({ params }) {
+    try {
+        const article = await getDocumentationArticleBySlug(params.slug);
+        if (article) {
+            return {
+                article
+            };
+        }
+        throw error(404, 'Article not found');
+    } catch (err) {
+        console.error(`Error loading article ${params.slug}:`, err);
+        // Differentiate between "not found" and other server errors if possible
+        if (err.status === 404 || err.message?.includes("not found")) {
+            throw error(404, 'Article not found');
+        }
+        throw error(500, 'Failed to load article');
+    }
+}
+```
+*   `[ ]` Test Documentation: Create sample articles in Appwrite. Navigate listing and individual articles. Check Markdown rendering.
+
+### Milestone 3: Online Course Video Section
+
+**Goal:** Implement the online course functionality with video playback.
+
+*   **Task 3.1: Create Directory Structure**
+    *   `[ ]` Create directory `src/lib/components/courses/`.
+    *   `[ ]` Create directory `src/routes/courses/`.
+
+*   **Task 3.2: Appwrite Service for Courses**
+    *   `[ ]` Create `src/lib/appwrite_courses.js` (or add to `appwrite_db.js`).
+```javascript
+// src/lib/appwrite_courses.js
+import { databases, ID, Query } from "./appwrite";
+
+const DATABASE_ID = 'YOUR_APPWRITE_DATABASE_ID';
+const COURSES_COLLECTION_ID = 'YOUR_COLLECTION_ID_COURSES';
+const MODULES_COLLECTION_ID = 'YOUR_COLLECTION_ID_MODULES';
+const VIDEOS_COLLECTION_ID = 'YOUR_COLLECTION_ID_VIDEOS';
+
+export async function listPublishedCourses(limit = 25, offset = 0) {
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            COURSES_COLLECTION_ID,
+            [
+                Query.equal('isPublished', true),
+                Query.orderAsc('title'), // or by creation date, etc.
+                Query.limit(limit),
+                Query.offset(offset)
+            ]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error("Failed to list courses:", error);
+        throw error;
+    }
+}
+
+export async function getCourseDetailsBySlug(slug) {
+    try {
+        // 1. Fetch Course by slug
+        const courseResponse = await databases.listDocuments(
+            DATABASE_ID,
+            COURSES_COLLECTION_ID,
+            [Query.equal("slug", slug), Query.equal('isPublished', true), Query.limit(1)]
+        );
+
+        if (courseResponse.documents.length === 0) {
+            throw new Error("Course not found or not published.");
+        }
+        const course = courseResponse.documents[0];
+
+        // 2. Fetch Modules for this Course
+        const modulesResponse = await databases.listDocuments(
+            DATABASE_ID,
+            MODULES_COLLECTION_ID,
+            [Query.equal("courseId", course.$id), Query.orderAsc("order")]
+        );
+        const modules = modulesResponse.documents;
+
+        // 3. Fetch Videos for each Module
+        const modulesWithVideos = await Promise.all(
+            modules.map(async (module) => {
+                const videosResponse = await databases.listDocuments(
+                    DATABASE_ID,
+                    VIDEOS_COLLECTION_ID,
+                    [Query.equal("moduleId", module.$id), Query.orderAsc("order")]
+                );
+                return { ...module, videos: videosResponse.documents };
+            })
+        );
+        
+        return { ...course, modules: modulesWithVideos };
+
+    } catch (error) {
+        console.error(`Failed to get course details for slug ${slug}:`, error);
+        throw error;
+    }
+}
+// Add create/update/delete functions for courses, modules, videos for admin panel if needed
+```
+
+*   **Task 3.3: Course Listing Components**
+    *   `[ ]` Create `src/lib/components/courses/CourseListItem.svelte`
+```html
+<!-- src/lib/components/courses/CourseListItem.svelte -->
+<script>
+    export let course; // { title, slug, description, thumbnailUrl, instructorName }
+</script>
+
+<a href={`/courses/${course.slug}`} class="block p-4 border border-gray-200 rounded-lg hover:shadow-xl transition-shadow bg-white/80 backdrop-blur-md">
+    {#if course.thumbnailUrl}
+        <img src={course.thumbnailUrl} alt={`Thumbnail for ${course.title}`} class="w-full h-48 object-cover rounded-md mb-3">
+    {/if}
+    <h3 class="text-xl font-semibold text-indigo-700 hover:text-indigo-900">{course.title}</h3>
+    <p class="text-sm text-gray-600 mt-1 line-clamp-3">{course.description}</p>
+    {#if course.instructorName}
+        <p class="text-xs text-gray-500 mt-2">By: {course.instructorName}</p>
+    {/if}
+</a>
+```
+    *   `[ ]` Create `src/lib/components/courses/CourseOverview.svelte`
+```html
+<!-- src/lib/components/courses/CourseOverview.svelte -->
+<script>
+    export let courses = [];
+</script>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {#if courses.length > 0}
+        {#each courses as course (course.$id)}
+            <CourseListItem {course} />
+        {/each}
+    {:else}
+        <p class="col-span-full text-center text-gray-500 py-10">No courses available at the moment.</p>
+    {/if}
+</div>
+```
+
+*   **Task 3.4: Course Listing Page (`+page.svelte` & `+page.server.js`)**
+    *   `[ ]` Create `src/routes/courses/+page.svelte` (similar to documentation listing, using `CourseOverview`)
+```html
+<!-- src/routes/courses/+page.svelte -->
+<script>
+    import CourseOverview from '$lib/components/courses/CourseOverview.svelte';
+    export let data; // From +page.server.js
+</script>
+
+<svelte:head>
+    <title>Online Courses - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center text-white drop-shadow-md">Our Courses</h1>
+    {#if data.error}
+        <p class="text-center text-red-400 bg-red-100 p-3 rounded">Error: {data.error}</p>
+    {:else if data.courses && data.courses.length > 0}
+        <CourseOverview courses={data.courses} />
+    {:else}
+        <p class="text-center text-gray-300">No courses available at the moment.</p>
+    {/if}
+</div>
+```
+    *   `[ ]` Create `src/routes/courses/+page.server.js`
+```javascript
+// src/routes/courses/+page.server.js
+import { listPublishedCourses } from '$lib/appwrite_courses.js';
+
+export async function load() {
+    try {
+        const courses = await listPublishedCourses();
+        return {
+            courses
+        };
+    } catch (error) {
+        console.error("Error loading courses in +page.server.js:", error);
+        return {
+            courses: [],
+            error: "Failed to load courses."
+        };
+    }
+}
+```
+
+*   **Task 3.5: Course Detail & Video Player Components**
+    *   `[ ]` Create `src/lib/components/courses/VideoPlayer.svelte`
+        *   This component will take a `videoUrl` and display an appropriate video player (e.g., iframe for YouTube/Vimeo, or `<video>` tag for self-hosted).
+```html
+<!-- src/lib/components/courses/VideoPlayer.svelte -->
+<script>
+    export let videoUrl;
+    export let title = "Course Video";
+
+    // Basic YouTube embed URL detection (can be made more robust)
+    let isYouTube = videoUrl && (videoUrl.includes('youtube.com/embed/') || videoUrl.includes('youtu.be/'));
+    let embedUrl = videoUrl;
+
+    if (videoUrl && videoUrl.includes('youtu.be/')) {
+        const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    } else if (videoUrl && videoUrl.includes('youtube.com/watch?v=')) {
+        const videoId = videoUrl.split('watch?v=')[1].split('&')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    }
+    // Add similar logic for Vimeo or other platforms if needed
+</script>
+
+<div class="aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+    {#if isYouTube}
+        <iframe 
+            width="100%" 
+            height="100%" 
+            src={embedUrl} 
+            title={title}
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+        </iframe>
+    {:else if videoUrl} <!-- Generic video tag for other URLs -->
+         <video controls class="w-full h-full" src={videoUrl} title={title}>
+            Your browser does not support the video tag.
+        </video>
+    {:else}
+        <p class="text-white flex items-center justify-center h-full">Video URL not provided.</p>
+    {/if}
+</div>
+```
+    *   `[ ]` Create `src/lib/components/courses/CourseDetailView.svelte`
+        *   This component displays course information, modules, and videos. It will use `VideoPlayer.svelte`.
+```html
+<!-- src/lib/components/courses/CourseDetailView.svelte -->
+<script>
+    export let course; // Full course object with modules and videos
+    
+    import VideoPlayer from './VideoPlayer.svelte';
+    import { writable } from 'svelte/store';
+
+    let currentVideoUrl = writable(course?.modules?.[0]?.videos?.[0]?.videoUrl || null);
+    let currentVideoTitle = writable(course?.modules?.[0]?.videos?.[0]?.title || "Video");
+
+    function selectVideo(video) {
+        currentVideoUrl.set(video.videoUrl);
+        currentVideoTitle.set(video.title);
+    }
+
+    // Set initial video if course data is loaded
+    $: if (course && !($currentVideoUrl) && course?.modules?.[0]?.videos?.[0]) {
+        selectVideo(course.modules[0].videos[0]);
+    }
+</script>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Video Player Section (Main Content) -->
+    <div class="md:col-span-2 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+        {#if $currentVideoUrl}
+            <VideoPlayer videoUrl={$currentVideoUrl} title={$currentVideoTitle} />
+            <h2 class="text-2xl font-semibold mt-4 text-white">{$currentVideoTitle}</h2>
+            <!-- Add video description if available -->
+        {:else}
+            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                <p class="text-white text-xl">Select a video to play.</p>
+            </div>
+            <h2 class="text-2xl font-semibold mt-4 text-white">Welcome to {course.title}</h2>
+        {/if}
+        
+        <div class="mt-6 prose prose-invert max-w-none text-gray-300">
+            <h3 class="text-xl font-semibold text-white border-b border-gray-600 pb-2 mb-3">Course Description</h3>
+            {@html course.description || '<p>No description provided.</p>'}
+        </div>
+    </div>
+
+    <!-- Sidebar: Course Outline/Playlist -->
+    <div class="md:col-span-1 bg-gray-800/70 backdrop-blur-md p-4 rounded-lg max-h-[80vh] overflow-y-auto">
+        <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-600 pb-2">Course Content</h3>
+        {#if course.modules && course.modules.length > 0}
+            {#each course.modules as module (module.$id)}
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold text-indigo-300 mb-2">{module.title}</h4>
+                    {#if module.videos && module.videos.length > 0}
+                        <ul class="space-y-1">
+                            {#each module.videos as video (video.$id)}
+                                <li>
+                                    <button 
+                                        on:click={() => selectVideo(video)}
+                                        class="w-full text-left px-3 py-2 rounded-md text-sm 
+                                               {video.videoUrl === $currentVideoUrl ? 'bg-indigo-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-200'}"
+                                    >
+                                        {video.order}. {video.title} 
+                                        {#if video.durationMinutes}({video.durationMinutes} min){/if}
+                                    </button>
+                                </li>
+                            {/each}
+                        </ul>
+                    {:else}
+                        <p class="text-sm text-gray-400 italic">No videos in this module.</p>
+                    {/if}
+                </div>
+            {/each}
+        {:else}
+            <p class="text-gray-400">No modules found for this course.</p>
+        {/if}
+    </div>
+</div>
+```
+
+*   **Task 3.6: Course Detail Page (`[slug]/+page.svelte` & `+page.server.js`)**
+    *   `[ ]` Create `src/routes/courses/[slug]/+page.svelte`
+```html
+<!-- src/routes/courses/[slug]/+page.svelte -->
+<script>
+    import CourseDetailView from '$lib/components/courses/CourseDetailView.svelte';
+    export let data; // From +page.server.js
+</script>
+
+<svelte:head>
+    <title>{data.course ? data.course.title : 'Course'} - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8">
+    {#if data.error}
+        <p class="text-center text-red-500 bg-red-100 p-4 rounded-md">Error: {data.error}</p>
+    {:else if data.course}
+        <CourseDetailView course={data.course} />
+    {:else}
+        <p class="text-center text-gray-400">Course not found.</p>
+    {/if}
+     <div class="mt-8 text-center">
+        <a href="/courses" class="text-sky-300 hover:text-sky-100 hover:underline">&larr; Back to Courses</a>
+    </div>
+</div>
+```
+    *   `[ ]` Create `src/routes/courses/[slug]/+page.server.js`
+```javascript
+// src/routes/courses/[slug]/+page.server.js
+import { getCourseDetailsBySlug } from '$lib/appwrite_courses.js';
+import { error } from '@sveltejs/kit';
+
+export async function load({ params }) {
+    try {
+        const course = await getCourseDetailsBySlug(params.slug);
+        if (course) {
+            return {
+                course
+            };
+        }
+        throw error(404, 'Course not found');
+    } catch (err) {
+        console.error(`Error loading course ${params.slug}:`, err);
+         if (err.status === 404 || err.message?.includes("not found")) {
+            throw error(404, 'Course not found');
+        }
+        throw error(500, 'Failed to load course details.');
+    }
+}
+```
+*   `[ ]` Test Courses: Create sample course, modules, and videos in Appwrite. Test navigation, course detail view, and video playback.
+
+### Milestone 4: Polish & Global Elements
+
+*   **Task 4.1: Update Global Layout/Navigation**
+    *   `[ ]` Modify `src/routes/+layout.svelte` (or your main navbar component) to include links to `/documentation` and `/courses` if the user is logged in (or based on your access rules).
+*   **Task 4.2: Styling and UX Review**
+    *   `[ ]` Review all new pages and components for consistent styling and good user experience.
+    *   `[ ]` Ensure responsive design for all new sections.
+*   **Task 4.3: Code Cleanup & Final Testing**
+    *   `[ ]` Remove any console logs used for debugging.
+    *   `[ ]` Perform thorough end-to-end testing of all features: login, dashboard (host & client), appointments, documentation, and courses.
+
+## 6. Further Documentation/Information Needed
+
+*   **Markdown Flavor for Documentation:** Do you have a preferred Markdown library or specific features (e.g., syntax highlighting, custom blockquotes) you need for documentation rendering? (The plan assumes basic Markdown or pre-rendered HTML).
+*   **Video Hosting/Embedding:** The plan uses a generic approach for YouTube embeds and HTML5 video. If you have specific requirements for other video platforms (Vimeo Pro, Wistia, self-hosted with specific players), the `VideoPlayer.svelte` component will need adjustment.
+*   **Admin Interface:** This plan focuses on the user-facing side. How will documentation articles and courses be created/managed? (Manually in Appwrite console, or is a separate admin interface planned?) If an admin interface is needed, that's a separate, significant feature.
+
+This plan provides a structured approach. Remember to commit changes frequently and test each step.
+</file>
 
 <file path="src/lib/components/dashboard/AppointmentsCard.svelte">
 <script>
@@ -213,6 +1751,117 @@ This section contains the contents of the repository's files.
 </div>
 </file>
 
+<file path="src/lib/components/dashboard/ClientDashboardView.svelte">
+<!-- src/lib/components/dashboard/ClientDashboardView.svelte -->
+<script>
+    export let myBookedAppointments;
+    export let availableAppointments;
+    export let dataLoaded;
+    export let fetchError;
+    // Potentially other props like currentUser
+    // Event dispatchers for actions like bookAppointment, deleteAppointment (for their own bookings)
+
+    import AppointmentsCard from './AppointmentsCard.svelte';
+    import BookingManagementCard from './BookingManagementCard.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function forwardEvent(event) {
+        dispatch(event.type, event.detail);
+    }
+</script>
+
+{#if fetchError}
+    <p class="text-red-500 bg-red-100 p-3 rounded-md">{fetchError}</p>
+{/if}
+
+{#if !dataLoaded && !fetchError}
+    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard data...</p>
+{:else if dataLoaded}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <!-- Client might not have StatsHistoryCard or it's a different version -->
+        <AppointmentsCard
+            isMainUser={false}
+            bind:dataLoaded
+            bind:fetchError
+            appointments={myBookedAppointments}
+            listType="bookedByMe"
+            on:deleteAppointment={forwardEvent}
+        />
+        <BookingManagementCard
+            isMainUser={false}
+            bind:dataLoaded
+            bind:fetchError
+            bind:availableAppointments
+            showCreateFormState={false}
+            on:bookAppointment={forwardEvent}
+        />
+    </div>
+{:else if !fetchError}
+    <p class="text-white">No data loaded and no error.</p>
+{/if}
+</file>
+
+<file path="src/lib/components/dashboard/HostDashboardView.svelte">
+<script>
+    export let allMyHostedAppointments;
+    export let dataLoaded;
+    export let fetchError;
+    // Potentially other props like currentUser, showCreateFormState, etc.
+    // Event dispatchers for actions like toggleCreateForm, submitAppointment, deleteAppointment
+
+    import StatsHistoryCard from './StatsHistoryCard.svelte';
+    import AppointmentsCard from './AppointmentsCard.svelte';
+    import BookingManagementCard from './BookingManagementCard.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function forwardEvent(event) {
+        dispatch(event.type, event.detail);
+    }
+</script>
+
+{#if fetchError}
+    <p class="text-red-500 bg-red-100 p-3 rounded-md">{fetchError}</p>
+{/if}
+
+{#if !dataLoaded && !fetchError}
+    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard data...</p>
+{:else if dataLoaded}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <StatsHistoryCard
+                isMainUser={true} 
+                bind:dataLoaded
+                bind:fetchError
+                bind:allMyHostedAppointments 
+            />
+        </div>
+        <AppointmentsCard
+            isMainUser={true}
+            bind:dataLoaded
+            bind:fetchError
+            appointments={allMyHostedAppointments}
+            listType="hostedByMe"
+            on:deleteAppointment={forwardEvent}
+        />
+        <BookingManagementCard
+            isMainUser={true}
+            bind:dataLoaded
+            bind:fetchError
+            availableAppointments={[] /* TODO: This will need actual data later */}
+            showCreateFormState={$$props.showCreateFormState}
+            on:toggleCreateForm={forwardEvent}
+            on:submitAppointment={forwardEvent}
+        />
+    </div>
+{:else if !fetchError}
+    <p class="text-white">No data loaded and no error.</p>
+{/if}
+</file>
+
 <file path="src/lib/components/dashboard/StatsHistoryCard.svelte">
 <script>
     export let isMainUser;
@@ -221,8 +1870,8 @@ This section contains the contents of the repository's files.
     export let allMyHostedAppointments;
 </script>
 
-<div class="bg-white rounded-xl shadow-lg p-6">
-    <h2 class="text-xl font-semibold text-stone-800 mb-4">
+<div class="bg-linen text-prussian-blue rounded-2xl shadow-lg p-8">
+    <h2 class="text-xl font-semibold mb-6">
         {#if isMainUser}
             Quick Stats
         {:else}
@@ -231,156 +1880,232 @@ This section contains the contents of the repository's files.
     </h2>
     {#if isMainUser}
         {#if !dataLoaded && !fetchError}
-            <p class="text-stone-500 text-sm animate-pulse">Loading stats...</p>
+            <p class="text-prussian-blue/70 text-sm animate-pulse">Loading stats...</p>
         {:else if fetchError && allMyHostedAppointments.length === 0}
             <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
         {:else}
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div>
-                    <span class="font-medium text-stone-700">Total Hosted Appointments:</span> 
-                    <span class="block text-3xl font-bold text-emerald-700">{allMyHostedAppointments.length}</span>
+                    <span class="font-medium">Total Hosted Appointments:</span> 
+                    <span class="block text-4xl font-bold text-moss-green">{allMyHostedAppointments.length}</span>
                 </div>
                 <div>
-                    <span class="font-medium text-stone-700">Currently Booked Slots:</span> 
-                    <span class="block text-3xl font-bold text-amber-600">{allMyHostedAppointments.filter(appt => appt.isBooked).length}</span>
+                    <span class="font-medium">Currently Booked Slots:</span> 
+                    <span class="block text-4xl font-bold text-persian-orange">{allMyHostedAppointments.filter(appt => appt.isBooked).length}</span>
                 </div>
             </div>
         {/if}
     {:else}
-        <p class="text-stone-600">View your past appointments and details.</p>
-        <p class="text-sm text-stone-500 italic mt-2">Feature coming soon.</p>
+        <p>View your past appointments and details.</p>
+        <p class="text-sm text-prussian-blue/70 italic mt-2">Feature coming soon.</p>
     {/if}
 </div>
 </file>
 
-<file path=".cursor/rules/geminimasterprompt.mdc">
----
-description: 
-globs: 
-alwaysApply: false
----
----
-description: 
-globs: 
-alwaysApply: false
----
+<file path="src/lib/components/documentation/ArticleListItem.svelte">
+<!-- src/lib/components/documentation/ArticleListItem.svelte -->
+<script>
+    export let article; // { title, slug, category, authorName, publishedAt }
+</script>
 
-You are a hyper-rational, first-principles problem solver with:
-- You are the best software architect and product owner of the world.
-- Zero tolerance for excuses, rationalizations or bullshit
-- Pure focus on deconstructing problems to fundamental truths 
-- Relentless drive for actionable solutions and results
-- No regard for conventional wisdom or "common knowledge"
-- Absolute commitment to intellectual honesty
+<div class="p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-md">
+    <a href={`/documentation/${article.slug}`} class="block">
+        <h3 class="text-xl font-semibold text-sky-700 hover:text-sky-900">{article.title}</h3>
+        {#if article.category}
+            <p class="text-sm text-gray-600 mt-1">Category: {article.category}</p>
+        {/if}
+        {#if article.authorName}
+            <p class="text-sm text-gray-500 mt-1">By: {article.authorName}</p>
+        {/if}
+        {#if article.publishedAt}
+            <p class="text-xs text-gray-400 mt-2">
+                Published: {new Date(article.publishedAt).toLocaleDateString()}
+            </p>
+        {/if}
+    </a>
+</div>
+</file>
 
- INTERACTION RULES WITH THE USER
-- Never console or sympathize
-- Cut off excuses instantly  
-- Redirect all complaints to solutions
-- Challenge limiting beliefs aggressively
-- Push for better when given weak plans
+<file path="src/lib/components/documentation/ArticleView.svelte">
+<!-- src/lib/components/documentation/ArticleView.svelte -->
+<script>
+    export let article; // { title, content, authorName, publishedAt, category }
+    import { marked } from 'marked'; // Install via npm/yarn/pnpm add marked
 
-DELIVERY PROTOCOL  
-- Call out fuzzy thinking immediately
-- Demand specificity in all things
-- Push back on vague goals/metrics
-- Force clarity through pointed questions
-- Insist on concrete next actions
+    let htmlContent = '';
 
+    $: {
+        if (article && article.content) {
+            try {
+                htmlContent = marked(article.content);
+            } catch (e) {
+                console.error("Error parsing Markdown content:", e);
+                htmlContent = '<p class="text-red-500">Error rendering content.</p>';
+            }
+        } else {
+            htmlContent = '<p>No content available.</p>';
+        }
+    }
+</script>
 
-!!! FOLLOW THOSE 4 ACTION STEPS CONSITENTLY !!!
+<article class="prose lg:prose-xl prose-invert max-w-none p-6 bg-white/10 backdrop-blur-md rounded-lg shadow-lg text-gray-200">
+    <header class="mb-6 pb-4 border-b border-gray-700">
+        <h1 class="!text-4xl font-bold !text-gray-100">{article?.title || 'Article Title Missing'}</h1>
+        <div class="mt-2 text-sm text-gray-400">
+            {#if article?.authorName}<span>By {article.authorName}</span>{/if}
+            {#if article?.publishedAt}<span class="ml-2">Published: {new Date(article.publishedAt).toLocaleDateString()}</span>{/if}
+            {#if article?.category}<span class="ml-2">Category: {article.category}</span>{/if}
+        </div>
+    </header>
+    
+    {@html htmlContent}
 
-1. DECONTRUCT PROBLEM
-Analyse the current status quo of the implementation at hand and define all its problematic week points.
+</article>
 
-- Break everything down to foundational truths
-- Challenge ALL assumptions ruthlessly
-- Identify core variables and dependencies  
-- Map causal relationships explicitly
-- Find the smallest actionable units
+<!-- 
+    Ensure Tailwind Typography plugin is configured in your tailwind.config.js for .prose styles:
+    plugins: [
+        require('@tailwindcss/typography'),
+    ],
+    And that your global CSS includes Tailwind base, components, utilities.
+    Prose styles can be further customized in tailwind.config.js, e.g., for prose-invert colors.
+-->
+</file>
 
-2. SOLUTION ENGINEERING
+<file path="src/lib/components/documentation/DocumentationOverview.svelte">
+<!-- src/lib/components/documentation/DocumentationOverview.svelte -->
+<script>
+    export let articles = []; // Passed as prop from +page.svelte or +page.server.js
+    import ArticleListItem from './ArticleListItem.svelte'; // Import the new component
+</script>
 
-Brainstorm with the user the wanted final product / architecture / solution, the want to achieve, if needed ask further questions back to the user for better clarification. 
-
-- Design interventions at leverage points
-- Prioritize by impact-to-effort ratio
-- Create specific, measurable action steps
-- Build feedback loops into every plan
-- Focus on speed of execution
-
-
-3. WRITTEN RESPONSE FORMAT:
-
-if step 1 and step 2 are done, write out a detail execution plan, how to get from state 1 to state 2, includuing referncing all the files, that need change or need to be delted or cretated. 
-
-Also write down and or requetst further documentiation refrences from the user, that is helpfull to execute better. 
-
-Maker sure that you strucute the exceution plan as testable milestones, whre the user can test and give feedback along the way if it works. also add to each subtask of every milestone markdown checkmarks. 
-
-Write all of this into our /DOCUMENTATION/ACTION_PLANS folder (at repository root) into a new PLAN_{short product / feature / bug title with max 3 words}.md file. 
-
-During execution always come back to this document and udpate along the way your progress, by checkmarking each task. 
-
-First write the document out, and dont start to code yet or execute, only when the user reuqests it explicitly.
-
-
-4. SPOKEN RESPONSE FORMAT:
-
-1. SITUATION ANALYSIS
-- Core problem statement
-- Key assumptions identified  
-- First principles breakdown
-- Critical variables isolated
-
-1. SOLUTION ARCHITECTURE
-- Strategic intervention points
-- Specific action steps
-- Success metrics
-- Risk mitigation
-
-1. EXECUTION FRAMEWORK  
-- Immediate next actions
-- Progress tracking method
-- Course correction triggers
-- Accountability measures
-
-VOICE CHARACTERISTICS:
-- Direct and unsparing
-- Intellectually ruthless
-- Solutions-obsessed
-- Zero fluff or padding
-- Pushes for excellence
-
-KEY PHRASES:
-"Let's break this down to first principles..."
-"Your actual problem is..."
-"That's an excuse. Here's what you need to do..."
-"Be more specific. What exactly do you mean by..."
-"Your plan is weak because..."
-"Here's your action plan, starting now..."
-"Let's identify your real constraints..."
-"That assumption is flawed because..."
-
-CONSTRAINTS:
-- No motivational fluff
-- No vague advice
-- No social niceties
-- No unnecessary context
-- No theoretical discussions without immediate application
-
-OBJECTIVE:
-Transform any problem, goal or desire into:
-1. Clear fundamental truths
-2. Specific action steps  
-3. Measurable outcomes
-4. Immediate next actions
+<div class="space-y-6">
+    {#if articles.length > 0}
+        {#each articles as article (article.$id)}
+            <ArticleListItem {article} />
+        {/each}
+    {:else}
+        <p class="text-center text-gray-500 py-10">No documentation articles found.</p>
+    {/if}
+</div>
 </file>
 
 <file path="src/lib/stores/userStore.js">
 import { writable } from 'svelte/store';
 
 export const currentUser = writable(null); // Initialize with null (no user logged in)
+</file>
+
+<file path="src/routes/documentation/[slug]/+page.server.js">
+import { appwriteService } from '$lib/services/appwriteService.js';
+import { error } from '@sveltejs/kit';
+
+export async function load({ params }) {
+    try {
+        const article = await appwriteService.getDocumentationArticleBySlug(params.slug);
+        if (article) {
+            return {
+                article
+            };
+        }
+        // If article is null (not found by appwriteService), throw a 404
+        throw error(404, { 
+            message: 'Article not found',
+            details: `No article with slug '${params.slug}' was found or it is not published.` 
+        });
+    } catch (err) {
+        // Log the original error for server-side debugging
+        console.error(`Error loading article with slug '${params.slug}':`, err);
+
+        // If it's already a SvelteKit error (like the one we threw), re-throw it
+        if (err.status) {
+            throw err;
+        }
+        // For other unexpected errors, throw a generic 500
+        throw error(500, {
+            message: 'Failed to load article',
+            details: 'An unexpected error occurred while trying to fetch the article.'
+        });
+    }
+}
+</file>
+
+<file path="src/routes/documentation/[slug]/+page.svelte">
+<!-- src/routes/documentation/[slug]/+page.svelte -->
+<script>
+    import ArticleView from '$lib/components/documentation/ArticleView.svelte';
+    export let data; // From +page.server.js
+</script>
+
+<svelte:head>
+    <title>{data.article ? data.article.title : 'Article Not Found'} - Network 3.0</title>
+    {#if data.article?.description}
+        <meta name="description" content={data.article.description} />
+    {/if}
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8 min-h-screen">
+    {#if data.article}
+        <ArticleView article={data.article} />
+    {:else}
+        <!-- This part should ideally not be reached if +page.server.js throws a 404 -->
+        <!-- SvelteKit's default error page will be shown instead. -->
+        <!-- However, keeping a fallback message can be useful during development. -->
+        <div class="text-center py-10">
+            <h1 class="text-3xl font-bold text-red-400 mb-4">Article Not Found</h1>
+            <p class="text-gray-300">The article you are looking for does not exist or could not be loaded.</p>
+        </div>
+    {/if}
+    <div class="mt-8 text-center">
+        <a href="/documentation" class="text-sky-300 hover:text-sky-100 hover:underline">&larr; Back to Documentation</a>
+    </div>
+</div>
+</file>
+
+<file path="src/routes/documentation/+page.server.js">
+import { appwriteService } from '$lib/services/appwriteService.js';
+
+export async function load() {
+    try {
+        const articles = await appwriteService.listDocumentationArticles();
+        return {
+            articles,
+            error: null // Explicitly set error to null on success
+        };
+    } catch (error) {
+        console.error("Error loading articles in documentation/+page.server.js:", error);
+        // It's generally better to let SvelteKit handle the error page by throwing it,
+        // or return a specific error structure that the +page.svelte can gracefully display.
+        return {
+            articles: [],
+            error: "Failed to load documentation articles. Please try again later."
+        };
+    }
+}
+</file>
+
+<file path="src/routes/documentation/+page.svelte">
+<!-- src/routes/documentation/+page.svelte (with +page.server.js) -->
+<script>
+    import DocumentationOverview from '$lib/components/documentation/DocumentationOverview.svelte';
+    export let data; // Provided by +page.server.js
+</script>
+
+<svelte:head>
+    <title>Documentation - Network 3.0</title>
+</svelte:head>
+
+<div class="container mx-auto px-4 py-8 min-h-screen">
+    <h1 class="text-4xl font-bold mb-8 text-center text-white drop-shadow-md">Documentation</h1>
+
+    {#if data.error}
+        <p class="text-center text-red-300 bg-red-900/50 p-3 rounded-md">Error: {data.error}</p>
+    {:else if data.articles && data.articles.length > 0}
+        <DocumentationOverview articles={data.articles} />
+    {:else}
+        <p class="text-center text-gray-300">No documentation articles found.</p>
+    {/if}
+</div>
 </file>
 
 <file path="src/app.html">
@@ -516,6 +2241,10 @@ const config = {
 export default config;
 </file>
 
+<file path="tailwind.config.js">
+
+</file>
+
 <file path="src/lib/components/AppointmentForm.svelte">
 <script>
     import { createEventDispatcher } from 'svelte';
@@ -564,175 +2293,6 @@ export default config;
         {isEditing ? 'Update' : 'Create'} Appointment
     </button>
 </form>
-</file>
-
-<file path="src/lib/appwrite_db.js">
-import { Client, Databases, ID, Query } from 'appwrite';
-import { client } from './appwrite'; // Assuming client is exported from appwrite.js
-
-export const DATABASE_ID = '68357c7b00070f3dbade';
-export const APPOINTMENTS_COLLECTION_ID = '68357d08003a530aa17d';
-
-export const databases = new Databases(client);
-
-export async function createAppointment(appointmentData, hostUser) {
-    // Allow empty name, but ID is critical.
-    if (!hostUser || !hostUser.$id) {
-        throw new Error("Valid host user ID is required to create an appointment.");
-    }
-    try {
-        const documentPayload = {
-            ...appointmentData, // Should contain title, description, appointmentDateTime, durationMinutes
-            hostUserId: hostUser.$id,
-            // Use user's name if available, otherwise part of email, or a default.
-            hostUserName: hostUser.name || hostUser.email.split('@')[0] || "User",
-            isBooked: false, // Default as per collection setup
-            // bookedByUserId, bookedByUserName, bookedAt, zoom fields will be null or not set initially
-        };
-
-        // Ensure appointmentDateTime is in ISO format if not already
-        // HTML datetime-local input usually provides it in a compatible format, but Appwrite expects strict ISO 8601.
-        // If appointmentData.appointmentDateTime is just a string, ensure it's correctly formatted.
-        // For simplicity, we assume it's correctly formatted by the input.
-
-        const response = await databases.createDocument(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            ID.unique(), // Generate a unique ID for the new document
-            documentPayload
-        );
-        return response; // Returns the newly created document
-    } catch (error) {
-        console.error("Failed to create appointment:", error);
-        // Consider how to propagate this error to the UI
-        // For now, re-throwing or returning a specific error structure might be good
-        throw error; // Re-throw the error to be caught by the calling UI component
-    }
-}
-
-export async function getAvailableAppointments() {
-    try {
-        const response = await databases.listDocuments(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            [
-                Query.equal('isBooked', false),
-                Query.orderDesc('appointmentDateTime') // Show soonest available first, or use orderAsc for further out
-            ]
-        );
-        return response.documents;
-    } catch (error) {
-        console.error("Failed to fetch available appointments:", error);
-        throw error;
-    }
-}
-
-export async function getAppointmentsHostedBy(userId) {
-    if (!userId) throw new Error("User ID is required to fetch hosted appointments.");
-    try {
-        const response = await databases.listDocuments(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            [
-                Query.equal('hostUserId', userId),
-                Query.orderDesc('appointmentDateTime')
-            ]
-        );
-        return response.documents;
-    } catch (error) {
-        console.error("Failed to fetch appointments hosted by user:", error);
-        throw error;
-    }
-}
-
-export async function getAppointmentsBookedBy(userId) {
-    if (!userId) throw new Error("User ID is required to fetch booked appointments.");
-    try {
-        const response = await databases.listDocuments(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            [
-                Query.equal('bookedByUserId', userId),
-                Query.orderDesc('appointmentDateTime')
-            ]
-        );
-        return response.documents;
-    } catch (error) {
-        console.error("Failed to fetch appointments booked by user:", error);
-        throw error;
-    }
-}
-
-export async function bookAppointment(appointmentId, bookerUser) {
-    if (!bookerUser || !bookerUser.$id) {
-        throw new Error("Valid booker user ID is required to book an appointment.");
-    }
-    if (!appointmentId) {
-        throw new Error("Appointment ID is required to book an appointment.");
-    }
-
-    try {
-        const payload = {
-            isBooked: true,
-            bookedByUserId: bookerUser.$id,
-            bookedByUserName: bookerUser.name || bookerUser.email.split('@')[0] || "User", // Fallback for name
-            bookedAt: new Date().toISOString()
-        };
-        const response = await databases.updateDocument(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            appointmentId,
-            payload
-        );
-        return response;
-    } catch (error) {
-        console.error(`Failed to book appointment ${appointmentId}:`, error);
-        throw error;
-    }
-}
-
-export async function deleteAppointment(appointmentId) {
-    if (!appointmentId) {
-        throw new Error("Appointment ID is required to delete an appointment.");
-    }
-    try {
-        const response = await databases.deleteDocument(
-            DATABASE_ID,
-            APPOINTMENTS_COLLECTION_ID,
-            appointmentId
-        );
-        return response; // Appwrite delete returns an empty response on success
-    } catch (error) {
-        console.error(`Failed to delete appointment ${appointmentId}:`, error);
-        throw error;
-    }
-}
-
-// Functions for interacting with appointments collection will be added here
-// e.g., createAppointment, getAvailableAppointments, etc.
-</file>
-
-<file path="src/lib/appwrite.js">
-import { Client, Account, ID } from 'appwrite';
-
-export const client = new Client();
-
-client
-    .setEndpoint('https://fra.cloud.appwrite.io/v1')
-    .setProject('68357409002d8b46f512');
-
-export const account = new Account(client);
-
-export async function logoutUser() {
-    try {
-        await account.deleteSession('current');
-    } catch (error) {
-        console.error("Failed to delete session:", error);
-        throw error;
-    }
-}
-
-export { ID };
 </file>
 
 <file path="README.md">
@@ -1017,7 +2577,9 @@ button:focus:not(:focus-visible) {
 	},
 	"dependencies": {
 		"@fontsource/inter": "^5.2.5",
-		"appwrite": "^14.0.1"
+		"appwrite": "^14.0.1",
+		"dotenv": "^16.5.0",
+		"marked": "^15.0.12"
 	}
 }
 </file>
@@ -1025,7 +2587,8 @@ button:focus:not(:focus-visible) {
 <file path="src/routes/+layout.svelte">
 <script>
 	import { onMount } from 'svelte';
-	import { account, logoutUser } from '$lib/appwrite'; // Path to your appwrite.js
+	// import { account, logoutUser } from '$lib/appwrite'; // Path to your appwrite.js - Removed
+	import { appwriteService } from '$lib/services/appwriteService.js';
 	import { currentUser } from '$lib/stores/userStore'; // Path to your userStore.js
 	import { goto } from '$app/navigation';
 	import '../app.css'; // Import global stylesheet
@@ -1033,9 +2596,11 @@ button:focus:not(:focus-visible) {
 
 	onMount(async () => {
 		try {
-			const user = await account.get();
+			const user = await appwriteService.getCurrentUser();
 			currentUser.set(user);
 		} catch (error) {
+			// getCurrentUser in service should return null on error/no session, so this catch might not be strictly needed for that call
+            // but kept for general robustness if other errors occur in onMount
 			currentUser.set(null);
 			// console.error("Failed to fetch user session on layout load:", error);
 		}
@@ -1043,7 +2608,7 @@ button:focus:not(:focus-visible) {
 
 	async function handleLogout() {
 		try {
-			await logoutUser();
+			await appwriteService.logoutUser();
 			currentUser.set(null);
 			goto('/');
 		} catch (error) {
@@ -1085,197 +2650,145 @@ button:focus:not(:focus-visible) {
     import { currentUser } from '$lib/stores/userStore';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import AppointmentsCard from '$lib/components/dashboard/AppointmentsCard.svelte';
-    import BookingManagementCard from '$lib/components/dashboard/BookingManagementCard.svelte';
-    import StatsHistoryCard from '$lib/components/dashboard/StatsHistoryCard.svelte';
-    import backgroundImage from '$lib/images/stone.jpg'; // Import the background image
-    import {
-        createAppointment,
-        getAvailableAppointments,
-        getAppointmentsHostedBy,
-        getAppointmentsBookedBy,
-        bookAppointment,
-        deleteAppointment
-    } from '$lib/appwrite_db.js';
+    import backgroundImage from '$lib/images/stone.jpg';
+    import { appwriteService } from '$lib/services/appwriteService.js';
 
-    const MAIN_HOST_USER_ID = '6835776c00327c1049fe'; // Task 1.1
-    let isMainUser = false; // Task 1.2
+    import HostDashboardView from '$lib/components/dashboard/HostDashboardView.svelte';
+    import ClientDashboardView from '$lib/components/dashboard/ClientDashboardView.svelte';
 
-    let allMyHostedAppointments = []; // For main user
-    let availableAppointments = []; // For regular users
-    let myBookedAppointments = []; // For regular users
+    const MAIN_HOST_USER_ID = '6835776c00327c1049fe';
+    let isMainUser = false;
+
+    let allMyHostedAppointments = [];
+    let availableAppointments = [];
+    let myBookedAppointments = [];
     let fetchError = '';
     let creationStatus = '';
     
-    let showCreateForm = false; // This will be toggled by a function now
+    let showCreateForm = false; 
+    let dataLoaded = false;
+    let isLoadingPage = true;
+    let previousUserId = null;
 
-    let dataLoaded = false; // Flag to track if initial data for the current user has been loaded
-    let isLoadingPage = true; // To manage the visibility of the 'Loading user...' message
-
-    // Reactive update for isMainUser
     $: {
         if ($currentUser && $currentUser.$id) {
             isMainUser = $currentUser.$id === MAIN_HOST_USER_ID;
-            if (dataLoaded && ($currentUser.$id !== (isMainUser ? MAIN_HOST_USER_ID : $currentUser.$id))) { 
-                // dataLoaded = false; // This was commented out, seems okay
-            }
         } else {
             isMainUser = false;
         }
     }
 
     async function fetchAllAppointments(source = 'unknown') {
-        console.log(`fetchAllAppointments called from: ${source}. Current user:`, $currentUser ? $currentUser.$id : 'No user');
+        // console.log(`fetchAllAppointments called from: ${source}. Current user:`, $currentUser ? $currentUser.$id : 'No user');
         if (!$currentUser || !$currentUser.$id) {
             dataLoaded = false;
-            console.log('fetchAllAppointments: No current user or user ID, returning.');
+            // console.log('fetchAllAppointments: No current user or user ID, returning.');
             return;
         }
         fetchError = '';
-        
+        isLoadingPage = true; // Show loading when fetching
         try {
             if (isMainUser) {
-                console.log('fetchAllAppointments: Fetching for MAIN USER...');
-                const hostedAppointmentsResult = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
-                console.log('fetchAllAppointments: Raw result from getAppointmentsHostedBy:', hostedAppointmentsResult);
+                const hostedAppointmentsResult = await appwriteService.getAppointmentsHostedBy(MAIN_HOST_USER_ID);
                 allMyHostedAppointments = hostedAppointmentsResult;
-                availableAppointments = [];
-                myBookedAppointments = []; 
+                availableAppointments = []; // Clear data not relevant to host
+                myBookedAppointments = [];
             } else {
-                console.log('fetchAllAppointments: Fetching for REGULAR USER...');
                 const [available, booked] = await Promise.all([
-                    getAvailableAppointments(), 
-                    getAppointmentsBookedBy($currentUser.$id)
+                    appwriteService.getAvailableAppointments(), 
+                    appwriteService.getAppointmentsBookedBy($currentUser.$id)
                 ]);
-                console.log('fetchAllAppointments: Raw result for available:', available);
-                console.log('fetchAllAppointments: Raw result for booked by user:', booked);
                 availableAppointments = available;
                 myBookedAppointments = booked;
-                allMyHostedAppointments = []; 
+                allMyHostedAppointments = []; // Clear data not relevant to client
             }
             dataLoaded = true;
-            console.log('fetchAllAppointments: dataLoaded set to true.');
         } catch (err) {
-            console.error("Dashboard: Error fetching role-specific appointments:", err); 
+            // console.error("Dashboard: Error fetching role-specific appointments:", err); 
             fetchError = "Failed to load appointments: " + err.message;
             dataLoaded = false; 
+        } finally {
+            isLoadingPage = false;
         }
     }
-
+    
     onMount(() => {
-        console.log('Dashboard onMount: Component mounted.');
         if ($currentUser && $currentUser.$id) {
-            isLoadingPage = false;
+            isLoadingPage = false; // Initial check, might be true again during fetch
             if (!dataLoaded) {
-                console.log('Dashboard onMount: User exists, initial data fetch needed.');
                 fetchAllAppointments('onMount');
-            } else {
-                console.log('Dashboard onMount: User exists, but data already loaded (dataLoaded=true).');
             }
         } else if ($currentUser === null) {
-            console.log('Dashboard onMount: No user (currentUser is null), redirecting to /.');
             goto('/');
-        } else {
-            console.log('Dashboard onMount: currentUser is undefined or not yet resolved. isLoadingPage remains true.');
         }
     });
 
-    // Reactive statement for when $currentUser changes or previousUserId indicates a change
-    $: {
+    $: { // Main reactive block for user changes
         if (typeof window !== 'undefined') { 
-            console.log('Dashboard reactive [$currentUser]: $currentUser changed. ID:', $currentUser ? $currentUser.$id : 'null/undefined');
             if ($currentUser && $currentUser.$id) {
-                if (isLoadingPage) {
-                    console.log('Dashboard reactive [$currentUser]: User resolved, setting isLoadingPage to false.');
-                    isLoadingPage = false;
+                if (isLoadingPage && !dataLoaded) { // If user resolved while page was initially loading
+                    // This condition might need refinement to avoid multiple fetches
                 }
                 if (previousUserId !== $currentUser.$id) {
-                    console.log(`Dashboard reactive [$currentUser]: User changed from ${previousUserId} to ${$currentUser.$id}. Resetting dataLoaded and fetching.`);
-                    dataLoaded = false;
+                    dataLoaded = false; // Reset for new user
                     previousUserId = $currentUser.$id;
+                    isMainUser = $currentUser.$id === MAIN_HOST_USER_ID; // Recalculate role for new user
                     fetchAllAppointments('currentUser changed - new ID');
-                } else if (!dataLoaded) {
-                    console.log('Dashboard reactive [$currentUser]: User ID same as previous, but data not loaded. Fetching.');
+                } else if (!dataLoaded) { // Same user, but data wasn't loaded (e.g. navigated back)
                     fetchAllAppointments('currentUser resolved - no data');
                 }
-            } else if ($currentUser === null) {
-                console.log('Dashboard reactive [$currentUser]: User became null (logout/session expiry).');
+                // isLoadingPage should be false after fetchAllAppointments completes or if user was already resolved
+                // The isLoadingPage = false was previously inside the fetchAllAppointments.
+            } else if ($currentUser === null) { // Logout
                 if (previousUserId !== null) {
-                     console.log('Dashboard reactive [$currentUser]: previousUserId was not null, resetting.');
                     dataLoaded = false;
                     previousUserId = null;
+                    isMainUser = false;
+                    allMyHostedAppointments = [];
+                    availableAppointments = [];
+                    myBookedAppointments = [];
                 }
-                if (window.location.pathname === '/dashboard') {
-                    console.log('Dashboard reactive [$currentUser]: On /dashboard and user is null, redirecting to /.');
-                    goto('/');
+                if (window.location.pathname.startsWith('/dashboard')) {
+                     goto('/');
                 }
-                // isLoadingPage = true; // Do not set isLoadingPage to true on logout, causes issues with redirect
-            } else {
-                 console.log('Dashboard reactive [$currentUser]: $currentUser is in an indeterminate state.');
             }
         }
     }
-
-    let previousUserId = null;
-    // Reactive statement for when $currentUser changes or previousUserId indicates a change
-    $: {
-        if ($currentUser && $currentUser.$id) {
-            if (previousUserId !== $currentUser.$id) {
-                dataLoaded = false;
-                previousUserId = $currentUser.$id;
-                 fetchAllAppointments('previousUserId changed'); // This would be called if the block above doesn't handle it first
-            }
-        } else if (previousUserId !== null) {
-            dataLoaded = false;
-            previousUserId = null;
-        }
-    }
-
-    $: if (!$currentUser && dataLoaded) { // Only reset if data was previously loaded for a user
-        console.log('Dashboard reactive [!$currentUser && dataLoaded]: User logged out, resetting data.');
-        dataLoaded = false;
-        allMyHostedAppointments = [];
-        availableAppointments = [];
-        myBookedAppointments = [];
-        isMainUser = false;
-    }
-
+    
+    // Event Handlers (to be connected to HostDashboardView/ClientDashboardView)
     async function handleAppointmentSubmit(event) {
         if (!isMainUser || !$currentUser || !$currentUser.$id) { 
             creationStatus = 'Error: Only the main host can create appointments.';
-            if (!$currentUser || !$currentUser.$id) creationStatus = 'Error: Current user ID is not available. Please log in again.';
             return;
         }
         creationStatus = 'Creating appointment...';
         try {
-            const appointmentDetails = event.detail;
-            const newAppointment = await createAppointment(appointmentDetails, $currentUser);
+            const eventData = event.detail.formData ? event.detail.formData : event.detail; // Adapt to potential form data object
+            const newAppointment = await appwriteService.createAppointment(eventData, $currentUser);
             creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
             await fetchAllAppointments('after submitAppointment'); 
-            showCreateForm = false; // Hide form after successful creation
+            showCreateForm = false;
         } catch (error) {
-            console.error("Dashboard: Error creating appointment:", error); 
             creationStatus = `Error creating appointment: ${error.message}`;
         }
     }
 
     async function handleBookAppointment(event) {
         const appointmentId = event.detail;
-        if ($currentUser && $currentUser.$id && isMainUser){
+        if ($currentUser && $currentUser.$id && isMainUser){ 
             alert('Main host account cannot book appointments. Please use a regular user account.');
             return;
         }
-        if (!$currentUser || !$currentUser.$id) {
+        if (!$currentUser || !$currentUser.$id) { 
             alert('You must be logged in to book an appointment.');
             return;
         }
         creationStatus = `Booking appointment ${appointmentId}...`;
         try {
-            await bookAppointment(appointmentId, $currentUser);
+            await appwriteService.bookAppointment(appointmentId, $currentUser);
             creationStatus = `Successfully booked appointment ${appointmentId}!`;
-            await fetchAllAppointments('after bookAppointment'); 
+            await fetchAllAppointments('after bookAppointment');
         } catch (error) {
-            console.error("Dashboard: Error booking appointment:", error); 
             creationStatus = `Error booking appointment: ${error.message}`;
             alert(`Error booking: ${error.message}`);
         }
@@ -1292,11 +2805,10 @@ button:focus:not(:focus-visible) {
         }
         creationStatus = `Deleting appointment ${appointmentId}...`;
         try {
-            await deleteAppointment(appointmentId);
+            await appwriteService.deleteAppointment(appointmentId);
             creationStatus = `Successfully deleted appointment ${appointmentId}.`;
-            await fetchAllAppointments('after deleteAppointment'); 
+            await fetchAllAppointments('after deleteAppointment');
         } catch (error) {
-            console.error("Dashboard: Error deleting appointment:", error); 
             creationStatus = `Error deleting: ${error.message}`;
             alert(`Error deleting: ${error.message}`);
         }
@@ -1313,64 +2825,47 @@ button:focus:not(:focus-visible) {
 </svelte:head>
 
 <div class="relative min-h-screen w-full">
-    <!-- Background Image -->
-    <div 
-        class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0"
-        style="background-image: url({backgroundImage});"
-    ></div>
+    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0" style="background-image: url({backgroundImage});"></div>
 
-    <!-- Dashboard Content -->
     <div class="relative z-10 min-h-screen text-stone-800 p-4 sm:p-6 lg:p-8">
-        {#if isLoadingPage && !$currentUser}
-            <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
-                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading user information...</p> <!-- Adjusted text color for visibility -->
+        {#if isLoadingPage && !$currentUser && typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard')}
+             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading user information...</p>
             </div>
         {:else if $currentUser}
             <header class="mb-6 sm:mb-8">
-                <h1 class="text-3xl sm:text-4xl font-bold text-white drop-shadow-md"> <!-- Adjusted text color -->
-                    Welcome, {$currentUser.name || $currentUser.email.split('@')[0]}!
+                <h1 class="text-3xl sm:text-4xl font-bold text-white drop-shadow-md">
+                    Welcome, {$currentUser.name || ($currentUser.email && $currentUser.email.split('@')[0]) || 'User'}!
                 </h1>
-                {#if isMainUser}
-                    <p class="text-sm text-emerald-300 font-semibold drop-shadow-sm">Host Dashboard</p> <!-- Adjusted text color -->
-                {:else}
-                    <p class="text-sm text-sky-300 font-semibold drop-shadow-sm">Client Dashboard</p> <!-- Adjusted text color -->
-                {/if}
+                <p class="text-sm font-semibold drop-shadow-sm {isMainUser ? 'text-emerald-300' : 'text-sky-300'}">
+                    {isMainUser ? 'Host Dashboard' : 'Client Dashboard'}
+                </p>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                
-                <!-- Appointments Card -->
-                <AppointmentsCard
-                    bind:isMainUser
-                    bind:dataLoaded
-                    bind:fetchError
-                    appointments={isMainUser ? allMyHostedAppointments : myBookedAppointments}
-                    listType={isMainUser ? "hostedByMe" : "bookedByMe"}
-                    currentUserId={$currentUser?.$id}
-                    on:deleteAppointment={handleDeleteAppointment}
-                />
-
-                <!-- Booking Management Card -->
-                <BookingManagementCard
-                    bind:isMainUser
-                    bind:dataLoaded
-                    bind:fetchError
-                    bind:availableAppointments
-                    currentUserId={$currentUser?.$id}
-                    showCreateFormState={showCreateForm} 
+            {#if isLoadingPage && dataLoaded === false } <!--  Show loading message specifically when fetching for a logged-in user -->
+                 <div class="flex justify-center items-center min-h-[calc(50vh)]">
+                    <p class="text-xl text-white bg-black/30 p-3 rounded-md">Fetching dashboard data...</p>
+                </div>
+            {:else if isMainUser}
+                <HostDashboardView 
+                    allMyHostedAppointments={allMyHostedAppointments}
+                    dataLoaded={dataLoaded}
+                    fetchError={fetchError}
+                    showCreateFormState={showCreateForm}
                     on:toggleCreateForm={toggleShowCreateForm}
                     on:submitAppointment={handleAppointmentSubmit}
+                    on:deleteAppointment={handleDeleteAppointment}
+                />
+            {:else}
+                <ClientDashboardView 
+                    myBookedAppointments={myBookedAppointments}
+                    availableAppointments={availableAppointments}
+                    dataLoaded={dataLoaded}
+                    fetchError={fetchError}
                     on:bookAppointment={handleBookAppointment}
+                    on:deleteAppointment={handleDeleteAppointment} 
                 />
-
-                <!-- Stats/History Card -->
-                <StatsHistoryCard
-                    bind:isMainUser
-                    bind:dataLoaded
-                    bind:fetchError
-                    bind:allMyHostedAppointments
-                />
-            </div>
+            {/if}
             
             {#if creationStatus}
                 <div class="fixed bottom-6 right-6 p-4 rounded-lg shadow-xl text-sm
@@ -1382,11 +2877,15 @@ button:focus:not(:focus-visible) {
                 </div>
             {/if}
 
-        {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname !== '/dashboard')}
-            <!-- Not on dashboard or SSR without user, this state might be complex or transient -->
-        {:else}
+        {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname.startsWith('/dashboard'))}
             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
-                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard state...</p> <!-- Adjusted text color -->
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Verifying session...</p>
+            </div>
+        {:else}
+             <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                 <p class="text-xl text-white bg-black/30 p-3 rounded-md">
+                    Please <a href="/login" class="underline hover:text-sky-300">log in</a> or <a href="/register" class="underline hover:text-sky-300">register</a> to view the dashboard.
+                </p>
             </div>
         {/if}
     </div>
@@ -1395,48 +2894,44 @@ button:focus:not(:focus-visible) {
 
 <file path="src/routes/+page.svelte">
 <script>
-    import { account, ID } from '$lib/appwrite';
+    // import { account, ID } from '$lib/appwrite'; Removed this line
+    import { appwriteService } from '$lib/services/appwriteService.js';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
     import backgroundImage from '$lib/images/stone.jpg'; // Updated image import
 
     async function login(email, password) {
         try {
-            // console.log("Attempting login...");
-            await account.createEmailPasswordSession(email, password);
-            // console.log("Session created. Getting user...");
-            const user = await account.get();
-            // console.log("User fetched:", user);
-            currentUser.set(user);
-            // console.log("currentUser store set. User ID: ", user.$id);
-            // alert(`Login successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
-            // console.log("Navigating to /dashboard...");
-            goto('/dashboard');
-            // console.log("goto('/dashboard') called."); 
+            const user = await appwriteService.loginUser(email, password);
+            if (user) {
+                currentUser.set(user);
+                goto('/dashboard');
+            } else {
+                // This case should ideally be handled by an error thrown from loginUser
+                // but as a fallback:
+                throw new Error("Login returned no user object.");
+            }
         } catch (error) {
             console.error("Login failed:", error);
-            alert("Login failed: " + error.message); // Keep this error alert for actual failures
+            alert("Login failed: " + error.message);
         }
     }
 
     async function register(email, password) {
         try {
-            // console.log("Attempting registration...");
-            await account.create(ID.unique(), email, password);
-            // console.log("User account created. Creating session...");
-            await account.createEmailPasswordSession(email, password);
-            // console.log("Session created after registration. Getting user...");
-            const user = await account.get();
-            // console.log("User fetched post-registration:", user);
-            currentUser.set(user);
-            // console.log("currentUser store set post-registration. User ID: ", user.$id);
-            // alert(`Registration successful for ${user.email}. Will attempt to navigate to dashboard.`); // REMOVING DEBUG ALERT
-            // console.log("Navigating to /dashboard post-registration...");
-            goto('/dashboard');
-            // console.log("goto('/dashboard') called post-registration.");
+            // Assuming signupUser in the service handles naming if necessary, or we add it.
+            // For now, let's assume the service function `signupUser` might take a name, or we adapt.
+            // The old code didn't pass a name to account.create, so we'll keep it simple.
+            const user = await appwriteService.signupUser(email, password, /* name - if needed */);
+            if (user) {
+                currentUser.set(user);
+                goto('/dashboard');
+            } else {
+                throw new Error("Registration returned no user object.");
+            }
         } catch (error) {
             console.error("Registration failed:", error);
-            alert("Registration failed: " + error.message); // Keep this error alert for actual failures
+            alert("Registration failed: " + error.message);
         }
     }
 
