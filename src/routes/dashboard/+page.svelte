@@ -2,8 +2,10 @@
     import { currentUser } from '$lib/stores/userStore';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import AppointmentForm from '$lib/components/AppointmentForm.svelte';
-    import AppointmentList from '$lib/components/AppointmentList.svelte';
+    import AppointmentsCard from '$lib/components/dashboard/AppointmentsCard.svelte';
+    import BookingManagementCard from '$lib/components/dashboard/BookingManagementCard.svelte';
+    import StatsHistoryCard from '$lib/components/dashboard/StatsHistoryCard.svelte';
+    import backgroundImage from '$lib/images/stone.jpg'; // Import the background image
     import {
         createAppointment,
         getAvailableAppointments,
@@ -22,7 +24,7 @@
     let fetchError = '';
     let creationStatus = '';
     
-    let showCreateForm = false; // For toggling appointment creation form
+    let showCreateForm = false; // This will be toggled by a function now
 
     let dataLoaded = false; // Flag to track if initial data for the current user has been loaded
     let isLoadingPage = true; // To manage the visibility of the 'Loading user...' message
@@ -39,28 +41,37 @@
         }
     }
 
-    async function fetchAllAppointments() {
+    async function fetchAllAppointments(source = 'unknown') {
+        console.log(`fetchAllAppointments called from: ${source}. Current user:`, $currentUser ? $currentUser.$id : 'No user');
         if (!$currentUser || !$currentUser.$id) {
-            dataLoaded = false; 
+            dataLoaded = false;
+            console.log('fetchAllAppointments: No current user or user ID, returning.');
             return;
         }
         fetchError = '';
         
         try {
             if (isMainUser) {
-                allMyHostedAppointments = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
+                console.log('fetchAllAppointments: Fetching for MAIN USER...');
+                const hostedAppointmentsResult = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
+                console.log('fetchAllAppointments: Raw result from getAppointmentsHostedBy:', hostedAppointmentsResult);
+                allMyHostedAppointments = hostedAppointmentsResult;
                 availableAppointments = [];
                 myBookedAppointments = []; 
             } else {
+                console.log('fetchAllAppointments: Fetching for REGULAR USER...');
                 const [available, booked] = await Promise.all([
                     getAvailableAppointments(), 
                     getAppointmentsBookedBy($currentUser.$id)
                 ]);
+                console.log('fetchAllAppointments: Raw result for available:', available);
+                console.log('fetchAllAppointments: Raw result for booked by user:', booked);
                 availableAppointments = available;
                 myBookedAppointments = booked;
                 allMyHostedAppointments = []; 
             }
-            dataLoaded = true; 
+            dataLoaded = true;
+            console.log('fetchAllAppointments: dataLoaded set to true.');
         } catch (err) {
             console.error("Dashboard: Error fetching role-specific appointments:", err); 
             fetchError = "Failed to load appointments: " + err.message;
@@ -69,55 +80,68 @@
     }
 
     onMount(() => {
+        console.log('Dashboard onMount: Component mounted.');
         if ($currentUser && $currentUser.$id) {
-            isLoadingPage = false; 
-            if (!dataLoaded) { 
-                fetchAllAppointments();
+            isLoadingPage = false;
+            if (!dataLoaded) {
+                console.log('Dashboard onMount: User exists, initial data fetch needed.');
+                fetchAllAppointments('onMount');
+            } else {
+                console.log('Dashboard onMount: User exists, but data already loaded (dataLoaded=true).');
             }
         } else if ($currentUser === null) {
+            console.log('Dashboard onMount: No user (currentUser is null), redirecting to /.');
             goto('/');
-        } 
+        } else {
+            console.log('Dashboard onMount: currentUser is undefined or not yet resolved. isLoadingPage remains true.');
+        }
     });
 
-    // Reactive statement for when $currentUser changes
+    // Reactive statement for when $currentUser changes or previousUserId indicates a change
     $: {
         if (typeof window !== 'undefined') { 
+            console.log('Dashboard reactive [$currentUser]: $currentUser changed. ID:', $currentUser ? $currentUser.$id : 'null/undefined');
             if ($currentUser && $currentUser.$id) {
                 if (isLoadingPage) {
+                    console.log('Dashboard reactive [$currentUser]: User resolved, setting isLoadingPage to false.');
                     isLoadingPage = false;
                 }
-                if (!dataLoaded) {
-                    fetchAllAppointments();
+                if (previousUserId !== $currentUser.$id) {
+                    console.log(`Dashboard reactive [$currentUser]: User changed from ${previousUserId} to ${$currentUser.$id}. Resetting dataLoaded and fetching.`);
+                    dataLoaded = false;
+                    previousUserId = $currentUser.$id;
+                    fetchAllAppointments('currentUser changed - new ID');
+                } else if (!dataLoaded) {
+                    console.log('Dashboard reactive [$currentUser]: User ID same as previous, but data not loaded. Fetching.');
+                    fetchAllAppointments('currentUser resolved - no data');
                 }
-            } else if ($currentUser === null){
+            } else if ($currentUser === null) {
+                console.log('Dashboard reactive [$currentUser]: User became null (logout/session expiry).');
+                if (previousUserId !== null) {
+                     console.log('Dashboard reactive [$currentUser]: previousUserId was not null, resetting.');
+                    dataLoaded = false;
+                    previousUserId = null;
+                }
                 if (window.location.pathname === '/dashboard') {
+                    console.log('Dashboard reactive [$currentUser]: On /dashboard and user is null, redirecting to /.');
                     goto('/');
                 }
-                isLoadingPage = true; 
-                dataLoaded = false; 
+                // isLoadingPage = true; // Do not set isLoadingPage to true on logout, causes issues with redirect
+            } else {
+                 console.log('Dashboard reactive [$currentUser]: $currentUser is in an indeterminate state.');
             }
         }
     }
 
     let previousUserId = null;
-    $: {
-        if ($currentUser && $currentUser.$id) {
-            if (previousUserId !== $currentUser.$id) {
-                dataLoaded = false;
-                previousUserId = $currentUser.$id;
-            }
-        } else if (previousUserId !== null) {
-            dataLoaded = false;
-            previousUserId = null;
-        }
-    }
 
-    $: if (!$currentUser) {
+    $: if (!$currentUser && dataLoaded) { // Only reset if data was previously loaded for a user
+        console.log('Dashboard reactive [!$currentUser && dataLoaded]: User logged out, resetting data.');
         dataLoaded = false;
         allMyHostedAppointments = [];
         availableAppointments = [];
         myBookedAppointments = [];
-        isMainUser = false; 
+        isMainUser = false;
     }
 
     async function handleAppointmentSubmit(event) {
@@ -131,7 +155,7 @@
             const appointmentDetails = event.detail;
             const newAppointment = await createAppointment(appointmentDetails, $currentUser);
             creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
-            await fetchAllAppointments(); 
+            await fetchAllAppointments('after submitAppointment'); 
             showCreateForm = false; // Hide form after successful creation
         } catch (error) {
             console.error("Dashboard: Error creating appointment:", error); 
@@ -153,7 +177,7 @@
         try {
             await bookAppointment(appointmentId, $currentUser);
             creationStatus = `Successfully booked appointment ${appointmentId}!`;
-            await fetchAllAppointments(); 
+            await fetchAllAppointments('after bookAppointment'); 
         } catch (error) {
             console.error("Dashboard: Error booking appointment:", error); 
             creationStatus = `Error booking appointment: ${error.message}`;
@@ -174,12 +198,16 @@
         try {
             await deleteAppointment(appointmentId);
             creationStatus = `Successfully deleted appointment ${appointmentId}.`;
-            await fetchAllAppointments(); 
+            await fetchAllAppointments('after deleteAppointment'); 
         } catch (error) {
             console.error("Dashboard: Error deleting appointment:", error); 
             creationStatus = `Error deleting: ${error.message}`;
             alert(`Error deleting: ${error.message}`);
         }
+    }
+
+    function toggleShowCreateForm() {
+        showCreateForm = !showCreateForm;
     }
 
 </script>
@@ -188,150 +216,83 @@
     <title>Dashboard - Network 3.0</title>
 </svelte:head>
 
-<div class="min-h-screen bg-stone-100 text-stone-800 p-4 sm:p-6 lg:p-8">
-    {#if isLoadingPage && !$currentUser}
-        <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
-            <p class="text-xl text-stone-600">Loading user information...</p>
-        </div>
-    {:else if $currentUser}
-        <header class="mb-6 sm:mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-stone-900">
-                Welcome, {$currentUser.name || $currentUser.email.split('@')[0]}!
-            </h1>
-            {#if isMainUser}
-                <p class="text-sm text-emerald-700 font-semibold">Host Dashboard</p>
-            {:else}
-                <p class="text-sm text-sky-700 font-semibold">Client Dashboard</p>
-            {/if}
-        </header>
+<div class="relative min-h-screen w-full">
+    <!-- Background Image -->
+    <div 
+        class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0"
+        style="background-image: url({backgroundImage});"
+    ></div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <!-- Dashboard Content -->
+    <div class="relative z-10 min-h-screen text-stone-800 p-4 sm:p-6 lg:p-8">
+        {#if isLoadingPage && !$currentUser}
+            <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading user information...</p> <!-- Adjusted text color for visibility -->
+            </div>
+        {:else if $currentUser}
+            <header class="mb-6 sm:mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-white drop-shadow-md"> <!-- Adjusted text color -->
+                    Welcome, {$currentUser.name || $currentUser.email.split('@')[0]}!
+                </h1>
+                {#if isMainUser}
+                    <p class="text-sm text-emerald-300 font-semibold drop-shadow-sm">Host Dashboard</p> <!-- Adjusted text color -->
+                {:else}
+                    <p class="text-sm text-sky-300 font-semibold drop-shadow-sm">Client Dashboard</p> <!-- Adjusted text color -->
+                {/if}
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Stats/History Card (Spanning two columns on medium screens and up) -->
+                <div class="md:col-span-2">
+                    <StatsHistoryCard
+                        bind:isMainUser
+                        bind:dataLoaded
+                        bind:fetchError
+                        bind:allMyHostedAppointments
+                    />
+                </div>
+
+                <!-- Appointments Card -->
+                <AppointmentsCard
+                    bind:isMainUser
+                    bind:dataLoaded
+                    bind:fetchError
+                    appointments={isMainUser ? allMyHostedAppointments : myBookedAppointments}
+                    listType={isMainUser ? "hostedByMe" : "bookedByMe"}
+                    currentUserId={$currentUser?.$id}
+                    on:deleteAppointment={handleDeleteAppointment}
+                />
+
+                <!-- Booking Management Card -->
+                <BookingManagementCard
+                    bind:isMainUser
+                    bind:dataLoaded
+                    bind:fetchError
+                    bind:availableAppointments
+                    currentUserId={$currentUser?.$id}
+                    showCreateFormState={showCreateForm} 
+                    on:toggleCreateForm={toggleShowCreateForm}
+                    on:submitAppointment={handleAppointmentSubmit}
+                    on:bookAppointment={handleBookAppointment}
+                />
+            </div>
             
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-stone-800 mb-4">
-                    {#if isMainUser}
-                        Your Hosted Appointments
-                    {:else}
-                        My Upcoming Appointments
-                    {/if}
-                </h2>
-                {#if isMainUser}
-                    {#if !dataLoaded && !fetchError && isLoadingPage}
-                        <p class="text-stone-600">Loading your hosted appointments...</p>
-                    {:else if allMyHostedAppointments.length > 0}
-                        <AppointmentList 
-                            appointments={allMyHostedAppointments} 
-                            listType="hostedByMe" 
-                            currentUserId={$currentUser.$id} 
-                            on:deleteAppointment={handleDeleteAppointment} 
-                        />
-                    {:else}
-                        <p class="text-stone-600">You have not created any appointments yet.</p>
-                    {/if}
-                {:else}
-                    {#if !dataLoaded && !fetchError && isLoadingPage}
-                        <p class="text-stone-600">Loading your booked appointments...</p>
-                    {:else if myBookedAppointments.length > 0}
-                         <AppointmentList 
-                            appointments={myBookedAppointments} 
-                            listType="bookedByMe" 
-                            currentUserId={$currentUser.$id} 
-                        />
-                    {:else}
-                        <p class="text-stone-600">You have no upcoming appointments.</p>
-                    {/if}
-                {/if}
-                {#if fetchError && (isMainUser ? allMyHostedAppointments.length === 0 : myBookedAppointments.length === 0)}
-                    <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
-                {/if}
-            </div>
+            {#if creationStatus}
+                <div class="fixed bottom-6 right-6 p-4 rounded-lg shadow-xl text-sm
+                            bg-opacity-90 backdrop-blur-md border
+                            {creationStatus.toLowerCase().startsWith('error:') ? 'bg-red-100 border-red-300 text-red-800' : 
+                            creationStatus.toLowerCase().startsWith('successfully') ? 'bg-green-100 border-green-300 text-green-800' : 
+                            'bg-blue-100 border-blue-300 text-blue-800'}">
+                    <p>{creationStatus}</p>
+                </div>
+            {/if}
 
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                 <h2 class="text-xl font-semibold text-stone-800 mb-4">
-                    {#if isMainUser}
-                        Manage Availability & Create
-                    {:else}
-                        Book an Appointment
-                    {/if}
-                </h2>
-                {#if isMainUser}
-                    <button on:click={() => showCreateForm = !showCreateForm} class="mb-4 w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                        {showCreateForm ? 'Cancel Creation' : 'Create New Appointment'}
-                    </button>
-                    {#if showCreateForm}
-                        <div class="mt-4">
-                            <AppointmentForm on:submitAppointment={handleAppointmentSubmit} />
-                        </div>
-                    {/if}
-                    <!-- Placeholder for other availability management tools -->
-                    {#if !showCreateForm}
-                    <p class="text-stone-600 text-sm mt-2">Click above to open the appointment creation form. Further availability tools can be added here.</p>
-                    {/if}
-                {:else}
-                    {#if !dataLoaded && !fetchError && isLoadingPage}
-                         <p class="text-stone-600">Loading available appointments...</p>
-                    {:else if availableAppointments.length > 0}
-                        <AppointmentList 
-                            appointments={availableAppointments} 
-                            listType="available" 
-                            currentUserId={$currentUser.$id} 
-                            on:bookAppointment={handleBookAppointment} 
-                        />
-                    {:else}
-                        <p class="text-stone-600">No appointments currently available to book.</p>
-                    {/if}
-                    {#if fetchError && availableAppointments.length === 0}
-                         <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
-                    {/if}
-                {/if}
-            </div>
-
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-stone-800 mb-4">
-                    {#if isMainUser}
-                        Quick Stats
-                    {:else}
-                        My Appointment History
-                    {/if}
-                </h2>
-                {#if isMainUser}
-                    {#if !dataLoaded && !fetchError && isLoadingPage}
-                        <p class="text-stone-500 text-sm animate-pulse">Loading stats...</p>
-                    {:else}
-                        <div class="space-y-3">
-                            <div>
-                                <span class="font-medium text-stone-700">Total Hosted Appointments:</span> 
-                                <span class="block text-3xl font-bold text-emerald-700">{allMyHostedAppointments.length}</span>
-                            </div>
-                            <div>
-                                <span class="font-medium text-stone-700">Currently Booked Slots:</span> 
-                                <span class="block text-3xl font-bold text-amber-600">{allMyHostedAppointments.filter(appt => appt.isBooked).length}</span>
-                            </div>
-                        </div>
-                    {/if}
-                {:else}
-                    <p class="text-stone-600">View your past appointments and details.</p>
-                    <!-- Placeholder for client's past appointments list. This will require logic to filter myBookedAppointments or a new fetch. -->
-                    <p class="text-sm text-stone-500 italic mt-2">Feature coming soon.</p>
-                {/if}
-            </div>
-        </div>
-        
-        {#if creationStatus}
-            <div class="fixed bottom-6 right-6 p-4 rounded-lg shadow-xl text-sm
-                        bg-opacity-90 backdrop-blur-md border
-                        {creationStatus.toLowerCase().startsWith('error:') ? 'bg-red-100 border-red-300 text-red-800' : 
-                        creationStatus.toLowerCase().startsWith('successfully') ? 'bg-green-100 border-green-300 text-green-800' : 
-                        'bg-blue-100 border-blue-300 text-blue-800'}">
-                <p>{creationStatus}</p>
+        {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname !== '/dashboard')}
+            <!-- Not on dashboard or SSR without user, this state might be complex or transient -->
+        {:else}
+            <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard state...</p> <!-- Adjusted text color -->
             </div>
         {/if}
-
-    {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname !== '/dashboard')}
-        <!-- Handled by redirect or initial load state -->
-    {:else}
-        <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
-            <p class="text-xl text-stone-600">Loading dashboard...</p>
-        </div>
-    {/if}
+    </div>
 </div> 

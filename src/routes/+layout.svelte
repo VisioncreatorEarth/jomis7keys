@@ -37,7 +37,7 @@
 				<a href="/dashboard" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Dashboard</a>
 				<button on:click={handleLogout} class="!text-orange-100 bg-red-500/50 hover:bg-red-600/60 border border-red-400/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Logout</button>
 			{:else}
-				<a href="/#cta-auth" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Login / Register</a>
+				<!-- <a href="/#cta-auth" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Login / Register</a> -->
 			{/if}
 		</div>
 	</nav>

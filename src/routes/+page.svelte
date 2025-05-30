@@ -2,7 +2,7 @@
     import { account, ID } from '$lib/appwrite';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
-    import backgroundImage from '$lib/images/earth.jpg'; // Updated image import
+    import backgroundImage from '$lib/images/stone.jpg'; // Updated image import
 
     async function login(email, password) {
         try {
@@ -93,16 +93,16 @@
                             <input id="password-cs" type="password" placeholder="Password" name="password" required class="mt-1 block w-full px-3 py-2 border border-white/30 rounded-md shadow-sm focus:ring-indigo-400 focus:border-indigo-400 sm:text-sm bg-white/20 text-white placeholder-gray-300" />
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                            <button type="submit" data-type="login" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 focus:ring-offset-black/50">Login</button>
-                            <button type="submit" data-type="register" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-black/50">Register</button>
+                            <button type="submit" data-type="login" class="w-full flex justify-center py-2 px-4 border border-stone-300/50 rounded-md shadow-sm text-sm font-medium text-stone-700 bg-stone-200/60 hover:bg-stone-300/70 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 focus:ring-offset-black/50">Login</button>
+                            <button type="submit" data-type="register" class="w-full flex justify-center py-2 px-4 border border-stone-300/50 rounded-md shadow-sm text-sm font-medium text-stone-700 bg-stone-200/60 hover:bg-stone-300/70 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 focus:ring-offset-black/50">Register</button>
                         </div>
                     </form>
                 </div>
             {:else}
                 <div class="text-center bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-lg drop-shadow-lg border border-white/20">
                     <p class="text-lg sm:text-xl mb-4 text-white">Willkommen zurück, {$currentUser.name || $currentUser.email}!</p>
-                    <p class="mb-4 text-base sm:text-lg text-white">Network 3.0 is launching soon. We'll keep you updated!</p>
-                    <a href="/dashboard" class="bg-emerald-700 text-white font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-lg hover:bg-emerald-800 transition duration-300 text-sm sm:text-base border border-emerald-600/50">Gehe zum Dashboard</a>
+                    <p class="mb-4 text-base sm:text-lg text-white">Network 3.0 is launching soon. We\'ll keep you updated!</p>
+                    <a href="/dashboard" class="bg-stone-200/60 backdrop-blur-md text-stone-700 hover:bg-stone-300/70 border border-stone-300/50 font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-lg transition duration-300 text-sm sm:text-base">Gehe zum Dashboard</a>
                 </div>
             {/if}
         </section>

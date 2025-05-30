@@ -47,14 +47,13 @@ The content is organized as follows:
 .cursor/
   rules/
     geminimasterprompt.mdc
-DOCUMENTATION/
-  ACTION_PLANS/
-    PLAN_CALENDAR_BOOKING.md
-    PLAN_HOMEPAGE_REDESIGN.md
-    PLAN_ROLE_BASED_DASHBOARD.md
 src/
   lib/
     components/
+      dashboard/
+        AppointmentsCard.svelte
+        BookingManagementCard.svelte
+        StatsHistoryCard.svelte
       AppointmentForm.svelte
       AppointmentList.svelte
     stores/
@@ -68,8 +67,6 @@ src/
     +page.svelte
   app.css
   app.html
-static/
-  robots.txt
 .gitignore
 .npmrc
 .prettierignore
@@ -84,6 +81,177 @@ vite.config.js
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/lib/components/dashboard/AppointmentsCard.svelte">
+<script>
+    export let isMainUser;
+    export let dataLoaded;
+    export let fetchError;
+    export let appointments; // Will be allMyHostedAppointments or myBookedAppointments
+    export let listType; // "hostedByMe" or "bookedByMe"
+    export let currentUserId;
+
+    import AppointmentList from '$lib/components/AppointmentList.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function handleDelete(event) {
+        dispatch('deleteAppointment', event.detail);
+    }
+</script>
+
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-xl font-semibold text-stone-800 mb-4">
+        {#if isMainUser}
+            Your Hosted Appointments
+        {:else}
+            My Upcoming Appointments
+        {/if}
+    </h2>
+    {#if isMainUser}
+        {#if !dataLoaded && !fetchError}
+            <p class="text-stone-600 animate-pulse">Loading your hosted appointments...</p>
+        {:else if fetchError && appointments.length === 0}
+            <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
+        {:else if appointments.length > 0}
+            <AppointmentList 
+                appointments={appointments} 
+                listType={listType}
+                currentUserId={currentUserId} 
+                on:deleteAppointment={handleDelete} 
+            />
+        {:else}
+            <p class="text-stone-600">You have not created any appointments yet.</p>
+        {/if}
+    {:else}
+        {#if !dataLoaded && !fetchError}
+            <p class="text-stone-600 animate-pulse">Loading your booked appointments...</p>
+        {:else if fetchError && appointments.length === 0}
+            <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
+        {:else if appointments.length > 0}
+             <AppointmentList 
+                appointments={appointments} 
+                listType={listType}
+                currentUserId={currentUserId} 
+            />
+        {:else}
+            <p class="text-stone-600">You have no upcoming appointments.</p>
+        {/if}
+    {/if}
+    {#if fetchError && appointments.length === 0}
+        <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
+    {/if}
+</div>
+</file>
+
+<file path="src/lib/components/dashboard/BookingManagementCard.svelte">
+<script>
+    export let isMainUser;
+    export let dataLoaded;
+    export let fetchError;
+    export let availableAppointments;
+    export let currentUserId;
+    export let showCreateFormState; // Use a more specific name for the prop
+
+    import AppointmentForm from '$lib/components/AppointmentForm.svelte';
+    import AppointmentList from '$lib/components/AppointmentList.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function handleAppointmentSubmit(event) {
+        dispatch('submitAppointment', event.detail);
+    }
+
+    function handleBookAppointment(event) {
+        dispatch('bookAppointment', event.detail);
+    }
+
+    function toggleCreateForm() {
+        dispatch('toggleCreateForm');
+    }
+
+</script>
+
+<div class="bg-white rounded-xl shadow-lg p-6">
+     <h2 class="text-xl font-semibold text-stone-800 mb-4">
+        {#if isMainUser}
+            Manage Availability & Create
+        {:else}
+            Book an Appointment
+        {/if}
+    </h2>
+    {#if isMainUser}
+        <button on:click={toggleCreateForm} class="mb-4 w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+            {showCreateFormState ? 'Cancel Creation' : 'Create New Appointment'}
+        </button>
+        {#if showCreateFormState}
+            <div class="mt-4">
+                <AppointmentForm on:submitAppointment={handleAppointmentSubmit} />
+            </div>
+        {/if}
+        {#if !showCreateFormState}
+        <p class="text-stone-600 text-sm mt-2">Click above to open the appointment creation form. Further availability tools can be added here.</p>
+        {/if}
+    {:else}
+        {#if !dataLoaded && !fetchError}
+             <p class="text-stone-600 animate-pulse">Loading available appointments...</p>
+        {:else if fetchError && availableAppointments.length === 0}
+            <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
+        {:else if availableAppointments.length > 0}
+            <AppointmentList 
+                appointments={availableAppointments} 
+                listType="available" 
+                currentUserId={currentUserId} 
+                on:bookAppointment={handleBookAppointment} 
+            />
+        {:else}
+            <p class="text-stone-600">No appointments currently available to book.</p>
+        {/if}
+    {/if}
+</div>
+</file>
+
+<file path="src/lib/components/dashboard/StatsHistoryCard.svelte">
+<script>
+    export let isMainUser;
+    export let dataLoaded;
+    export let fetchError;
+    export let allMyHostedAppointments;
+</script>
+
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-xl font-semibold text-stone-800 mb-4">
+        {#if isMainUser}
+            Quick Stats
+        {:else}
+            My Appointment History
+        {/if}
+    </h2>
+    {#if isMainUser}
+        {#if !dataLoaded && !fetchError}
+            <p class="text-stone-500 text-sm animate-pulse">Loading stats...</p>
+        {:else if fetchError && allMyHostedAppointments.length === 0}
+            <p class="text-sm text-red-600 mt-2">Error: {fetchError}</p>
+        {:else}
+            <div class="space-y-3">
+                <div>
+                    <span class="font-medium text-stone-700">Total Hosted Appointments:</span> 
+                    <span class="block text-3xl font-bold text-emerald-700">{allMyHostedAppointments.length}</span>
+                </div>
+                <div>
+                    <span class="font-medium text-stone-700">Currently Booked Slots:</span> 
+                    <span class="block text-3xl font-bold text-amber-600">{allMyHostedAppointments.filter(appt => appt.isBooked).length}</span>
+                </div>
+            </div>
+        {/if}
+    {:else}
+        <p class="text-stone-600">View your past appointments and details.</p>
+        <p class="text-sm text-stone-500 italic mt-2">Feature coming soon.</p>
+    {/if}
+</div>
+</file>
 
 <file path=".cursor/rules/geminimasterprompt.mdc">
 ---
@@ -209,295 +377,10 @@ Transform any problem, goal or desire into:
 4. Immediate next actions
 </file>
 
-<file path="DOCUMENTATION/ACTION_PLANS/PLAN_ROLE_BASED_DASHBOARD.md">
-# ACTION PLAN: Role-Based Dashboard (Admin/Client vs. Regular User)
-
-This plan outlines the steps to differentiate the dashboard experience for a "main user" (admin/client) who hosts appointments and regular users who book them.
-
-## Goal
-
-- Identify a "main user" (admin/client) via their Appwrite User ID.
-- **Main User Dashboard:**
-    - Can create new appointments.
-    - Sees a comprehensive list of **all appointments they host**, indicating if they are booked (and by whom) or available.
-    - Can delete their own unbooked appointments.
-- **Regular User Dashboard:**
-    - Cannot create appointments.
-    - Sees a list of **available appointments** to book.
-    - Sees a list of **their own booked appointments**.
-- Update UI components and data fetching logic accordingly.
-
-## Prerequisites
-
-- Need the Appwrite User ID of the "main user" (admin/client).
-    - Provided: `6835776c00327c1049fe`
-
----
-
-## Milestone 1: Main User Identification & Basic Dashboard Logic
-
-- [x] **Task 1.1: Define Main User ID Constant**
-    - [x] In `src/routes/dashboard/+page.svelte` (or a new config file if preferred, e.g., `src/lib/config.js`), define a constant for the main user's Appwrite ID. 
-    - [x] Example: `const MAIN_HOST_USER_ID = '6835776c00327c1049fe';`
-- [x] **Task 1.2: Conditional Logic in Dashboard Page**
-    - [x] In `src/routes/dashboard/+page.svelte`:
-        - [x] Create a reactive variable `isMainUser` based on whether `$currentUser.$id === MAIN_HOST_USER_ID`.
-        - [x] Conditionally show/hide the `AppointmentForm` based on `isMainUser`.
-- [x] **Task 1.3: Adapt `AppointmentList.svelte` for Admin View of Hosted Appointments**
-    - [x] Modify `AppointmentList.svelte` when `listType` is `'hostedByMe'`:
-        - [x] If an appointment `appt` is booked (`appt.isBooked`), display who it was booked by (`appt.bookedByUserName`) and when (`appt.bookedAt`).
-        - [x] The delete button for `hostedByMe` should still only appear if `!appt.isBooked`.
-
----
-
-## Milestone 2: Data Fetching and Display for Roles
-
-- [x] **Task 2.1: Main User - Fetching Hosted Appointments**
-    - [x] In `src/routes/dashboard/+page.svelte`:
-        - [x] If `isMainUser` is true, the primary list to fetch and display will be `getAppointmentsHostedBy(MAIN_HOST_USER_ID)`. This list will be passed to an `AppointmentList` instance with `listType='hostedByMe'`.
-        - [x] For the main user, the sections for "Available Appointments" (as a separate query) and "My Booked Appointments" (as a booker) might be hidden or not fetched to simplify their view, as their `hostedByMe` list will show availability and booking status of their own appointments.
-- [x] **Task 2.2: Regular User - Fetching Relevant Appointments**
-    - [x] In `src/routes/dashboard/+page.svelte`:
-        - [x] If `isMainUser` is false, continue to fetch and display:
-            - [x] `getAvailableAppointments()` passed to `AppointmentList` with `listType='available'`.
-            - [x] `getAppointmentsBookedBy($currentUser.$id)` passed to `AppointmentList` with `listType='bookedByMe'`.
-        - [x] The "My Hosted Appointments" section should be hidden for regular users if they are not intended to create appointments.
-- [x] **Task 2.3: Adjust Dashboard Template Structure**
-    - [x] In `src/routes/dashboard/+page.svelte`'s template:
-        - [x] Use `{#if isMainUser}` and `{:else}` blocks to render different sets of `AppointmentList` components and section titles based on the user role.
-
----
-
-## Milestone 3: Testing and Refinement
-
-- [ ] **Task 3.1: Test Main User View**
-    - [ ] Log in as the main user.
-    - [ ] Verify the "Create Appointment" form is visible.
-    - [ ] Verify the list shows all appointments hosted by the main user, with correct booking status and booker details displayed.
-    - [ ] Verify delete functionality for unbooked appointments.
-- [ ] **Task 3.2: Test Regular User View**
-    - [ ] Log in as a regular user.
-    - [ ] Verify the "Create Appointment" form is NOT visible.
-    - [ ] Verify the "My Hosted Appointments" list is NOT visible.
-    - [ ] Verify "Available Appointments" list shows correctly.
-    - [ ] Verify "My Booked Appointments" list shows correctly.
-    - [ ] Test booking an appointment and see it move to "My Booked Appointments" and disappear from "Available."
-- [ ] **Task 3.3: Code Cleanup and Review**
-    - [ ] Remove any temporary debug alerts/logs (like the one in `src/routes/+page.svelte`'s login function).
-    - [ ] Review for clarity and efficiency.
-
----
-</file>
-
-<file path="src/lib/components/AppointmentForm.svelte">
-<script>
-    import { createEventDispatcher } from 'svelte';
-
-    export let title = '';
-    export let description = '';
-    export let appointmentDateTime = ''; // Expected format: YYYY-MM-DDTHH:mm
-    export let durationMinutes = 30;
-    export let isEditing = false; // To change button text, etc.
-
-    const dispatch = createEventDispatcher();
-
-    function handleSubmit() {
-        // Basic validation (can be enhanced)
-        if (!appointmentDateTime || !durationMinutes) {
-            alert('Please provide a valid date/time and duration.');
-            return;
-        }
-        dispatch('submitAppointment', {
-            title,
-            description,
-            appointmentDateTime,
-            durationMinutes: parseInt(durationMinutes, 10)
-        });
-    }
-</script>
-
-<form on:submit|preventDefault={handleSubmit}>
-    <div>
-        <label for="title">Title (Optional):</label>
-        <input type="text" id="title" bind:value={title} maxlength="255" />
-    </div>
-    <div>
-        <label for="description">Description (Optional):</label>
-        <textarea id="description" bind:value={description} maxlength="10000"></textarea>
-    </div>
-    <div>
-        <label for="appointmentDateTime">Date and Time:</label>
-        <input type="datetime-local" id="appointmentDateTime" bind:value={appointmentDateTime} required />
-    </div>
-    <div>
-        <label for="durationMinutes">Duration (minutes):</label>
-        <input type="number" id="durationMinutes" bind:value={durationMinutes} min="15" step="15" required />
-    </div>
-    <button type="submit">{isEditing ? 'Update' : 'Create'} Appointment</button>
-</form>
-
-<style>
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        max-width: 500px;
-        margin: 1rem auto; /* Center form if used standalone */
-    }
-    div {
-        display: flex;
-        flex-direction: column;
-    }
-    label {
-        margin-bottom: 0.25rem;
-        font-weight: bold;
-    }
-    input[type="text"],
-    input[type="datetime-local"],
-    input[type="number"],
-    textarea {
-        padding: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1em;
-    }
-    textarea {
-        min-height: 80px;
-        resize: vertical;
-    }
-    button[type="submit"] {
-        padding: 0.75rem;
-        border: none;
-        border-radius: 4px;
-        background-color: #28a745; /* Green for create/update */
-        color: white;
-        font-size: 1em;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-    button[type="submit"]:hover {
-        background-color: #218838;
-    }
-</style>
-</file>
-
 <file path="src/lib/stores/userStore.js">
 import { writable } from 'svelte/store';
 
 export const currentUser = writable(null); // Initialize with null (no user logged in)
-</file>
-
-<file path="src/app.css">
-@import 'tailwindcss';
-@import '@fontsource/fira-mono';
-
-:root {
-	--font-body:
-		Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-		'Open Sans', 'Helvetica Neue', sans-serif;
-	--font-mono: 'Fira Mono', monospace;
-	--color-bg-0: rgb(202, 216, 228);
-	--color-bg-1: hsl(209, 36%, 86%);
-	--color-bg-2: hsl(224, 44%, 95%);
-	--color-theme-1: #ff3e00;
-	--color-theme-2: #4075a6;
-	--color-text: rgba(0, 0, 0, 0.7);
-	--column-width: 42rem;
-	--column-margin-top: 4rem;
-	font-family: var(--font-body);
-	color: var(--color-text);
-}
-
-body {
-	min-height: 100vh;
-	margin: 0;
-	background-attachment: fixed;
-	background-color: var(--color-bg-1);
-	background-size: 100vw 100vh;
-	background-image:
-		radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 100%),
-		linear-gradient(180deg, var(--color-bg-0) 0%, var(--color-bg-1) 15%, var(--color-bg-2) 50%);
-}
-
-h1,
-h2,
-p {
-	font-weight: 400;
-}
-
-p {
-	line-height: 1.5;
-}
-
-a {
-	color: var(--color-theme-1);
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
-h1 {
-	font-size: 2rem;
-	text-align: center;
-}
-
-h2 {
-	font-size: 1rem;
-}
-
-pre {
-	font-size: 16px;
-	font-family: var(--font-mono);
-	background-color: rgba(255, 255, 255, 0.45);
-	border-radius: 3px;
-	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
-	padding: 0.5em;
-	overflow-x: auto;
-	color: var(--color-text);
-}
-
-.text-column {
-	display: flex;
-	max-width: 48rem;
-	flex: 0.6;
-	flex-direction: column;
-	justify-content: center;
-	margin: 0 auto;
-}
-
-input,
-button {
-	font-size: inherit;
-	font-family: inherit;
-}
-
-button:focus:not(:focus-visible) {
-	outline: none;
-}
-
-@media (min-width: 720px) {
-	h1 {
-		font-size: 2.4rem;
-	}
-}
-
-.visually-hidden {
-	border: 0;
-	clip: rect(0 0 0 0);
-	height: auto;
-	margin: 0;
-	overflow: hidden;
-	padding: 0;
-	position: absolute;
-	width: 1px;
-	white-space: nowrap;
-}
 </file>
 
 <file path="src/app.html">
@@ -513,12 +396,6 @@ button:focus:not(:focus-visible) {
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
-</file>
-
-<file path="static/robots.txt">
-# https://www.robotstxt.org/robotstxt.html
-User-agent: *
-Disallow:
 </file>
 
 <file path=".gitignore">
@@ -639,355 +516,54 @@ const config = {
 export default config;
 </file>
 
-<file path="vite.config.js">
-import tailwindcss from '@tailwindcss/vite';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()]
-});
-</file>
-
-<file path="DOCUMENTATION/ACTION_PLANS/PLAN_CALENDAR_BOOKING.md">
-# ACTION PLAN: Calendar & Appointment Booking System (Phase 1: Core Functionality)
-
-This document outlines the steps to implement the fundamental functionality of the calendar and appointment booking system using SvelteKit and Appwrite.
-
-## Goal
-
-Implement and test core Appwrite interactions: storing/retrieving appointments, user auth, hosts creating appointments, and bookers viewing/booking appointments. No external Zoom/email integration in this phase.
-
-## Appwrite Configuration Reference
-
-- **Project ID:** `68357409002d8b46f512`
-- **API Endpoint:** `https://fra.cloud.appwrite.io/v1`
-- **Database ID:** `68357c7b00070f3dbade`
-- **Appointments Collection ID:** `68357d08003a530aa17d`
-
----
-
-## Milestone 1: Appwrite Backend Setup
-
-- [x] **Task 1.1: Create Appwrite Database**
-    - In the Appwrite Console, navigate to "Databases".
-    - Create a new database if you don't have one already. Record its ID as `YOUR_DATABASE_ID`.
-- [x] **Task 1.2: Create `appointments` Collection**
-    - Within your database, create a new collection named `appointments`. Record its ID as `appointments_collection`.
-    - Define Attributes:
-        - [x] `title`: String (size: 255, not required)
-        - [x] `description`: String (size: 10000, not required)
-        - [x] `appointmentDateTime`: Datetime (required)
-        - [x] `durationMinutes`: Integer (required)
-        - [x] `hostUserId`: String (size: 255, required)
-        - [x] `hostUserName`: String (size: 255, required)
-        - [x] `isBooked`: Boolean (required, default: `false`)
-        - [x] `bookedByUserId`: String (size: 255, not required)
-        - [x] `bookedByUserName`: String (size: 255, not required)
-        - [x] `bookedAt`: Datetime (not required)
-        - [x] `zoomMeetingId`: String (size: 255, not required)
-        - [x] `zoomJoinUrl`: String (size: 1024, not required)
-        - [x] `zoomStartUrl`: String (size: 1024, not required)
-    - Define Indexes (suggested for querying):
-        - [x] Index on `appointmentDateTime`
-        - [x] Index on `isBooked`
-        - [x] Index on `hostUserId`
-        - [x] Index on `bookedByUserId`
-- [x] **Task 1.3: Set Collection Permissions for `appointments`**
-    - Go to the "Settings" tab for the `appointments` collection.
-    - Permissions:
-        - Add Role: `users` (Authenticated Users)
-            - [x] Read Documents: Granted
-            - [x] Create Documents: Granted
-            - [x] Update Documents: Granted
-            - [x] Delete Documents: Granted (We will rely on document-level security or frontend logic to ensure users only delete/update their own items appropriately for this phase).
-
----
-
-## Milestone 2: SvelteKit Frontend Setup for Appointments
-
-- [x] **Task 2.1: Create Appwrite Database Helper Module**
-    - Create `src/lib/appwrite_db.js`.
-    - This module will export functions for interacting with the `appointments` collection.
-    - [x] Add imports: `client` (from `../appwrite`), `Databases`, `ID`, `Query` from `appwrite`.
-    - [x] Initialize `Databases` service: `const databases = new Databases(client);`
-    - [x] Store `YOUR_DATABASE_ID` and `appointments_collection` ID (once known) as constants.
-- [x] **Task 2.2: Update `src/routes/+page.svelte` (Auth Page)**
-    - [x] Import `goto` from `$app/navigation`.
-    - [x] Import `account` and `client` (or a store for user session) to check login status. (Now uses `currentUser` store)
-    - [x] On successful login (in `login` function) and if user session is found on page load, redirect to `/dashboard` using `goto('/dashboard')`.
-    - [x] Ensure `currentUser` store is populated/cleared correctly.
-- [x] **Task 2.3: Create User Session Store**
-    - Create `src/lib/stores/userStore.js` (or similar).
-    - [x] Create a writable store `currentUser` initialized to `null`.
-    - [x] In `src/routes/+layout.svelte` (or `app.html` if preferred for initial load):
-        - Attempt to get the current Appwrite session (`account.get()`).
-        - If successful, set `currentUser.set(sessionData)`.
-        - If fails, set `currentUser.set(null)`.
-    - Update `src/routes/+page.svelte` to use this store. (Covered by 2.2 changes)
-
----
-
-## Milestone 3: Appointment Creation ("Host" Functionality)
-
-- [x] **Task 3.1: Create `src/routes/dashboard/+page.svelte`**
-    - [x] Basic structure with a welcome message.
-    - [x] Placeholder sections for "Create Appointment", "Available Appointments", etc.
-    - [x] Subscribe to `currentUser` store to get user details.
-- [x] **Task 3.2: Create `src/lib/components/AppointmentForm.svelte`**
-    - [x] Form with inputs for: `title`, `description`, `appointmentDateTime` (use `<input type="datetime-local">`), `durationMinutes`.
-    - [x] "Create Appointment" button.
-    - [x] Emit an event or call a prop function on submit with form data.
-- [x] **Task 3.3: Implement Appointment Creation Logic in `appwrite_db.js`**
-    - [x] `createAppointment(appointmentData, hostUser)` function:
-        - Takes `appointmentData` (title, description, dateTime, duration) and `hostUser` (from `currentUser` store).
-        - Constructs the document payload including `hostUserId: hostUser.$id`, `hostUserName: hostUser.name`.
-        - Calls `databases.createDocument(...)` for the `appointments` collection.
-        - Returns the created document or throws an error.
-- [x] **Task 3.4: Integrate Form in `dashboard/+page.svelte`**
-    - [x] Import and use `AppointmentForm.svelte`.
-    - [x] Handle the submit event:
-        - Get current user from `currentUser` store.
-        - Call `createAppointment` from `appwrite_db.js`.
-        - Provide user feedback (success/error message).
-        - (Optional) Refresh list of hosted appointments.
-
----
-
-## Milestone 4: Viewing Appointments
-
-- [x] **Task 4.1: Create `src/lib/components/AppointmentList.svelte`**
-    - [x] Prop: `appointments` (array of appointment documents).
-    - [x] Prop: `listType` (e.g., "available", "bookedByMe", "hostedByMe", "all") to conditionally render action buttons or details.
-    - [x] Displays appointments in a list or cards.
-    - [x] For "available" appointments, show a "Book" button.
-    - [x] For "hostedByMe" appointments, show "Edit"/"Delete" buttons (Delete for this phase).
-    - [x] For "bookedByMe" appointments, show details and maybe a "Cancel Booking" button (future).
-- [x] **Task 4.2: Implement Appointment Fetching Logic in `appwrite_db.js`**
-    - [x] `getAvailableAppointments()`:
-        - `databases.listDocuments(...)` with `Query.equal('isBooked', false)`, `Query.orderDesc('appointmentDateTime')`.
-    - [x] `getAppointmentsHostedBy(userId)`:
-        - `databases.listDocuments(...)` with `Query.equal('hostUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
-    - [x] `getAppointmentsBookedBy(userId)`:
-        - `databases.listDocuments(...)` with `Query.equal('bookedByUserId', userId)`, `Query.orderDesc('appointmentDateTime')`.
-- [x] **Task 4.3: Display Appointments in `dashboard/+page.svelte`**
-    - [x] On page load (e.g., in `onMount`), fetch different lists of appointments using functions from `appwrite_db.js`.
-        - Need `currentUser.$id` for hosted/booked lists.
-    - [x] Store these lists in local Svelte state (e.g., `availableAppointments`, `myHostedAppointments`, `myBookedAppointments`).
-    - [x] Pass these lists to instances of `AppointmentList.svelte`.
-
----
-
-## Milestone 5: Booking Appointments ("Booker" Functionality)
-
-- [x] **Task 5.1: Implement Appointment Booking Logic in `appwrite_db.js`**
-    - [x] `bookAppointment(appointmentId, bookerUser)` function:
-        - Takes `appointmentId` and `bookerUser` (from `currentUser` store).
-        - Data to update: `isBooked: true`, `bookedByUserId: bookerUser.$id`, `bookedByUserName: bookerUser.name`, `bookedAt: new Date().toISOString()`.
-        - Calls `databases.updateDocument(...)`.
-        - Ensure it only books if `isBooked` is currently `false` (either via Appwrite security rules later or a read-before-write check, though the latter has race conditions. For now, a simple update).
-- [x] **Task 5.2: Add "Book" Functionality to `AppointmentList.svelte`**
-    - [x] When `listType` is "available", the "Book" button for an appointment should:
-        - Get current user from `currentUser` store.
-        - Call `bookAppointment(appointment.$id, currentUser)`.
-        - Provide user feedback.
-        - Refresh relevant appointment lists (available, my booked).
-- [x] **Task 5.3: Implement Appointment Deletion Logic (for "Host") in `appwrite_db.js`**
-    - [x] `deleteAppointment(appointmentId, hostUserId)`:
-        - Before calling `databases.deleteDocument(...)`, ideally verify `hostUserId` matches the document's `hostUserId`. For this phase, ensure the call is made from a context where `hostUserId` is confirmed.
-        - (Future: Appwrite document-level security can enforce this).
-- [x] **Task 5.4: Add "Delete" Functionality to `AppointmentList.svelte`**
-    - [x] When `listType` is "hostedByMe" and appointment is NOT booked:
-        - "Delete" button calls `deleteAppointment(appointment.$id, currentUser.$id)`.
-        - Provide user feedback.
-        - Refresh hosted appointments list.
-
----
-
-## Documentation & Refinement
-
-- [ ] Review and refine Appwrite collection permissions for more granular security (post-Phase 1).
-- [ ] Add more robust error handling and user feedback.
-- [ ] Consider UI/UX improvements (styling, date/time pickers, calendar view components).
-
-Please provide your Appwrite **Database ID** when you're ready to start Milestone 1.
-This plan will be updated as we progress.
-</file>
-
-<file path="DOCUMENTATION/ACTION_PLANS/PLAN_HOMEPAGE_REDESIGN.md">
-# ACTION PLAN: Homepage Redesign & Enhanced User Experience
-
-This plan outlines the steps to transform the current login page (`src/routes/+page.svelte`) into a proper homepage with placeholder website content, integrate login/registration functionality smoothly, and ensure a clear user flow to the dashboard.
-
-## Goal
-
-- The route `/` will serve as a general website landing page with placeholder content.
-- Login/Registration functionality will be seamlessly integrated into the homepage design on `/`.
-- The global navigation bar (from `+layout.svelte`) will continue to be the primary indicator of login status and the gateway to the dashboard for logged-in users or the login section for logged-out users.
-- Ensure the homepage (`/`) loads its content immediately, without displaying "Loading user information..." messages. This message is acceptable only for protected routes like `/dashboard` if a session is being verified or before redirection.
-
----
-
-## Milestone 1: Homepage Structure & Login Form Integration
-
-- [x] **Task 1.1: Restructure `src/routes/+page.svelte` for Homepage Content**
-    - [x] Keep the existing `<script>` section containing login/registration logic.
-    - [x] Wrap the existing login form (`<div class="container">...</div>`) in a specific section (e.g., `<section id="auth-section">`).
-    - [x] Add new HTML sections above and/or below the auth section to serve as placeholders for typical homepage content:
-        - [x] Example: `<section id="hero"><h1>Welcome to JOMA Appointments!</h1>...</section>`
-        - [x] Example: `<section id="features"><p>Placeholder for features...</p></section>`
-        - [x] Example: `<section id="about"><p>Placeholder for about us...</p></section>`
-    - [x] Remove the standalone paragraph `<p>Please log in or register.</p>` as the form's context will be part of the larger page.
-- [x] **Task 1.2: Initial Styling for New Homepage Layout**
-    - [x] In `<style>` of `src/routes/+page.svelte`:
-        - [x] Adjust existing styles for `.container` (now within `#auth-section`) if needed, or make them specific to `#auth-section .container`.
-        - [x] Remove or adjust `:global(body)` styles from `+page.svelte` if they are overly restrictive for a multi-section homepage (e.g., `display:flex` on body). The `margin: 0; background-color: #f0f2f5;` from the old `:global(body)` is likely fine to keep if applied generally in `app.html` or `+layout.svelte`, or can be scoped locally. For now, we'll assume the one in `+page.svelte` might need to be less specific.
-        - [x] Add basic placeholder styling for new sections (`#hero`, `#features`, `#about`) for visual separation (e.g., padding, background colors).
-
----
-
-## Milestone 2: User Flow and Experience Refinement
-
-- [ ] **Task 2.1: Verify Homepage Content Visibility**
-    - [ ] Test loading `/` when logged out and logged in.
-    - [ ] Confirm that the new homepage sections (hero, features, etc.) are displayed immediately and are not hidden behind any "Loading user information..." messages.
-- [ ] **Task 2.2: Confirm Login/Registration Functionality**
-    - [ ] Test the login and registration process using the form now integrated into the homepage.
-    - [ ] Ensure successful login/registration still correctly redirects to `/dashboard`.
-    - [ ] Verify the global navigation bar in `+layout.svelte` updates the user's status and links correctly.
-- [ ] **Task 2.3: Verify Dashboard Loading Behavior**
-    - [ ] When logged out, attempting to access `/dashboard` directly should show the "Loading user information or redirecting..." message *briefly* before redirecting to `/` (the new homepage).
-    - [ ] When logged in, `/dashboard` should load, showing "Loading appointments..." if data fetching takes time, but not get stuck on "Loading user information...".
-
----
-</file>
-
-<file path="src/lib/components/AppointmentList.svelte">
+<file path="src/lib/components/AppointmentForm.svelte">
 <script>
-    export let appointments = [];
-    export let listType = 'all'; // 'all', 'available', 'bookedByMe', 'hostedByMe'
-    export let currentUserId = null; // Needed for some conditional rendering/actions
-
     import { createEventDispatcher } from 'svelte';
+
+    export let title = '';
+    export let description = '';
+    export let appointmentDateTime = ''; // Expected format: YYYY-MM-DDTHH:mm
+    export let durationMinutes = 30;
+    export let isEditing = false; // To change button text, etc.
+
     const dispatch = createEventDispatcher();
 
-    function formatDate(dateTimeString) {
-        if (!dateTimeString) return 'N/A';
-        try {
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            return new Date(dateTimeString).toLocaleDateString(undefined, options);
-        } catch (e) {
-            return 'Invalid Date';
+    function handleSubmit() {
+        // Basic validation (can be enhanced)
+        if (!appointmentDateTime || !durationMinutes) {
+            alert('Please provide a valid date/time and duration.');
+            return;
         }
-    }
-
-    function handleBook(appointmentId) {
-        dispatch('bookAppointment', appointmentId);
-    }
-
-    function handleDelete(appointmentId) {
-        dispatch('deleteAppointment', appointmentId);
+        dispatch('submitAppointment', {
+            title,
+            description,
+            appointmentDateTime,
+            durationMinutes: parseInt(durationMinutes, 10)
+        });
     }
 </script>
 
-<div class="appointment-list-container">
-    {#if appointments.length === 0}
-        <p>No appointments to display in this list.</p>
-    {:else}
-        <ul>
-            {#each appointments as appt (appt.$id)}
-                <li>
-                    <strong>{appt.title || 'Appointment'}</strong>
-                    <p>Host: {appt.hostUserName || 'N/A'}</p>
-                    <p>When: {formatDate(appt.appointmentDateTime)}</p>
-                    <p>Duration: {appt.durationMinutes} minutes</p>
-                    {#if appt.description}
-                        <p>Description: {appt.description}</p>
-                    {/if}
-                    
-                    {#if listType === 'available' && !appt.isBooked}
-                        <button on:click={() => handleBook(appt.$id)}>Book This Appointment</button>
-                    {/if}
-
-                    {#if listType === 'hostedByMe'}
-                        {#if appt.isBooked}
-                            <p class="booked-info"><em>Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</em></p>
-                        {:else}
-                            <p class="available-info"><em>This appointment is currently available.</em></p>
-                            {#if appt.hostUserId === currentUserId}
-                                <button on:click={() => handleDelete(appt.$id)} class="delete-button">Delete My Appointment</button>
-                            {/if}
-                        {/if}
-                    {/if}
-
-                    {#if listType === 'bookedByMe' && appt.bookedByUserId === currentUserId}
-                        <p><em>You have booked this appointment.</em></p>
-                        <p>Booked on: {formatDate(appt.bookedAt)}</p>
-                    {/if}
-
-                    {#if listType !== 'hostedByMe' && listType !== 'bookedByMe' && appt.isBooked }
-                        <p><em>This appointment is booked.</em></p>
-                        {#if appt.bookedByUserName}
-                            <p>Booked by: {appt.bookedByUserName}</p>
-                        {/if}
-                    {/if}
-                </li>
-            {/each}
-        </ul>
-    {/if}
-</div>
-
-<style>
-    .appointment-list-container {
-        margin-top: 1rem;
-    }
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-    li {
-        background-color: #f9f9f9;
-        border: 1px solid #eee;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-    }
-    li strong {
-        font-size: 1.2em;
-        color: #333;
-    }
-    p {
-        margin: 0.5rem 0;
-        color: #555;
-    }
-    .booked-info {
-        color: #28a745; /* Green for booked */
-        font-style: italic;
-    }
-    .available-info {
-        color: #17a2b8; /* Info blue for available */
-        font-style: italic;
-    }
-    button {
-        padding: 0.5rem 1rem;
-        margin-top: 0.5rem;
-        border: none;
-        border-radius: 4px;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-    .delete-button {
-        background-color: #dc3545;
-    }
-    .delete-button:hover {
-        background-color: #c82333;
-    }
-</style>
+<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-4 bg-stone-50 p-4 rounded-lg border border-stone-200 shadow-sm">
+    <div>
+        <label for="title-apt-form" class="block mb-1 font-semibold text-sm text-stone-700">Title (Optional):</label>
+        <input type="text" id="title-apt-form" bind:value={title} maxlength="255" class="block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm text-stone-900 placeholder-stone-400 bg-white" />
+    </div>
+    <div>
+        <label for="description-apt-form" class="block mb-1 font-semibold text-sm text-stone-700">Description (Optional):</label>
+        <textarea id="description-apt-form" bind:value={description} maxlength="10000" class="block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm text-stone-900 placeholder-stone-400 bg-white min-h-[80px] resize-y"></textarea>
+    </div>
+    <div>
+        <label for="appointmentDateTime-apt-form" class="block mb-1 font-semibold text-sm text-stone-700">Date and Time:</label>
+        <input type="datetime-local" id="appointmentDateTime-apt-form" bind:value={appointmentDateTime} required class="block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm text-stone-900 placeholder-stone-400 bg-white" />
+    </div>
+    <div>
+        <label for="durationMinutes-apt-form" class="block mb-1 font-semibold text-sm text-stone-700">Duration (minutes):</label>
+        <input type="number" id="durationMinutes-apt-form" bind:value={durationMinutes} min="15" step="15" required class="block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm text-stone-900 placeholder-stone-400 bg-white" />
+    </div>
+    <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-stone-100">
+        {isEditing ? 'Update' : 'Create'} Appointment
+    </button>
+</form>
 </file>
 
 <file path="src/lib/appwrite_db.js">
@@ -1159,46 +735,6 @@ export async function logoutUser() {
 export { ID };
 </file>
 
-<file path="package.json">
-{
-	"name": "joma",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
-	},
-	"devDependencies": {
-		"@eslint/compat": "^1.2.5",
-		"@eslint/js": "^9.18.0",
-		"@fontsource/fira-mono": "^5.0.0",
-		"@neoconfetti/svelte": "^2.0.0",
-		"@sveltejs/adapter-auto": "^6.0.0",
-		"@sveltejs/kit": "^2.16.0",
-		"@sveltejs/vite-plugin-svelte": "^5.0.0",
-		"@tailwindcss/vite": "^4.0.0",
-		"eslint": "^9.18.0",
-		"eslint-config-prettier": "^10.0.1",
-		"eslint-plugin-svelte": "^3.0.0",
-		"globals": "^16.0.0",
-		"prettier": "^3.4.2",
-		"prettier-plugin-svelte": "^3.3.3",
-		"prettier-plugin-tailwindcss": "^0.6.11",
-		"svelte": "^5.25.0",
-		"tailwindcss": "^4.0.0",
-		"vite": "^6.2.6"
-	},
-	"dependencies": {
-		"appwrite": "^14.0.1"
-	}
-}
-</file>
-
 <file path="README.md">
 # sv
 
@@ -1240,12 +776,260 @@ You can preview the production build with `npm run preview`.
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
 </file>
 
+<file path="vite.config.js">
+import tailwindcss from '@tailwindcss/vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+	plugins: [sveltekit(), tailwindcss()]
+});
+</file>
+
+<file path="src/lib/components/AppointmentList.svelte">
+<script>
+    export let appointments = [];
+    export let listType = 'all'; // 'all', 'available', 'bookedByMe', 'hostedByMe'
+    export let currentUserId = null; // Needed for some conditional rendering/actions
+
+    import { createEventDispatcher } from 'svelte';
+    const dispatch = createEventDispatcher();
+
+    function formatDate(dateTimeString) {
+        if (!dateTimeString) return 'N/A';
+        try {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateTimeString).toLocaleDateString(undefined, options);
+        } catch (e) {
+            return 'Invalid Date';
+        }
+    }
+
+    function handleBook(appointmentId) {
+        dispatch('bookAppointment', appointmentId);
+    }
+
+    function handleDelete(appointmentId) {
+        dispatch('deleteAppointment', appointmentId);
+    }
+</script>
+
+<div class="mt-1">
+    {#if appointments.length === 0}
+        <p class="text-stone-500 text-sm italic">No appointments to display in this list.</p>
+    {:else}
+        <ul class="space-y-4">
+            {#each appointments as appt (appt.$id)}
+                <li class="bg-stone-50 border border-stone-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-150">
+                    <strong class="text-lg text-stone-700 font-semibold block mb-1">{appt.title || 'Appointment'}</strong>
+                    <p class="text-stone-600 text-sm my-1">Host: {appt.hostUserName || 'N/A'}</p>
+                    <p class="text-stone-600 text-sm my-1">When: {formatDate(appt.appointmentDateTime)}</p>
+                    <p class="text-stone-600 text-sm my-1">Duration: {appt.durationMinutes} minutes</p>
+                    {#if appt.description}
+                        <p class="text-stone-600 text-sm my-1 italic">Description: {appt.description}</p>
+                    {/if}
+                    
+                    {#if listType === 'available' && !appt.isBooked}
+                        <button 
+                            on:click={() => handleBook(appt.$id)} 
+                            class="px-3 py-1.5 mt-3 text-xs font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 ease-in-out bg-sky-600 hover:bg-sky-700 focus:ring-sky-500 focus:ring-offset-stone-50">
+                            Book This Appointment
+                        </button>
+                    {/if}
+
+                    {#if listType === 'hostedByMe'}
+                        {#if appt.isBooked}
+                            <p class="text-green-600 italic text-sm my-1">Booked by: {appt.bookedByUserName || 'Unknown User'} on {formatDate(appt.bookedAt)}</p>
+                        {:else}
+                            <p class="text-sky-600 italic text-sm my-1">This appointment is currently available.</p>
+                            {#if appt.hostUserId === currentUserId}
+                                <button 
+                                    on:click={() => handleDelete(appt.$id)} 
+                                    class="px-3 py-1.5 mt-3 text-xs font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 ease-in-out bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-stone-50">
+                                    Delete My Appointment
+                                </button>
+                            {/if}
+                        {/if}
+                    {/if}
+
+                    {#if listType === 'bookedByMe' && appt.bookedByUserId === currentUserId}
+                        <p class="text-emerald-700 font-medium text-sm my-1">You have booked this appointment.</p>
+                        <p class="text-stone-500 text-xs my-1">Booked on: {formatDate(appt.bookedAt)}</p>
+                    {/if}
+
+                    {#if listType !== 'hostedByMe' && listType !== 'bookedByMe' && appt.isBooked }
+                        <p class="text-orange-600 italic text-sm my-1">This appointment is booked.</p>
+                        {#if appt.bookedByUserName}
+                            <p class="text-stone-500 text-xs my-1">Booked by: {appt.bookedByUserName}</p>
+                        {/if}
+                    {/if}
+                </li>
+            {/each}
+        </ul>
+    {/if}
+</div>
+</file>
+
+<file path="src/app.css">
+@import 'tailwindcss';
+@import '@fontsource/fira-mono';
+@import '@fontsource/inter/index.css';
+
+html {
+	height: 100%;
+	overflow: hidden; /* Prevent html element from scrolling */
+}
+
+:root {
+	--font-body:
+		'Inter', Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+		'Open Sans', 'Helvetica Neue', sans-serif;
+	--font-mono: 'Fira Mono', monospace;
+	--color-bg-0: rgb(202, 216, 228);
+	--color-bg-1: hsl(209, 36%, 86%);
+	--color-bg-2: hsl(224, 44%, 95%);
+	--color-theme-1: #ff3e00;
+	--color-theme-2: #4075a6;
+	--color-text: rgba(0, 0, 0, 0.7);
+	--column-width: 42rem;
+	--column-margin-top: 4rem;
+	font-family: var(--font-body);
+	color: var(--color-text);
+}
+
+body {
+	height: 100%; /* Make body take full viewport height */
+	margin: 0;
+	overflow-y: auto; /* Allow body to scroll if content overflows */
+	/* background-color: var(--color-bg-1); Removed to let page-specific backgrounds dominate */
+}
+
+h1,
+h2,
+p {
+	font-weight: 400;
+}
+
+p {
+	line-height: 1.5;
+}
+
+a {
+	color: var(--color-theme-1);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 2rem;
+	text-align: center;
+}
+
+h2 {
+	font-size: 1rem;
+}
+
+pre {
+	font-size: 16px;
+	font-family: var(--font-mono);
+	background-color: rgba(255, 255, 255, 0.45);
+	border-radius: 3px;
+	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
+	padding: 0.5em;
+	overflow-x: auto;
+	color: var(--color-text);
+}
+
+.text-column {
+	display: flex;
+	max-width: 48rem;
+	flex: 0.6;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 auto;
+}
+
+input,
+button {
+	font-size: inherit;
+	font-family: inherit;
+}
+
+button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+@media (min-width: 720px) {
+	h1 {
+		font-size: 2.4rem;
+	}
+}
+
+.visually-hidden {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: auto;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
+</file>
+
+<file path="package.json">
+{
+	"name": "joma",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"format": "prettier --write .",
+		"lint": "prettier --check . && eslint ."
+	},
+	"devDependencies": {
+		"@eslint/compat": "^1.2.5",
+		"@eslint/js": "^9.18.0",
+		"@fontsource/fira-mono": "^5.0.0",
+		"@neoconfetti/svelte": "^2.0.0",
+		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/kit": "^2.16.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@tailwindcss/vite": "^4.0.0",
+		"eslint": "^9.18.0",
+		"eslint-config-prettier": "^10.0.1",
+		"eslint-plugin-svelte": "^3.0.0",
+		"globals": "^16.0.0",
+		"prettier": "^3.4.2",
+		"prettier-plugin-svelte": "^3.3.3",
+		"prettier-plugin-tailwindcss": "^0.6.11",
+		"svelte": "^5.25.0",
+		"tailwindcss": "^4.0.0",
+		"vite": "^6.2.6"
+	},
+	"dependencies": {
+		"@fontsource/inter": "^5.2.5",
+		"appwrite": "^14.0.1"
+	}
+}
+</file>
+
 <file path="src/routes/+layout.svelte">
 <script>
 	import { onMount } from 'svelte';
 	import { account, logoutUser } from '$lib/appwrite'; // Path to your appwrite.js
 	import { currentUser } from '$lib/stores/userStore'; // Path to your userStore.js
 	import { goto } from '$app/navigation';
+	import '../app.css'; // Import global stylesheet
+	// import '@fontsource/playfair-display'; // Removed Playfair Display font import
 
 	onMount(async () => {
 		try {
@@ -1269,68 +1053,29 @@ You can preview the production build with `npm run preview`.
 	}
 </script>
 
-<header>
-	<nav>
-		<a href="/" class="logo">JOMA Appointments</a>
-		<div class="nav-links">
+<header class="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg p-4 border-b border-white/20">
+	<nav class="flex justify-between items-center max-w-screen-xl mx-auto">
+		<a href="/" class="text-2xl font-bold !text-orange-100 hover:!text-orange-200">Network 3.0</a>
+		<div class="flex items-center space-x-4">
 			{#if $currentUser}
-				<span>Welcome, {$currentUser.name || $currentUser.email}!</span>
-				<a href="/dashboard" class="nav-button">Dashboard</a>
-				<button on:click={handleLogout} class="nav-button logout">Logout</button>
+				<span class="text-gray-300">Welcome, {$currentUser.name || $currentUser.email}!</span>
+				<a href="/dashboard" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Dashboard</a>
+				<button on:click={handleLogout} class="!text-orange-100 bg-red-500/50 hover:bg-red-600/60 border border-red-400/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Logout</button>
 			{:else}
-				<a href="/" class="nav-button">Login / Register</a>
+				<!-- <a href="/#cta-auth" class="!text-orange-100 hover:!text-orange-200 px-3 py-2 rounded-md text-sm font-medium border border-transparent hover:border-orange-100/50 transition-colors">Login / Register</a> -->
 			{/if}
 		</div>
 	</nav>
 </header>
 
-<main>
+<main class="pt-20">
 	<slot />
 </main>
 
 <style>
-	header {
-		background-color: #f0f0f0;
-		padding: 1rem;
-		border-bottom: 1px solid #ddd;
-	}
-	nav {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.logo {
-		font-weight: bold;
-		font-size: 1.5em;
-		text-decoration: none;
-		color: #333;
-	}
-	.nav-links span {
-		margin-right: 1rem;
-	}
-	.nav-button {
-		padding: 0.5rem 1rem;
-		text-decoration: none;
-		color: #333;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		margin-left: 0.5rem;
-		background-color: white;
-		cursor: pointer;
-	}
-	.nav-button.logout {
-		background-color: #ffdddd;
-		border-color: #ffaaaa;
-	}
-	.nav-button:hover {
-		background-color: #e9e9e9;
-	}
-	.nav-button.logout:hover {
-		background-color: #ffcccc;
-	}
+	/* Keeping main minimal, specific component styles should be in those components or Tailwind */
 	main {
-		padding: 1rem;
-		font-family: sans-serif;
+		/* font-family: sans-serif; --- This is now handled by Tailwind or global app.css defaults */
 	}
 </style>
 </file>
@@ -1340,8 +1085,10 @@ You can preview the production build with `npm run preview`.
     import { currentUser } from '$lib/stores/userStore';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import AppointmentForm from '$lib/components/AppointmentForm.svelte';
-    import AppointmentList from '$lib/components/AppointmentList.svelte';
+    import AppointmentsCard from '$lib/components/dashboard/AppointmentsCard.svelte';
+    import BookingManagementCard from '$lib/components/dashboard/BookingManagementCard.svelte';
+    import StatsHistoryCard from '$lib/components/dashboard/StatsHistoryCard.svelte';
+    import backgroundImage from '$lib/images/stone.jpg'; // Import the background image
     import {
         createAppointment,
         getAvailableAppointments,
@@ -1359,7 +1106,8 @@ You can preview the production build with `npm run preview`.
     let myBookedAppointments = []; // For regular users
     let fetchError = '';
     let creationStatus = '';
-    // Removed showAppointmentForm, will be controlled by isMainUser for form visibility
+    
+    let showCreateForm = false; // This will be toggled by a function now
 
     let dataLoaded = false; // Flag to track if initial data for the current user has been loaded
     let isLoadingPage = true; // To manage the visibility of the 'Loading user...' message
@@ -1368,134 +1116,132 @@ You can preview the production build with `npm run preview`.
     $: {
         if ($currentUser && $currentUser.$id) {
             isMainUser = $currentUser.$id === MAIN_HOST_USER_ID;
-            // console.log("Dashboard reactive: isMainUser set to: ", isMainUser);
-            // When user type changes (e.g. logout and login as different type), reset dataLoaded to force refetch appropriate data
-            if (dataLoaded && ($currentUser.$id !== (isMainUser ? MAIN_HOST_USER_ID : $currentUser.$id))) { // A bit redundant, but checks if context changed
-                // dataLoaded = false;
+            if (dataLoaded && ($currentUser.$id !== (isMainUser ? MAIN_HOST_USER_ID : $currentUser.$id))) { 
+                // dataLoaded = false; // This was commented out, seems okay
             }
         } else {
             isMainUser = false;
         }
     }
 
-    async function fetchAllAppointments() {
+    async function fetchAllAppointments(source = 'unknown') {
+        console.log(`fetchAllAppointments called from: ${source}. Current user:`, $currentUser ? $currentUser.$id : 'No user');
         if (!$currentUser || !$currentUser.$id) {
-            dataLoaded = false; // No user, so no data loaded for a user
+            dataLoaded = false;
+            console.log('fetchAllAppointments: No current user or user ID, returning.');
             return;
         }
-        // console.log(`Dashboard: Fetching appointments. User: ${$currentUser.$id}, IsMainUser: ${isMainUser}`);
         fetchError = '';
-        // isLoadingPage = true; // isLoadingPage is more about initial page readiness, not repeated fetches
-
+        
         try {
             if (isMainUser) {
-                // console.log("Fetching data for MAIN USER");
-                allMyHostedAppointments = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
-                // Clear other lists for main user to avoid confusion if they were populated
+                console.log('fetchAllAppointments: Fetching for MAIN USER...');
+                const hostedAppointmentsResult = await getAppointmentsHostedBy(MAIN_HOST_USER_ID);
+                console.log('fetchAllAppointments: Raw result from getAppointmentsHostedBy:', hostedAppointmentsResult);
+                allMyHostedAppointments = hostedAppointmentsResult;
                 availableAppointments = [];
                 myBookedAppointments = []; 
             } else {
-                // console.log("Fetching data for REGULAR USER");
+                console.log('fetchAllAppointments: Fetching for REGULAR USER...');
                 const [available, booked] = await Promise.all([
                     getAvailableAppointments(), 
                     getAppointmentsBookedBy($currentUser.$id)
                 ]);
+                console.log('fetchAllAppointments: Raw result for available:', available);
+                console.log('fetchAllAppointments: Raw result for booked by user:', booked);
                 availableAppointments = available;
                 myBookedAppointments = booked;
-                // Clear host list for regular user
                 allMyHostedAppointments = []; 
             }
-            dataLoaded = true; // Mark data as loaded for this user session
+            dataLoaded = true;
+            console.log('fetchAllAppointments: dataLoaded set to true.');
         } catch (err) {
-            console.error("Dashboard: Error fetching role-specific appointments:", err); // Keep this error log
+            console.error("Dashboard: Error fetching role-specific appointments:", err); 
             fetchError = "Failed to load appointments: " + err.message;
-            dataLoaded = false; // Data loading failed
-        } finally {
-            // if (dataLoaded || fetchError) {
-            //      isLoadingPage = false; // This was moved to be set earlier when $currentUser is known
-            // }
+            dataLoaded = false; 
         }
     }
 
     onMount(() => {
+        console.log('Dashboard onMount: Component mounted.');
         if ($currentUser && $currentUser.$id) {
-            isLoadingPage = false; // User identified, initial page structure can show
-            if (!dataLoaded) { 
-                // console.log("Dashboard onMount: User found, initial data fetch.");
-                fetchAllAppointments();
+            isLoadingPage = false;
+            if (!dataLoaded) {
+                console.log('Dashboard onMount: User exists, initial data fetch needed.');
+                fetchAllAppointments('onMount');
+            } else {
+                console.log('Dashboard onMount: User exists, but data already loaded (dataLoaded=true).');
             }
         } else if ($currentUser === null) {
-            // console.log("Dashboard onMount: No user (currentUser is null), redirecting to /.");
+            console.log('Dashboard onMount: No user (currentUser is null), redirecting to /.');
             goto('/');
         } else {
-            // console.log("Dashboard onMount: currentUser is in an intermediate state. Waiting for reactive block.");
-            // isLoadingPage remains true by default until $currentUser resolves
+            console.log('Dashboard onMount: currentUser is undefined or not yet resolved. isLoadingPage remains true.');
         }
     });
 
-    // Reactive statement for when $currentUser changes (primarily for fetching and redirection)
+    // Reactive statement for when $currentUser changes or previousUserId indicates a change
     $: {
-        if (typeof window !== 'undefined') { // Ensure this runs only client-side
+        if (typeof window !== 'undefined') { 
+            console.log('Dashboard reactive [$currentUser]: $currentUser changed. ID:', $currentUser ? $currentUser.$id : 'null/undefined');
             if ($currentUser && $currentUser.$id) {
-                // console.log("Dashboard reactive: $currentUser became available with ID: ", $currentUser.$id);
                 if (isLoadingPage) {
-                    // console.log("Dashboard reactive (user resolved): isLoadingPage was true, setting to false.");
+                    console.log('Dashboard reactive [$currentUser]: User resolved, setting isLoadingPage to false.');
                     isLoadingPage = false;
                 }
-                if (!dataLoaded) {
-                    // console.log("Dashboard reactive (user resolved): Data not loaded for this context, fetching.");
-                    fetchAllAppointments();
+                if (previousUserId !== $currentUser.$id) {
+                    console.log(`Dashboard reactive [$currentUser]: User changed from ${previousUserId} to ${$currentUser.$id}. Resetting dataLoaded and fetching.`);
+                    dataLoaded = false;
+                    previousUserId = $currentUser.$id;
+                    fetchAllAppointments('currentUser changed - new ID');
+                } else if (!dataLoaded) {
+                    console.log('Dashboard reactive [$currentUser]: User ID same as previous, but data not loaded. Fetching.');
+                    fetchAllAppointments('currentUser resolved - no data');
                 }
-            } else if ($currentUser === null){
-                // console.log("Dashboard reactive: currentUser became null (logout or session expiry).");
+            } else if ($currentUser === null) {
+                console.log('Dashboard reactive [$currentUser]: User became null (logout/session expiry).');
+                if (previousUserId !== null) {
+                     console.log('Dashboard reactive [$currentUser]: previousUserId was not null, resetting.');
+                    dataLoaded = false;
+                    previousUserId = null;
+                }
                 if (window.location.pathname === '/dashboard') {
-                    // console.log("Dashboard reactive: Still on /dashboard and currentUser is null, redirecting to /.");
+                    console.log('Dashboard reactive [$currentUser]: On /dashboard and user is null, redirecting to /.');
                     goto('/');
                 }
-                isLoadingPage = true; // Reset for next potential load if user navigates back
-                dataLoaded = false; // Reset dataLoaded status
+                // isLoadingPage = true; // Do not set isLoadingPage to true on logout, causes issues with redirect
             } else {
-                // console.log("Dashboard reactive: $currentUser is in an indeterminate state (not null, but no .$id?), or initial undefined from store before layout hydration ", $currentUser);
-                // If $currentUser is undefined (initial state before layout sets it to user object or null), isLoadingPage should remain true.
-                // if ($currentUser === undefined && isLoadingPage) {
-                    // console.log("Dashboard reactive: currentUser is undefined, page is still loading.");
-                // }
+                 console.log('Dashboard reactive [$currentUser]: $currentUser is in an indeterminate state.');
             }
         }
     }
 
-    // This block specifically resets dataLoaded when user context changes, forcing a refetch.
     let previousUserId = null;
+    // Reactive statement for when $currentUser changes or previousUserId indicates a change
     $: {
         if ($currentUser && $currentUser.$id) {
             if (previousUserId !== $currentUser.$id) {
-                // console.log(`Dashboard reactive: User changed from ${previousUserId} to ${$currentUser.$id}. Resetting dataLoaded.`);
                 dataLoaded = false;
                 previousUserId = $currentUser.$id;
-                // FetchAllAppointments will be called by the other reactive block if !dataLoaded
+                 fetchAllAppointments('previousUserId changed'); // This would be called if the block above doesn't handle it first
             }
         } else if (previousUserId !== null) {
-            // User logged out
-            // console.log(`Dashboard reactive: User logged out (was ${previousUserId}). Resetting dataLoaded.`);
             dataLoaded = false;
             previousUserId = null;
         }
     }
 
-    // Reset dataLoaded flag if the user logs out (currentUser becomes null)
-    // This ensures that if a new user logs in, data will be fetched for them.
-    $: if (!$currentUser) {
-        // console.log("Dashboard reactive: $currentUser is now falsy. Resetting dataLoaded and lists.");
+    $: if (!$currentUser && dataLoaded) { // Only reset if data was previously loaded for a user
+        console.log('Dashboard reactive [!$currentUser && dataLoaded]: User logged out, resetting data.');
         dataLoaded = false;
         allMyHostedAppointments = [];
         availableAppointments = [];
         myBookedAppointments = [];
-        isMainUser = false; // Reset isMainUser if user logs out
-        // isLoadingPage = true; // Reconsider if this should always be true - might cause flicker on logout then redirect
+        isMainUser = false;
     }
 
     async function handleAppointmentSubmit(event) {
-        if (!isMainUser || !$currentUser || !$currentUser.$id) { // Ensure only main user can submit
+        if (!isMainUser || !$currentUser || !$currentUser.$id) { 
             creationStatus = 'Error: Only the main host can create appointments.';
             if (!$currentUser || !$currentUser.$id) creationStatus = 'Error: Current user ID is not available. Please log in again.';
             return;
@@ -1505,9 +1251,10 @@ You can preview the production build with `npm run preview`.
             const appointmentDetails = event.detail;
             const newAppointment = await createAppointment(appointmentDetails, $currentUser);
             creationStatus = `Successfully created: ${newAppointment.title || 'Appointment'}`;
-            await fetchAllAppointments(); // Refresh lists
+            await fetchAllAppointments('after submitAppointment'); 
+            showCreateForm = false; // Hide form after successful creation
         } catch (error) {
-            console.error("Dashboard: Error creating appointment:", error); // Keep this error log
+            console.error("Dashboard: Error creating appointment:", error); 
             creationStatus = `Error creating appointment: ${error.message}`;
         }
     }
@@ -1526,9 +1273,9 @@ You can preview the production build with `npm run preview`.
         try {
             await bookAppointment(appointmentId, $currentUser);
             creationStatus = `Successfully booked appointment ${appointmentId}!`;
-            await fetchAllAppointments(); // Refresh all lists
+            await fetchAllAppointments('after bookAppointment'); 
         } catch (error) {
-            console.error("Dashboard: Error booking appointment:", error); // Keep this error log
+            console.error("Dashboard: Error booking appointment:", error); 
             creationStatus = `Error booking appointment: ${error.message}`;
             alert(`Error booking: ${error.message}`);
         }
@@ -1543,108 +1290,107 @@ You can preview the production build with `npm run preview`.
             alert('Error: User not identified. Cannot delete.');
             return;
         }
-        // Further check if mainUser is deleting one of their own, if needed, though AppointmentList handles button visibility
         creationStatus = `Deleting appointment ${appointmentId}...`;
         try {
             await deleteAppointment(appointmentId);
             creationStatus = `Successfully deleted appointment ${appointmentId}.`;
-            await fetchAllAppointments(); // Refresh all lists
+            await fetchAllAppointments('after deleteAppointment'); 
         } catch (error) {
-            console.error("Dashboard: Error deleting appointment:", error); // Keep this error log
+            console.error("Dashboard: Error deleting appointment:", error); 
             creationStatus = `Error deleting: ${error.message}`;
             alert(`Error deleting: ${error.message}`);
         }
     }
 
+    function toggleShowCreateForm() {
+        showCreateForm = !showCreateForm;
+    }
+
 </script>
 
 <svelte:head>
-    <title>Dashboard - JOMA</title>
+    <title>Dashboard - Network 3.0</title>
 </svelte:head>
 
-{#if isLoadingPage && !$currentUser && typeof window !== 'undefined' && window.location.pathname === '/dashboard'}
-    <!-- More specific condition for initial loading message for dashboard -->
-    <p>Loading user information or redirecting...</p>
-{:else if $currentUser}
-    <h1>Welcome to your Dashboard, {$currentUser.name || $currentUser.email.split('@')[0]}!</h1>
-    <p>Your User ID is: {$currentUser.$id} {#if isMainUser}<strong>(Main Host Account)</strong>{/if}</p>
-    <hr />
+<div class="relative min-h-screen w-full">
+    <!-- Background Image -->
+    <div 
+        class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0"
+        style="background-image: url({backgroundImage});"
+    ></div>
 
-    {#if isMainUser}
-        <div>
-            <h2>Create New Appointment</h2>
-            <AppointmentForm on:submitAppointment={handleAppointmentSubmit} />
-            {#if creationStatus && (creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
-                <p class="status-message">{creationStatus}</p>
+    <!-- Dashboard Content -->
+    <div class="relative z-10 min-h-screen text-stone-800 p-4 sm:p-6 lg:p-8">
+        {#if isLoadingPage && !$currentUser}
+            <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading user information...</p> <!-- Adjusted text color for visibility -->
+            </div>
+        {:else if $currentUser}
+            <header class="mb-6 sm:mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-white drop-shadow-md"> <!-- Adjusted text color -->
+                    Welcome, {$currentUser.name || $currentUser.email.split('@')[0]}!
+                </h1>
+                {#if isMainUser}
+                    <p class="text-sm text-emerald-300 font-semibold drop-shadow-sm">Host Dashboard</p> <!-- Adjusted text color -->
+                {:else}
+                    <p class="text-sm text-sky-300 font-semibold drop-shadow-sm">Client Dashboard</p> <!-- Adjusted text color -->
+                {/if}
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                
+                <!-- Appointments Card -->
+                <AppointmentsCard
+                    bind:isMainUser
+                    bind:dataLoaded
+                    bind:fetchError
+                    appointments={isMainUser ? allMyHostedAppointments : myBookedAppointments}
+                    listType={isMainUser ? "hostedByMe" : "bookedByMe"}
+                    currentUserId={$currentUser?.$id}
+                    on:deleteAppointment={handleDeleteAppointment}
+                />
+
+                <!-- Booking Management Card -->
+                <BookingManagementCard
+                    bind:isMainUser
+                    bind:dataLoaded
+                    bind:fetchError
+                    bind:availableAppointments
+                    currentUserId={$currentUser?.$id}
+                    showCreateFormState={showCreateForm} 
+                    on:toggleCreateForm={toggleShowCreateForm}
+                    on:submitAppointment={handleAppointmentSubmit}
+                    on:bookAppointment={handleBookAppointment}
+                />
+
+                <!-- Stats/History Card -->
+                <StatsHistoryCard
+                    bind:isMainUser
+                    bind:dataLoaded
+                    bind:fetchError
+                    bind:allMyHostedAppointments
+                />
+            </div>
+            
+            {#if creationStatus}
+                <div class="fixed bottom-6 right-6 p-4 rounded-lg shadow-xl text-sm
+                            bg-opacity-90 backdrop-blur-md border
+                            {creationStatus.toLowerCase().startsWith('error:') ? 'bg-red-100 border-red-300 text-red-800' : 
+                            creationStatus.toLowerCase().startsWith('successfully') ? 'bg-green-100 border-green-300 text-green-800' : 
+                            'bg-blue-100 border-blue-300 text-blue-800'}">
+                    <p>{creationStatus}</p>
+                </div>
             {/if}
-        </div>
-        <hr />
-        {#if creationStatus && !(creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
-             <p class="status-message">{creationStatus}</p> <!-- For booking/deleting status if main user somehow triggers -->
-        {/if}
-        {#if fetchError}<p class="status-message error">{fetchError}</p>{/if}
 
-        {#if isLoadingPage || (!dataLoaded && !fetchError)}
-             <p>Loading your appointments...</p>
-        {:else if fetchError}
-             <!-- error displayed above -->
+        {:else if !$currentUser && (typeof window === 'undefined' || window.location.pathname !== '/dashboard')}
+            <!-- Not on dashboard or SSR without user, this state might be complex or transient -->
         {:else}
-            <div>
-                <h2>My Hosted Appointments Overview</h2>
-                <AppointmentList appointments={allMyHostedAppointments} listType='hostedByMe' currentUserId={MAIN_HOST_USER_ID} on:deleteAppointment={handleDeleteAppointment} />
+            <div class="flex justify-center items-center min-h-[calc(100vh-4rem)]">
+                <p class="text-xl text-white bg-black/30 p-3 rounded-md">Loading dashboard state...</p> <!-- Adjusted text color -->
             </div>
         {/if}
-    {:else} <!-- Regular User View -->
-        {#if creationStatus && !(creationStatus.startsWith('Successfully created') || creationStatus.startsWith('Error creating'))}
-             <p class="status-message">{creationStatus}</p> <!-- For booking/deleting status -->
-        {/if}
-        {#if fetchError}<p class="status-message error">{fetchError}</p>{/if}
-
-        {#if isLoadingPage || (!dataLoaded && !fetchError)}
-            <p>Loading appointments...</p>
-        {:else if fetchError}
-            <!-- error displayed above -->
-        {:else}
-            <div>
-                <h2>Available Appointments</h2>
-                <AppointmentList appointments={availableAppointments} listType='available' currentUserId={$currentUser.$id} on:bookAppointment={handleBookAppointment} />
-            </div>
-            <hr />
-            <div>
-                <h2>My Booked Appointments</h2>
-                <AppointmentList appointments={myBookedAppointments} listType='bookedByMe' currentUserId={$currentUser.$id} />
-            </div>
-        {/if}
-    {/if}
-{:else}
-    <!-- This state should only be hit if $currentUser is null AND isLoadingPage is false (after layout confirms no session) -->
-    <!-- Or if navigating to /dashboard directly without a session -->
-    <p>No active session. Redirecting to login...</p>
-{/if}
-
-<style>
-    h1, h2 {
-        color: #333;
-    }
-    hr {
-        margin: 2rem 0;
-    }
-    div {
-        margin-bottom: 2rem;
-    }
-    .status-message {
-        margin-top: 1rem;
-        padding: 0.5rem;
-        border-radius: 4px;
-        background-color: #e9ecef;
-        border: 1px solid #ced4da;
-    }
-    .status-message.error {
-        background-color: #f8d7da;
-        color: #721c24;
-        border-color: #f5c6cb;
-    }
-</style>
+    </div>
+</div>
 </file>
 
 <file path="src/routes/+page.svelte">
@@ -1652,6 +1398,7 @@ You can preview the production build with `npm run preview`.
     import { account, ID } from '$lib/appwrite';
     import { currentUser } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
+    import backgroundImage from '$lib/images/stone.jpg'; // Updated image import
 
     async function login(email, password) {
         try {
@@ -1707,174 +1454,58 @@ You can preview the production build with `npm run preview`.
 </script>
 
 <svelte:head>
-	<title>JOMA Appointments - Welcome</title>
+	<title>Network 3.0 - Coming Soon</title>
 </svelte:head>
 
-<div class="homepage-container">
-    <section id="hero">
-        <h1>Welcome to JOMA Appointments!</h1>
-        <p>Your easy solution for scheduling and managing appointments.</p>
-        {#if !$currentUser}
-            <p>Please log in or register below to get started.</p>
-        {:else}
-            <p>Access your <a href="/dashboard">dashboard</a> to manage your appointments.</p>
-        {/if}
-    </section>
+<div class="relative min-h-screen w-full">
+    <!-- Background Image (no overlay) -->
+    <div 
+        class="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed z-0"
+        style="background-image: url({backgroundImage});"
+        data-testid="background-image-div"
+    ></div>
+    
+    <!-- Removed Overlay Div -->
 
-    <section id="features">
-        <h2>Features</h2>
-        <ul>
-            <li>Easy Appointment Scheduling</li>
-            <li>Organized Dashboard View</li>
-            <li>User-Friendly Interface</li>
-            <li>Secure & Reliable</li>
-        </ul>
-    </section>
+    <!-- Content (centered and on top) -->
+    <div class="relative z-20 min-h-screen w-full flex flex-col items-center justify-center p-4 space-y-10">
+        
+        <div class="text-center mb-8 sm:mb-12 md:mb-16">
+            <h1 class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold mb-4 text-white drop-shadow-lg">Network 3.0</h1>
+            <p class="text-3xl sm:text-4xl md:text-5xl text-white drop-shadow-md">Coming soon...</p>
+        </div>
 
-    <section id="auth-section">
-        <h2>Get Started</h2>
-        {#if !$currentUser}    
-            <div class="auth-form-container">
-                <form on:submit={submit}>
-                    <input type="email" placeholder="Email" name="email" required />
-                    <input type="password" placeholder="Password" name="password" required />
-                    <div class="button-group">
-                        <button type="submit" data-type="login">Login</button>
-                        <button type="submit" data-type="register">Register</button>
-                    </div>
-                </form>
-            </div>
-        {:else}
-            <p>You are currently logged in as {$currentUser.name || $currentUser.email}.</p>
-        {/if}
-    </section>
-
-    <section id="about">
-        <h2>About JOMA</h2>
-        <p>We aim to simplify appointment booking for everyone. More placeholder text here.</p>
-    </section>
-
-    <footer>
-        <p>&copy; 2024 JOMA Appointments. All rights reserved.</p>
-    </footer>
+        <section id="cta-auth" class="w-full max-w-md">
+            {#if !$currentUser}    
+                <div class="bg-white/10 backdrop-blur-md p-6 sm:p-8 rounded-lg shadow-xl border border-white/20">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6 text-center text-white">Login or Register</h2>
+                    <form on:submit={submit} class="space-y-5 sm:space-y-6">
+                        <div>
+                            <label for="email-cs" class="block text-sm font-medium text-gray-200 sr-only">Email</label>
+                            <input id="email-cs" type="email" placeholder="Email" name="email" required class="mt-1 block w-full px-3 py-2 border border-white/30 rounded-md shadow-sm focus:ring-indigo-400 focus:border-indigo-400 sm:text-sm bg-white/20 text-white placeholder-gray-300" />
+                        </div>
+                        <div>
+                            <label for="password-cs" class="block text-sm font-medium text-gray-200 sr-only">Password</label>
+                            <input id="password-cs" type="password" placeholder="Password" name="password" required class="mt-1 block w-full px-3 py-2 border border-white/30 rounded-md shadow-sm focus:ring-indigo-400 focus:border-indigo-400 sm:text-sm bg-white/20 text-white placeholder-gray-300" />
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                            <button type="submit" data-type="login" class="w-full flex justify-center py-2 px-4 border border-stone-300/50 rounded-md shadow-sm text-sm font-medium text-stone-700 bg-stone-200/60 hover:bg-stone-300/70 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 focus:ring-offset-black/50">Login</button>
+                            <button type="submit" data-type="register" class="w-full flex justify-center py-2 px-4 border border-stone-300/50 rounded-md shadow-sm text-sm font-medium text-stone-700 bg-stone-200/60 hover:bg-stone-300/70 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 focus:ring-offset-black/50">Register</button>
+                        </div>
+                    </form>
+                </div>
+            {:else}
+                <div class="text-center bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-lg drop-shadow-lg border border-white/20">
+                    <p class="text-lg sm:text-xl mb-4 text-white">Willkommen zurück, {$currentUser.name || $currentUser.email}!</p>
+                    <p class="mb-4 text-base sm:text-lg text-white">Network 3.0 is launching soon. We\'ll keep you updated!</p>
+                    <a href="/dashboard" class="bg-stone-200/60 backdrop-blur-md text-stone-700 hover:bg-stone-300/70 border border-stone-300/50 font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-lg transition duration-300 text-sm sm:text-base">Gehe zum Dashboard</a>
+                </div>
+            {/if}
+        </section>
+    </div>
 </div>
 
-<style>
-    /* Remove or significantly reduce specificity of :global(body) here */
-    /* General body styles should be in app.html or +layout.svelte if needed globally */
-	:global(body) {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-		margin: 0;
-		background-color: #f9f9f9; /* Lighter overall background for homepage */
-	}
-
-    .homepage-container {
-        /* No specific layout for homepage-container itself, sections will flow block */
-    }
-
-    section {
-        padding: 2rem 1rem;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-    }
-
-    #hero {
-        background-color: #e0f2f7;
-        color: #333;
-    }
-
-    #hero h1 {
-        margin-bottom: 0.5rem;
-    }
-
-    #features ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    #features li {
-        margin-bottom: 0.5rem;
-        font-size: 1.1em;
-    }
-    
-    #auth-section {
-        background-color: #fff; /* Keep auth form background white */
-    }
-
-	.auth-form-container { /* This was previously .container */
-		background-color: #fff;
-		padding: 2rem;
-		border-radius: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		text-align: center;
-		width: 100%;
-		max-width: 400px;
-		margin: 1rem auto; /* Centering the form container */
-	}
-
-	p {
-		color: #555; /* Slightly softer text color for general paragraphs */
-		font-size: 1.1em;
-		margin-bottom: 1.5rem;
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	input[type="email"],
-	input[type="password"] {
-		padding: 0.75rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1em;
-	}
-
-	input[type="email"]:focus,
-	input[type="password"]:focus {
-		border-color: #007bff;
-		outline: none;
-		box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-	}
-
-	.button-group {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	button {
-		padding: 0.75rem;
-		border: none;
-		border-radius: 4px;
-		font-size: 1em;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-		flex-grow: 1;
-	}
-
-	button[type="submit"] {
-		background-color: #007bff;
-		color: white;
-	}
-
-	button[type="submit"]:hover {
-		background-color: #0056b3;
-	}
-
-	form .button-group button {
-	}
-
-    footer {
-        text-align: center;
-        padding: 2rem 1rem;
-        background-color: #333;
-        color: #f0f0f0;
-        font-size: 0.9em;
-    }
-</style>
+<!-- Removed the entire <style> block that was previously here -->
 </file>
 
 </files>
