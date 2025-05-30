@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"@fontsource/inter": "^5.2.5",
-		"appwrite": "^14.0.1"
+		"appwrite": "^14.0.1",
+		"marked": "^15.0.12"
 	}
 }

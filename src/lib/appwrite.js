@@ -1,4 +1,4 @@
-import { Client, Account, ID } from 'appwrite';
+import { Client, Account, ID, Databases, Query } from 'appwrite';
 
 export const client = new Client();
 
@@ -7,6 +7,7 @@ client
     .setProject('68357409002d8b46f512');
 
 export const account = new Account(client);
+export const databases = new Databases(client);
 
 export async function logoutUser() {
     try {
@@ -17,4 +18,4 @@ export async function logoutUser() {
     }
 }
 
-export { ID }; 
+export { ID, Query }; 
