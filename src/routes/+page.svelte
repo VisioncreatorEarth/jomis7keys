@@ -1,6 +1,7 @@
 <script>
     import { currentUser } from '$lib/stores/userStore';
     import HeroSection from '$lib/components/landing/HeroSection.svelte';
+    import PhilosophySection from '$lib/components/landing/PhilosophySection.svelte';
     import AktuellSection from '$lib/components/landing/AktuellSection.svelte';
     
     // Import the background image for hero section
@@ -18,6 +19,9 @@
 <div class="min-h-screen w-full">
     <!-- Hero Section -->
     <HeroSection backgroundImage={heroBackground} />
+    
+    <!-- Philosophy Section -->
+    <PhilosophySection />
     
     <!-- Current Dates Section -->
     <AktuellSection backgroundImage={aktuellBackground} />

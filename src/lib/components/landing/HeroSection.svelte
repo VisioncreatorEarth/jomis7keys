@@ -17,15 +17,9 @@
     </div>
 
     <!-- Hero Content -->
-    <div class="relative z-10 w-full h-full flex items-center justify-end px-8 lg:px-16">
+    <div class="relative z-10 w-full h-full flex items-center justify-end px-8 lg:px-16 pt-32">
         <div class="max-w-3xl mr-8 lg:mr-16 xl:mr-24">
             <!-- Main Headline with better spacing and stronger contrast -->
-            <h1 class="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-white mb-8 leading-tight tracking-tight text-right hero-title">
-                <span class="block mb-4">Die 7 Schlüssel</span>
-                <span class="block text-transparent bg-gradient-to-r from-sky-400 to-yellow-400 bg-clip-text hero-gradient" style="background: linear-gradient(to right, #87CEEB, #FFC107); -webkit-background-clip: text; background-clip: text;">
-                    zu deiner Befreiung
-                </span>
-            </h1>
 
             <!-- Subheadline with improved spacing and stronger contrast -->
             <h2 class="text-2xl md:text-3xl lg:text-4xl xl:text-5xl mb-12 font-semibold leading-relaxed text-right hero-subtitle" style="color: #E6E6FA;">
@@ -42,11 +36,11 @@
             <!-- Call-to-Action with improved spacing and stronger prominence -->
             <div class="space-y-6 mb-20 text-right">
                 <div class="space-y-3">
-                    <button class="cta-button text-white font-bold py-6 px-16 rounded-full text-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20" style="background: linear-gradient(135deg, #98FF98, #87CEEB, #98FF98); box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(152,255,152,0.4);">
+                    <button class="cta-button text-white font-bold py-6 px-16 rounded-full text-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20" style="background: linear-gradient(135deg, #C2A36E, #E6E6FA, #C2A36E); box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(194,163,110,0.4);">
                         Beginne deine Transformation
                     </button>
                     
-                    <p class="text-lg font-semibold" style="color: #FFC107;">
+                    <p class="text-lg font-semibold" style="color: #C2A36E;">
                         → Jetzt anmelden
                     </p>
                 </div>
@@ -106,35 +100,33 @@
         animation-delay: 0.6s;
     }
 
-    /* Enhanced text shadows for maximum readability */
+    /* Elegant text shadows for readability */
     .hero-title {
-        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 
-                     1px 1px 3px rgba(0, 0, 0, 0.9),
-                     0 0 15px rgba(0, 0, 0, 0.5);
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .hero-subtitle {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7),
-                     1px 1px 2px rgba(0, 0, 0, 0.8),
-                     0 0 10px rgba(0, 0, 0, 0.4);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .hero-description {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7),
-                     1px 1px 2px rgba(0, 0, 0, 0.8);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .hero-gradient {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8),
-                     1px 1px 2px rgba(0, 0, 0, 0.9);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
     }
 
     .cta-button {
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .cta-button:hover {
         box-shadow: 0 15px 40px rgba(0,0,0,0.4), 
-                    0 0 30px rgba(152,255,152,0.6) !important;
+                    0 0 30px rgba(194,163,110,0.6) !important;
     }
 </style> 

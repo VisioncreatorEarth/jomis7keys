@@ -71,28 +71,31 @@
 
 <style>
     .logo-gradient {
-        background: linear-gradient(135deg, #87CEEB, #98FF98);
-        box-shadow: 0 4px 15px rgba(135, 206, 235, 0.4);
+        background: linear-gradient(135deg, #C2A36E, #E6E6FA);
+        box-shadow: 0 4px 15px rgba(194, 163, 110, 0.4);
     }
 
     .logo-text {
-        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 
-                     1px 1px 3px rgba(0, 0, 0, 0.9),
-                     0 0 15px rgba(0, 0, 0, 0.6);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 500;
     }
 
     .login-btn {
         backdrop-filter: blur(10px);
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 500;
     }
 
     .login-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 25px rgba(194, 163, 110, 0.3);
+        background: rgba(194, 163, 110, 0.4) !important;
     }
 
     .hamburger-menu:hover .hamburger-line {
-        background: #87CEEB;
+        background: #C2A36E;
     }
 
     .hamburger-menu.active .hamburger-line:nth-child(1) {
@@ -116,6 +119,7 @@
         text-decoration: none;
         transition: all 0.3s ease;
         position: relative;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .fullscreen-nav-link::after {
@@ -126,14 +130,14 @@
         transform: translateX(-50%);
         width: 0;
         height: 2px;
-        background: linear-gradient(135deg, #87CEEB, #98FF98);
+        background: linear-gradient(135deg, #C2A36E, #E6E6FA);
         transition: width 0.3s ease;
     }
 
     .fullscreen-nav-link:hover {
-        color: #87CEEB;
+        color: #C2A36E;
         transform: translateY(-5px);
-        text-shadow: 0 10px 30px rgba(135, 206, 235, 0.3);
+        text-shadow: 0 10px 30px rgba(194, 163, 110, 0.3);
     }
 
     .fullscreen-nav-link:hover::after {

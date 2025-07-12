@@ -2,114 +2,79 @@
     export let backgroundImage = null;
 </script>
 
-<section class="relative py-24 lg:py-32 overflow-hidden">
-    <!-- Background Image Container -->
+<section class="relative h-screen overflow-hidden flex items-center justify-center">
+    <!-- Video Background -->
     <div class="absolute inset-0">
-        {#if backgroundImage}
-            <img 
-                src={backgroundImage} 
-                alt="Retreat location" 
-                class="w-full h-full object-cover"
-            />
-            <!-- Light overlay for text readability -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black/20 to-black/10"></div>
-        {:else}
-            <!-- Clean gradient background -->
-            <div class="absolute inset-0 bg-gradient-to-br from-amber-50 via-white to-yellow-50"></div>
-        {/if}
+        <video 
+            autoplay 
+            muted 
+            loop 
+            playsinline
+            class="w-full h-full object-cover"
+        >
+            <source src="/videos/aktuell.mov" type="video/quicktime">
+            <source src="/videos/aktuell.mov" type="video/mp4">
+        </video>
+        <!-- Cinematic overlay -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60"></div>
     </div>
 
-    <!-- Content with improved spacing -->
-    <div class="relative z-10 max-w-7xl mx-auto px-8">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-            
-            <!-- Left side - Text Content with better spacing -->
-            <div class="space-y-12">
-                <!-- AKTUELL Header with more breathing room -->
-                <div class="text-center lg:text-left">
-                    <p class="text-sm font-semibold text-amber-600 uppercase tracking-widest mb-4">
-                        AKTUELL
-                    </p>
-                    <h2 class="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800 leading-tight mb-6">
-                        Die nächsten Termine
-                    </h2>
-                    <p class="text-xl text-gray-600 font-light">
-                        (4-8 Teilnehmer)
-                    </p>
-                </div>
+    <!-- Glassmorphic Content Overlay -->
+    <div class="relative z-10 text-center max-w-2xl mx-auto px-8">
+        <!-- Header -->
+        <div class="mb-16">
+            <p class="text-lg font-semibold uppercase tracking-widest mb-6 glassmorphic-text" style="color: #C2A36E;">
+                AKTUELL
+            </p>
+            <h2 class="text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-8 leading-tight cinematic-title">
+                Die nächsten
+                <span class="block text-transparent bg-gradient-to-r bg-clip-text cinematic-gradient" style="background: linear-gradient(to right, #C2A36E, #E6E6FA); -webkit-background-clip: text; background-clip: text;">
+                    Termine
+                </span>
+            </h2>
+        </div>
 
-                <!-- Location with cleaner design -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-amber-100">
-                    <div class="flex items-start space-x-4">
-                        <svg class="w-7 h-7 text-amber-600 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Glassmorphic Dates Container -->
+        <div class="glassmorphic-container p-8 rounded-3xl backdrop-blur-xl border border-white/20 shadow-2xl">
+            <div class="space-y-8">
+                <!-- Location -->
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center space-x-3 mb-3">
+                        <svg class="w-6 h-6" style="color: #C2A36E;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
-                        <div>
-                            <h3 class="font-semibold text-gray-800 text-xl mb-2">Ort</h3>
-                            <p class="text-gray-600 text-lg leading-relaxed">Guntersberg mit Alpenblick im Chiemgau</p>
+                        <p class="text-xl font-semibold text-white">Guntersberg mit Alpenblick im Chiemgau</p>
+                    </div>
+                    <p class="text-base text-white/80">(4-8 Teilnehmer)</p>
+                </div>
+
+                <!-- Dates Grid -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="date-card p-6 rounded-2xl backdrop-blur-sm border border-white/10" style="background: rgba(194, 163, 110, 0.15);">
+                        <div class="text-center">
+                            <p class="text-base font-medium text-white/80 mb-2">Retreat 1</p>
+                            <p class="text-3xl font-bold text-white mb-2">24. - 27.</p>
+                            <p class="text-xl font-semibold" style="color: #C2A36E;">Juli 2025</p>
+                        </div>
+                    </div>
+
+                    <div class="date-card p-6 rounded-2xl backdrop-blur-sm border border-white/10" style="background: rgba(194, 163, 110, 0.15);">
+                        <div class="text-center">
+                            <p class="text-base font-medium text-white/80 mb-2">Retreat 2</p>
+                            <p class="text-3xl font-bold text-white mb-2">14. - 17.</p>
+                            <p class="text-xl font-semibold" style="color: #C2A36E;">August 2025</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dates with improved spacing -->
-                <div class="space-y-6">
-                    <div class="bg-gradient-to-r from-amber-100 to-yellow-100 rounded-2xl p-8 border border-amber-200 shadow-sm">
-                        <div class="flex items-center space-x-4">
-                            <svg class="w-7 h-7 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 text-lg mb-1">Retreat 1</h4>
-                                <p class="text-2xl font-bold text-amber-700">24. - 27. Juli 2025</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-r from-amber-100 to-yellow-100 rounded-2xl p-8 border border-amber-200 shadow-sm">
-                        <div class="flex items-center space-x-4">
-                            <svg class="w-7 h-7 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 text-lg mb-1">Retreat 2</h4>
-                                <p class="text-2xl font-bold text-amber-700">14. - 17. August 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Call to Action with better spacing -->
-                <div class="pt-8">
-                    <button class="w-full lg:w-auto bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-semibold py-5 px-14 rounded-full text-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <!-- CTA Button -->
+                <div class="pt-6">
+                    <button class="cta-button text-white font-bold py-4 px-12 rounded-full text-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20" style="background: linear-gradient(135deg, #C2A36E, #E6E6FA, #C2A36E);">
                         Jetzt Platz sichern
                     </button>
-                    <p class="text-sm text-gray-500 mt-4 font-light">
+                    <p class="text-white/70 mt-3 text-base">
                         Begrenzte Teilnehmerzahl - Frühe Anmeldung empfohlen
-                    </p>
-                </div>
-            </div>
-
-            <!-- Right side - Cleaner image placeholder -->
-            <div class="lg:order-last">
-                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-10 text-center border border-amber-100 shadow-lg">
-                    <!-- Placeholder for retreat image -->
-                    <div class="w-full h-80 bg-gradient-to-br from-amber-200 to-yellow-200 rounded-2xl flex items-center justify-center mb-8">
-                        <div class="text-center">
-                            <svg class="w-20 h-20 text-amber-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            <p class="text-amber-700 font-semibold text-lg">Alpenpanorama</p>
-                            <p class="text-amber-600">Guntersberg</p>
-                        </div>
-                    </div>
-                    
-                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">
-                        Idyllische Bergkulisse
-                    </h3>
-                    <p class="text-gray-600 leading-relaxed text-lg">
-                        Finde deine innere Ruhe in der majestätischen Alpenlandschaft. 
-                        Ein Ort der Kraft und Transformation.
                     </p>
                 </div>
             </div>
@@ -118,11 +83,11 @@
 </section>
 
 <style>
-    /* Subtle animation for the cards */
-    @keyframes slideInUp {
+    /* Cinematic animations */
+    @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(50px);
         }
         to {
             opacity: 1;
@@ -130,11 +95,83 @@
         }
     }
 
-    .bg-gradient-to-r {
-        animation: slideInUp 0.6s ease-out;
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
-    .bg-gradient-to-r:nth-child(2) {
+    @keyframes glow {
+        0%, 100% {
+            text-shadow: 0 0 20px rgba(194, 163, 110, 0.5);
+        }
+        50% {
+            text-shadow: 0 0 30px rgba(194, 163, 110, 0.8);
+        }
+    }
+
+    /* Glassmorphic container */
+    .glassmorphic-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        animation: scaleIn 1s ease-out;
+    }
+
+    /* Cinematic title */
+    .cinematic-title {
+        animation: fadeInUp 1.2s ease-out;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .cinematic-gradient {
+        animation: glow 3s ease-in-out infinite;
+    }
+
+    /* Glassmorphic text */
+    .glassmorphic-text {
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        animation: fadeInUp 1s ease-out;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Date cards */
+    .date-card {
+        animation: fadeInUp 1.4s ease-out;
+        transition: all 0.3s ease;
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .date-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(194, 163, 110, 0.3);
+    }
+
+    .date-card:nth-child(2) {
         animation-delay: 0.2s;
+    }
+
+    /* CTA Button */
+    .cta-button {
+        animation: fadeInUp 1.6s ease-out;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .cta-button:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4), 
+                    0 0 30px rgba(194,163,110,0.6) !important;
+    }
+
+    /* Video background styling */
+    video {
+        filter: brightness(0.7) contrast(1.1);
     }
 </style> 
