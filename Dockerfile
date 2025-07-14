@@ -11,7 +11,13 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Set production environment
+# Set build arguments for public environment variables
+ARG PUBLIC_APPWRITE_ENDPOINT
+ARG PUBLIC_APPWRITE_PROJECT_ID
+
+# Export them as environment variables for the build
+ENV PUBLIC_APPWRITE_ENDPOINT=$PUBLIC_APPWRITE_ENDPOINT
+ENV PUBLIC_APPWRITE_PROJECT_ID=$PUBLIC_APPWRITE_PROJECT_ID
 ENV NODE_ENV=production
 
 # Build the app

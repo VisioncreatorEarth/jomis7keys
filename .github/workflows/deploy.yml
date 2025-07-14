@@ -38,4 +38,4 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only
+        run: flyctl deploy --remote-only --build-arg PUBLIC_APPWRITE_ENDPOINT="${{ secrets.PUBLIC_APPWRITE_ENDPOINT }}" --build-arg PUBLIC_APPWRITE_PROJECT_ID="${{ secrets.PUBLIC_APPWRITE_PROJECT_ID }}"

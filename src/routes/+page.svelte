@@ -7,7 +7,6 @@
 
 	// Use Appwrite image for hero section
 	const heroBackground = imageService.getImageUrl('joachim-michaela-garden');
-	const aktuellBackground = null; // Keep gradient background for now
 </script>
 
 <!-- Hero Section -->
@@ -20,4 +19,4 @@
 <UeberUnsSection />
 
 <!-- Aktuell Section -->
-<AktuellSection backgroundImage={aktuellBackground} />
+<AktuellSection />

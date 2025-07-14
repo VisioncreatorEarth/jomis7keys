@@ -35,6 +35,7 @@
 					on:click={toggleMenu}
 					class="hamburger-menu flex h-8 w-8 flex-col items-center justify-center space-y-1 focus:outline-none"
 					class:active={isMenuOpen}
+					aria-label="Navigation menü öffnen"
 				>
 					<div
 						class="hamburger-line h-0.5 w-6 bg-white drop-shadow-lg transition-all duration-300"
@@ -64,6 +65,7 @@
 			<button
 				on:click={toggleMenu}
 				class="absolute top-8 right-8 text-white transition-colors hover:text-gray-300"
+				aria-label="Navigation menü schließen"
 			>
 				<svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path

@@ -96,31 +96,6 @@
 		}
 	}
 
-	h1,
-	h2,
-	p {
-		animation: fadeInUp 0.8s ease-out;
-	}
-
-	h2 {
-		animation-delay: 0.2s;
-	}
-
-	p {
-		animation-delay: 0.4s;
-	}
-
-	button {
-		animation: fadeInUp 0.8s ease-out;
-		animation-delay: 0.6s;
-	}
-
-	/* Elegant text shadows for readability */
-	.hero-title {
-		text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	}
-
 	.hero-subtitle {
 		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -129,10 +104,6 @@
 	.hero-description {
 		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	}
-
-	.hero-gradient {
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 	}
 
 	.glassmorphic-button {

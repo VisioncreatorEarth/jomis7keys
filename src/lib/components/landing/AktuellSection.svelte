@@ -1,8 +1,6 @@
 <script>
 	import { imageService } from '$lib/services/imageService.js';
 
-	export let backgroundImage = null;
-
 	// Get video from Appwrite
 	const videoSource = imageService.getImageUrl('hero-video');
 </script>
