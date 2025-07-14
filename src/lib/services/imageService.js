@@ -23,7 +23,7 @@ export const IMAGE_MAPPING = {
 
 // Local image paths for reference during migration
 export const LOCAL_IMAGES = {
-	'hero-video': '/videos/aktuell.mov',
+	'hero-video': 'https://via.placeholder.com/800x450.mp4?text=Video+Placeholder',
 	'joachim-michaela-garden': '/src/lib/images/joachim-michaela-garden-optimized.jpg',
 	'philosophy-bg': '/src/lib/images/Still 2025-07-12 105710_1.7.1.jpg',
 	'about-us-bg': '/src/lib/images/DSCF0534.jpg',
