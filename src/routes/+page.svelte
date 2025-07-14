@@ -1,5 +1,4 @@
 <script>
-	import { currentUser } from '$lib/stores/userStore';
 	import HeroSection from '$lib/components/landing/HeroSection.svelte';
 	import PhilosophySection from '$lib/components/landing/PhilosophySection.svelte';
 	import UeberUnsSection from '$lib/components/landing/UeberUnsSection.svelte';

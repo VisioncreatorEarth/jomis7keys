@@ -10,7 +10,7 @@
 		try {
 			const user = await appwriteService.getCurrentUser();
 			currentUser.set(user);
-		} catch (error) {
+		} catch {
 			console.log('No active session');
 		}
 	});
