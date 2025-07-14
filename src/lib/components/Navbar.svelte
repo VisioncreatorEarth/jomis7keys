@@ -17,7 +17,6 @@
 						<span class="text-2xl font-bold text-white drop-shadow-lg">Q</span>
 					</div>
 					<div class="logo-text text-sm font-bold tracking-wider text-white">QUANTENSPRUNG</div>
-					<div class="logo-text text-xs font-light tracking-widest text-white">RETREAT</div>
 				</a>
 			</div>
 

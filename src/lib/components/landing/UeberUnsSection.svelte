@@ -3,12 +3,17 @@
 	import { imageService } from '$lib/services/imageService.js';
 
 	let sectionElement;
-	let isVisible = false;
+	let isVisible = true; // Text ist sofort sichtbar
 
 	// Get background image from Appwrite
 	const backgroundImage = imageService.getImageUrl('about-us-bg');
 
 	onMount(() => {
+		// Animation nach kurzer Verzögerung starten
+		setTimeout(() => {
+			isVisible = true;
+		}, 200);
+
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				if (entry.isIntersecting) {
@@ -30,7 +35,7 @@
 
 <section bind:this={sectionElement} class="relative min-h-screen overflow-hidden">
 	<!-- Background Image -->
-	<div class="absolute inset-0 z-0">
+	<div class="absolute inset-0 z-0 bg-gray-900">
 		<img
 			src={backgroundImage}
 			alt="Joachim und Michaela Andert"

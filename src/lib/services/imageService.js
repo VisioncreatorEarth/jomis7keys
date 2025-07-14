@@ -9,7 +9,7 @@ import { appwriteService } from './appwriteService.js';
 export const IMAGE_MAPPING = {
 	// Hero/Background Images - Videos are hosted on external CDN
 	'hero-video':
-		'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // External CDN video placeholder
+		'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68750734001e49fce439/view?project=68357409002d8b46f512&mode=admin', // External CDN video placeholder
 	'joachim-michaela-garden':
 		'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/6874dddd0023e534e01f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NTAzY2E1MWE1ZDk1Nzk2OTQiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NGRkZGQwMDIzZTUzNGUwMWYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjEiLCJleHAiOjE3NTI0OTkyMDZ9.um35nG71aklxYi727a7VKxdT5_4eR-T0MqiRi9ZJVeQ',
 	'philosophy-bg':
