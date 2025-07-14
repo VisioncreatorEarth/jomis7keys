@@ -36,7 +36,7 @@
             <!-- Call-to-Action with improved spacing and stronger prominence -->
             <div class="space-y-6 mb-20 text-right">
                 <div class="space-y-3">
-                    <button class="cta-button text-white font-bold py-6 px-16 rounded-full text-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-white/20" style="background: linear-gradient(135deg, #C2A36E, #E6E6FA, #C2A36E); box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(194,163,110,0.4);">
+                    <button class="glassmorphic-button text-white font-bold py-6 px-16 rounded-full text-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 backdrop-blur-xl border border-white/30">
                         Beginne deine Transformation
                     </button>
                     
@@ -120,13 +120,20 @@
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
     }
 
-    .cta-button {
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    .glassmorphic-button {
+        background: rgba(194, 163, 110, 0.2);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 
+                    0 0 20px rgba(194, 163, 110, 0.3);
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
         font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .cta-button:hover {
-        box-shadow: 0 15px 40px rgba(0,0,0,0.4), 
-                    0 0 30px rgba(194,163,110,0.6) !important;
+    .glassmorphic-button:hover {
+        background: rgba(194, 163, 110, 0.3);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 
+                    0 0 40px rgba(194, 163, 110, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4);
     }
 </style> 

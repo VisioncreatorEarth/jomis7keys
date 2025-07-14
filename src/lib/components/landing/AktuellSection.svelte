@@ -1,5 +1,10 @@
 <script>
+    import { imageService } from '$lib/services/imageService.js';
+    
     export let backgroundImage = null;
+    
+    // Get video from Appwrite
+    const videoSource = imageService.getImageUrl('hero-video');
 </script>
 
 <section class="relative h-screen overflow-hidden flex items-center justify-center">
@@ -12,8 +17,8 @@
             playsinline
             class="w-full h-full object-cover"
         >
-            <source src="/videos/aktuell.mov" type="video/quicktime">
-            <source src="/videos/aktuell.mov" type="video/mp4">
+            <source src={videoSource} type="video/quicktime">
+            <source src={videoSource} type="video/mp4">
         </video>
         <!-- Cinematic overlay -->
         <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60"></div>

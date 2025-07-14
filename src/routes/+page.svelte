@@ -2,11 +2,12 @@
     import { currentUser } from '$lib/stores/userStore';
     import HeroSection from '$lib/components/landing/HeroSection.svelte';
     import PhilosophySection from '$lib/components/landing/PhilosophySection.svelte';
+    import UeberUnsSection from '$lib/components/landing/UeberUnsSection.svelte';
     import AktuellSection from '$lib/components/landing/AktuellSection.svelte';
+    import { imageService } from '$lib/services/imageService.js';
     
-    // Import the background image for hero section
-    import heroBackground from '$lib/images/Still 2025-07-12 105710_1.5.1.jpg';
-    // import aktuellBackground from '$lib/images/your-aktuell-background.jpg';
+    // Use Appwrite image for hero section
+    const heroBackground = imageService.getImageUrl('joachim-michaela-garden');
     const aktuellBackground = null; // Keep gradient background for now
 </script>
 
@@ -25,6 +26,9 @@
     
     <!-- Current Dates Section -->
     <AktuellSection backgroundImage={aktuellBackground} />
+    
+    <!-- Über Uns Section -->
+    <UeberUnsSection />
     
     <!-- Future sections will go here -->
     <!-- 

@@ -1,8 +1,8 @@
-import { Client, Account, Databases, ID } from 'appwrite';
+import { Client, Account, Databases, Storage, ID } from 'appwrite';
 
 // Environment variable configuration for both server and client
 const IS_SERVER = typeof window === 'undefined';
-let VITE_APPWRITE_ENDPOINT, VITE_APPWRITE_PROJECT_ID, VITE_APPWRITE_DATABASE_ID;
+let VITE_APPWRITE_ENDPOINT, VITE_APPWRITE_PROJECT_ID, VITE_APPWRITE_DATABASE_ID, VITE_APPWRITE_BUCKET_ID;
 
 if (IS_SERVER) {
     try {
@@ -12,6 +12,7 @@ if (IS_SERVER) {
         VITE_APPWRITE_ENDPOINT = process.env.VITE_APPWRITE_ENDPOINT;
         VITE_APPWRITE_PROJECT_ID = process.env.VITE_APPWRITE_PROJECT_ID;
         VITE_APPWRITE_DATABASE_ID = process.env.VITE_APPWRITE_DATABASE_ID;
+        VITE_APPWRITE_BUCKET_ID = process.env.VITE_APPWRITE_BUCKET_ID;
     } catch (err) {
         console.error('[appwriteService.js] Error configuring dotenv:', err);
     }
@@ -20,6 +21,7 @@ if (IS_SERVER) {
     VITE_APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
     VITE_APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
     VITE_APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+    VITE_APPWRITE_BUCKET_ID = import.meta.env.VITE_APPWRITE_BUCKET_ID;
 }
 
 // Validate environment variables
@@ -27,7 +29,8 @@ if (!VITE_APPWRITE_ENDPOINT || !VITE_APPWRITE_PROJECT_ID || !VITE_APPWRITE_DATAB
     console.error("[appwriteService.js] Missing Appwrite environment variables:", {
         endpoint: !!VITE_APPWRITE_ENDPOINT,
         projectId: !!VITE_APPWRITE_PROJECT_ID,
-        databaseId: !!VITE_APPWRITE_DATABASE_ID
+        databaseId: !!VITE_APPWRITE_DATABASE_ID,
+        bucketId: !!VITE_APPWRITE_BUCKET_ID
     });
 }
 
@@ -43,6 +46,7 @@ if (VITE_APPWRITE_ENDPOINT && VITE_APPWRITE_PROJECT_ID) {
 // Initialize services
 const account = new Account(client);
 const databases = new Databases(client);
+const storage = new Storage(client);
 
 /**
  * ========================================
@@ -87,6 +91,63 @@ async function getCurrentUser() {
     }
 }
 
+/**
+ * ========================================
+ * Storage Functions
+ * ========================================
+ */
+
+async function uploadFile(file, fileId = null) {
+    try {
+        const response = await storage.createFile(
+            VITE_APPWRITE_BUCKET_ID,
+            fileId || ID.unique(),
+            file
+        );
+        return response;
+    } catch (error) {
+        console.error("Failed to upload file:", error);
+        throw error;
+    }
+}
+
+async function deleteFile(fileId) {
+    try {
+        await storage.deleteFile(VITE_APPWRITE_BUCKET_ID, fileId);
+        return true;
+    } catch (error) {
+        console.error("Failed to delete file:", error);
+        throw error;
+    }
+}
+
+function getFileUrl(fileId) {
+    try {
+        return storage.getFileView(VITE_APPWRITE_BUCKET_ID, fileId);
+    } catch (error) {
+        console.error("Failed to get file URL:", error);
+        return null;
+    }
+}
+
+function getFileDownload(fileId) {
+    try {
+        return storage.getFileDownload(VITE_APPWRITE_BUCKET_ID, fileId);
+    } catch (error) {
+        console.error("Failed to get file download URL:", error);
+        return null;
+    }
+}
+
+async function getFileList() {
+    try {
+        return await storage.listFiles(VITE_APPWRITE_BUCKET_ID);
+    } catch (error) {
+        console.error("Failed to get file list:", error);
+        throw error;
+    }
+}
+
 // Export clean service interface
 export const appwriteService = {
     // Core authentication
@@ -95,11 +156,20 @@ export const appwriteService = {
     logoutUser,
     getCurrentUser,
     
+    // Storage functions
+    uploadFile,
+    deleteFile,
+    getFileUrl,
+    getFileDownload,
+    getFileList,
+    
     // Direct access to clients for custom operations
     client,
     account,
     databases,
+    storage,
     
     // Environment variables for custom collection operations
-    DATABASE_ID: VITE_APPWRITE_DATABASE_ID
+    DATABASE_ID: VITE_APPWRITE_DATABASE_ID,
+    BUCKET_ID: VITE_APPWRITE_BUCKET_ID
 }; 

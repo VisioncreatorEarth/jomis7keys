@@ -1,12 +1,15 @@
 <script>
-    // No props needed for this section
+    import { imageService } from '$lib/services/imageService.js';
+    
+    // Get background image from Appwrite
+    const backgroundImage = imageService.getImageUrl('philosophy-bg');
 </script>
 
 <section class="relative py-16 lg:py-24 overflow-hidden">
     <!-- Background Image -->
     <div class="absolute inset-0 z-0">
         <img 
-            src="/src/lib/images/Still 2025-07-12 105710_1.7.1.jpg" 
+            src={backgroundImage}
             alt="Background"
             class="w-full h-full object-cover"
         />
