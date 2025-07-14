@@ -7,6 +7,12 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
+		"start": "PORT=3000 bun run build/index.js",
+		"deploy": "fly deploy",
+		"deploy:script": "./scripts/deploy.sh",
+		"fly:setup": "fly launch --no-deploy",
+		"fly:logs": "fly logs",
+		"fly:status": "fly status",
 		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint ."
@@ -33,6 +39,7 @@
 	},
 	"dependencies": {
 		"@fontsource/inter": "^5.2.5",
+		"@sveltejs/adapter-node": "^5.2.13",
 		"appwrite": "^14.0.1",
 		"dotenv": "^16.5.0",
 		"marked": "^15.0.12"
