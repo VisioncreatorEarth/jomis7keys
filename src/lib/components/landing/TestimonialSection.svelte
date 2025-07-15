@@ -5,6 +5,9 @@
 	let isVisible = false;
 	let expandedCards = new Set(); // Track which cards are expanded
 
+	// Background image URL from Appwrite
+	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ab4002a3efa2954/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNhYmRjOTVhODM5MDVlNDgiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNhYjQwMDJhM2VmYTI5NTQiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjEzIiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.zl4mRZz4NR-WqoZdFuinT2Y3H133-tFW3dQfNdbiWIA";
+
 	// Toggle expansion of a testimonial card
 	function toggleExpansion(index) {
 		if (expandedCards.has(index)) {
@@ -15,7 +18,7 @@
 		expandedCards = new Set(expandedCards); // Trigger reactivity
 	}
 
-	// Real testimonials from retreat participants (shortened for readability)
+	// Real testimonials from retreat participants (first 6 testimonials)
 	const testimonials = [
 		{
 			name: 'Maria-Luisa',
@@ -52,18 +55,6 @@
 			avatar: 'M',
 			text: 'Diese drei Tage haben mein Leben verändert. Die Arbeit mit den wunden Punkten hat mir gezeigt, wo meine wahren Blockaden lagen. Ich fühle mich wie neugeboren!',
 			full: 'Diese drei Tage haben mein Leben verändert. Ich konnte endlich loslassen, was mich jahrelang belastet hat. Die Arbeit mit den wunden Punkten hat mir gezeigt, wo meine wahren Blockaden lagen. Joachim und Michaela haben mich mit so viel Liebe und Achtsamkeit durch diesen Prozess geführt. Ich fühle mich wie neugeboren!'
-		},
-		{
-			name: 'Wochenend-Teilnehmerin',
-			avatar: 'WT',
-			text: 'So viel ehrliche und tiefe Begegnungen in einem feinen Kreis. Fühlen und begreifen und wieder fühlen. So bewegend und befreiend! ✨🌈🌟',
-			full: 'Vielen Dank für dieses wunderbare Wochenende! ✨🌈🌟 So viel ehrliche und tiefe Begegnungen in einem feinen und sehr persönlichen Kreis. 💫 Ich bin mit meinen gut verdeckten Gefühlen wieder in Kontakt gekommen und hatte so einige Aha-Momente. Fühlen und begreifen und wieder fühlen. So bewegend und befreiend! Das ganze Ausmaß der Entfaltung meines erweiterten Potentials wird sich Stück für Stück zeigen.'
-		},
-		{
-			name: 'Thomas',
-			avatar: 'T',
-			text: 'Vor dem Retreat war ich innerlich zerrissen. Die Arbeit mit dem Nervensystem und den alten Traumata war heilsam. Ich bin unendlich dankbar für diese Transformation.',
-			full: 'Vor dem Retreat war ich innerlich zerrissen und konnte nicht mehr klar denken. Die Arbeit mit Joachim und Michaela hat mir geholfen, meine innere Ruhe wiederzufinden. Besonders die Arbeit mit dem Nervensystem und den alten Traumata war heilsam. Ich bin unendlich dankbar für diese Transformation.'
 		}
 	];
 
@@ -94,13 +85,17 @@
 
 <section
 	bind:this={sectionElement}
-	class="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white py-16 lg:py-24"
+	class="relative overflow-hidden py-16 lg:py-24"
+	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 >
-	<!-- Subtle background pattern -->
-	<div class="absolute inset-0 opacity-5">
+	<!-- Background overlay for better readability -->
+	<div class="absolute inset-0 bg-black/40"></div>
+	
+	<!-- Subtle pattern overlay -->
+	<div class="absolute inset-0 opacity-10">
 		<div
 			class="absolute inset-0"
-			style="background-image: radial-gradient(circle at 1px 1px, rgba(194,163,110,0.15) 1px, transparent 0); background-size: 20px 20px;"
+			style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0); background-size: 20px 20px;"
 		></div>
 	</div>
 
@@ -110,25 +105,25 @@
 			<!-- Tag -->
 			<div class="mb-6 inline-block">
 				<span
-					class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-800"
+					class="inline-flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-purple-800 backdrop-blur-sm"
 				>
 					Erfahrungen unserer Teilnehmer
 				</span>
 			</div>
 
 			<!-- Title -->
-			<h2 class="mb-6 text-4xl leading-tight font-bold text-gray-900 lg:text-5xl xl:text-6xl">
+			<h2 class="mb-6 text-4xl leading-tight font-bold text-white lg:text-5xl xl:text-6xl">
 				Unsere Wand der
 				<span
 					class="block bg-gradient-to-r bg-clip-text text-transparent"
-					style="background: linear-gradient(to right, #C2A36E, #8B7355); -webkit-background-clip: text; background-clip: text;"
+					style="background: linear-gradient(to right, #C2A36E, #FFD700); -webkit-background-clip: text; background-clip: text;"
 				>
 					Transformation
 				</span>
 			</h2>
 
 			<!-- Subtitle -->
-			<p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600">
+			<p class="mx-auto max-w-3xl text-xl leading-relaxed text-white/90">
 				Lesen Sie, was unsere Teilnehmer über ihre lebensverändernde Erfahrung beim Quantensprung
 				Retreat sagen.
 			</p>
@@ -138,21 +133,21 @@
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
 			{#each testimonials as testimonial, index (index)}
 				<div
-					class="testimonial-card glassmorphic-card rounded-2xl border border-gray-200/50 bg-white/70 p-6 shadow-lg backdrop-blur-lg transition-all duration-500 hover:shadow-xl lg:p-8"
+					class="testimonial-card glassmorphic-card rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:shadow-xl lg:p-8"
 					class:animate-in={isVisible}
 					class:expanded={expandedCards.has(index)}
 					style="animation-delay: {index * 100}ms"
 				>
 					<!-- Testimonial Text -->
 					<div class="mb-6">
-						<blockquote class="leading-relaxed font-medium text-gray-700">
+						<blockquote class="leading-relaxed font-medium text-white">
 							"{expandedCards.has(index) && testimonial.full ? testimonial.full : testimonial.text}"
 						</blockquote>
 
 						<!-- Read More/Less Button -->
 						{#if testimonial.full}
 							<button
-								class="mt-3 text-sm font-semibold text-[#C2A36E] transition-colors duration-200 hover:text-[#8B7355]"
+								class="mt-3 text-sm font-semibold text-[#C2A36E] transition-colors duration-200 hover:text-[#FFD700]"
 								on:click={() => toggleExpansion(index)}
 							>
 								{expandedCards.has(index) ? 'Weniger lesen' : 'Mehr lesen'}
@@ -164,17 +159,17 @@
 					<div class="flex items-center space-x-4">
 						<!-- Avatar -->
 						<div
-							class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C2A36E] to-[#8B7355] text-sm font-bold text-white"
+							class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C2A36E] to-[#8B7355] text-sm font-bold text-white shadow-lg"
 						>
 							{testimonial.avatar}
 						</div>
 
 						<!-- Name -->
 						<div class="min-w-0 flex-1">
-							<div class="truncate font-semibold text-gray-900">
+							<div class="truncate font-semibold text-white">
 								{testimonial.name}
 							</div>
-							<div class="text-sm text-gray-500">
+							<div class="text-sm text-white/70">
 								Retreat Teilnehmer{testimonial.name.includes('in') ? 'in' : ''}
 							</div>
 						</div>
@@ -183,24 +178,6 @@
 			{/each}
 		</div>
 
-		<!-- Bottom CTA -->
-		<div class="mt-16 text-center">
-			<div
-				class="glassmorphic-card inline-block rounded-2xl border border-gray-200/50 bg-white/80 p-8 shadow-lg backdrop-blur-lg"
-			>
-				<h3 class="mb-4 text-2xl font-bold text-gray-900">
-					Bereit für Ihre eigene Transformation?
-				</h3>
-				<p class="mx-auto mb-6 max-w-md text-gray-600">
-					Werden Sie Teil unserer Gemeinschaft und erleben Sie Ihren persönlichen Quantensprung.
-				</p>
-				<button
-					class="glassmorphic-button transform rounded-full bg-gradient-to-r from-[#C2A36E] to-[#8B7355] px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
-				>
-					Jetzt anmelden
-				</button>
-			</div>
-		</div>
 	</div>
 </section>
 
@@ -208,12 +185,15 @@
 	.glassmorphic-card {
 		backdrop-filter: blur(20px);
 		transition: all 0.3s ease;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.glassmorphic-card:hover {
 		transform: translateY(-4px);
-		border-color: rgba(194, 163, 110, 0.3);
-		background: rgba(255, 255, 255, 0.85);
+		border-color: rgba(194, 163, 110, 0.4);
+		background: rgba(255, 255, 255, 0.15);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 	}
 
 	.glassmorphic-button {
@@ -272,12 +252,6 @@
 	}
 	.testimonial-card:nth-child(6) {
 		animation-delay: 500ms;
-	}
-	.testimonial-card:nth-child(7) {
-		animation-delay: 600ms;
-	}
-	.testimonial-card:nth-child(8) {
-		animation-delay: 700ms;
 	}
 
 	/* Responsive adjustments */
