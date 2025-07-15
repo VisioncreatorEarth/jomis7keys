@@ -3,14 +3,13 @@
 
 	let sectionElement;
 	let carouselElement;
-	let isVisible = true;
 	let currentSlide = 0;
 	let autoPlayInterval;
-	let isPlaying = true;
 	let hasAnimated = false;
 
 	// Background image URL from Appwrite
-	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ebc000574f8c44f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNlZDU2NmY1MDM4Nzg1NmUiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNlYmMwMDA1NzRmOGM0NGYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjE0IiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.IZ7AYLMKGt8JiyZnZjbHXjV77PCvtbxxDBa84KQsPIU";
+	const backgroundImageUrl =
+		'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ebc000574f8c44f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNlZDU2NmY1MDM4Nzg1NmUiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNlYmMwMDA1NzRmOGM0NGYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjE0IiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.IZ7AYLMKGt8JiyZnZjbHXjV77PCvtbxxDBa84KQsPIU';
 
 	// Three main offers
 	const offers = [
@@ -80,15 +79,6 @@
 		}
 	];
 
-	// Auto-play functionality (much slower)
-	function startAutoPlay() {
-		autoPlayInterval = setInterval(() => {
-			if (isPlaying) {
-				nextSlide();
-			}
-		}, 15000); // 15 seconds instead of 5
-	}
-
 	function stopAutoPlay() {
 		if (autoPlayInterval) {
 			clearInterval(autoPlayInterval);
@@ -107,24 +97,12 @@
 		currentSlide = index;
 	}
 
-	function pauseAutoPlay() {
-		isPlaying = false;
-	}
-
-	function resumeAutoPlay() {
-		isPlaying = true;
-	}
-
 	onMount(() => {
-		// Make carousel visible immediately
-		isVisible = true;
-		// No autoplay - let users control navigation manually
-		
 		// After initial animation completes, make future cards load instantly
 		setTimeout(() => {
 			hasAnimated = true;
 		}, 1000);
-		
+
 		return () => {
 			stopAutoPlay();
 		};
@@ -133,14 +111,14 @@
 
 <section
 	bind:this={sectionElement}
-	class="overflow-hidden relative py-16 lg:py-24"
+	class="relative overflow-hidden py-16 lg:py-24"
 	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 	role="region"
 	aria-label="Angebote Carousel"
 >
 	<!-- Background overlay for better readability -->
 	<div class="absolute inset-0 bg-black/50"></div>
-	
+
 	<!-- Subtle pattern overlay -->
 	<div class="absolute inset-0 opacity-10">
 		<div
@@ -149,11 +127,11 @@
 		></div>
 	</div>
 
-	<div class="relative z-10 px-8 mx-auto max-w-7xl">
+	<div class="relative z-10 mx-auto max-w-7xl px-8">
 		<!-- Header -->
 		<div class="mb-16 text-center">
 			<!-- Tag -->
-			<div class="inline-block mb-6">
+			<div class="mb-6 inline-block">
 				<span
 					class="inline-flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-[#C2A36E] backdrop-blur-sm"
 				>
@@ -162,10 +140,10 @@
 			</div>
 
 			<!-- Title -->
-			<h2 class="mb-6 text-4xl font-bold leading-tight text-white lg:text-5xl xl:text-6xl">
+			<h2 class="mb-6 text-4xl leading-tight font-bold text-white lg:text-5xl xl:text-6xl">
 				Was wir
 				<span
-					class="block text-transparent bg-clip-text bg-gradient-to-r"
+					class="block bg-gradient-to-r bg-clip-text text-transparent"
 					style="background: linear-gradient(to right, #C2A36E, #FFD700); -webkit-background-clip: text; background-clip: text;"
 				>
 					anbieten
@@ -182,18 +160,17 @@
 		<!-- Carousel Container -->
 		<div class="relative mx-auto max-w-5xl">
 			<!-- Main Carousel -->
-			<div
-				bind:this={carouselElement}
-				class="overflow-hidden relative rounded-3xl shadow-2xl"
-			>
+			<div bind:this={carouselElement} class="relative overflow-hidden rounded-3xl shadow-2xl">
 				<div
 					class="flex transition-transform duration-700 ease-out"
 					style="transform: translateX(-{currentSlide * 100}%)"
 				>
 					{#each offers as offer (offer.id)}
-						<div class="flex-shrink-0 w-full">
+						<div class="w-full flex-shrink-0">
 							<div
-								class="relative min-h-[450px] overflow-hidden rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl lg:min-h-[400px] glassmorphic-card {hasAnimated ? 'no-animation' : ''}"
+								class="glassmorphic-card relative min-h-[450px] overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl backdrop-blur-xl lg:min-h-[400px] {hasAnimated
+									? 'no-animation'
+									: ''}"
 							>
 								<!-- Background Gradient -->
 								<div
@@ -203,7 +180,7 @@
 
 								<!-- Content Grid -->
 								<div
-									class="grid relative z-10 gap-8 items-center p-8 h-full lg:grid-cols-2 lg:p-12"
+									class="relative z-10 grid h-full items-center gap-8 p-8 lg:grid-cols-2 lg:p-12"
 								>
 									<!-- Left: Content -->
 									<div class="space-y-6">
@@ -211,7 +188,7 @@
 										{#if offer.badge}
 											<div class="inline-block">
 												<span
-													class="px-3 py-1 text-sm font-semibold text-white rounded-full"
+													class="rounded-full px-3 py-1 text-sm font-semibold text-white"
 													style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 												>
 													{offer.badge}
@@ -239,11 +216,11 @@
 											{#each offer.features as feature (feature)}
 												<div class="flex items-center space-x-3">
 													<div
-														class="flex flex-shrink-0 justify-center items-center w-5 h-5 rounded-full"
+														class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
 														style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 													>
 														<svg
-															class="w-3 h-3 text-white"
+															class="h-3 w-3 text-white"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -263,7 +240,7 @@
 									</div>
 
 									<!-- Right: Price & CTA -->
-									<div class="flex flex-col justify-center items-center space-y-8 text-center">
+									<div class="flex flex-col items-center justify-center space-y-8 text-center">
 										<!-- Price Display -->
 										<div class="space-y-2">
 											{#if offer.originalPrice}
@@ -272,14 +249,14 @@
 												</div>
 											{/if}
 											<div class="text-5xl font-bold text-white lg:text-6xl">
-												<span class="text-3xl align-top lg:text-4xl">{offer.currency}</span
+												<span class="align-top text-3xl lg:text-4xl">{offer.currency}</span
 												>{offer.price}
 											</div>
 										</div>
 
 										<!-- CTA Button -->
 										<button
-											class="px-8 py-4 text-lg font-bold text-white rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+											class="transform rounded-full px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
 											style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo}); box-shadow: 0 8px 32px {offer.gradientFrom}40"
 										>
 											Jetzt buchen
@@ -299,30 +276,34 @@
 
 			<!-- Navigation Arrows -->
 			<button
-				class="flex absolute left-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/20 hover:scale-110 hover:bg-white/30"
+				class="absolute top-1/2 left-4 z-10 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white/30"
 				aria-label="Vorheriges Angebot"
 				on:click={prevSlide}
 			>
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
+					></path>
 				</svg>
 			</button>
 
 			<button
-				class="flex absolute right-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/20 hover:scale-110 hover:bg-white/30"
+				class="absolute top-1/2 right-4 z-10 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white/30"
 				aria-label="Nächstes Angebot"
 				on:click={nextSlide}
 			>
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
+					></path>
 				</svg>
 			</button>
 
 			<!-- Dot Indicators -->
-			<div class="flex justify-center mt-8 space-x-3">
+			<div class="mt-8 flex justify-center space-x-3">
 				{#each offers as offer (offer.id)}
 					<button
-						class="w-3 h-3 rounded-full transition-all duration-300 {currentSlide === offer.id - 1 ? 'bg-[#C2A36E] scale-125' : 'bg-white bg-opacity-40'}"
+						class="h-3 w-3 rounded-full transition-all duration-300 {currentSlide === offer.id - 1
+							? 'scale-125 bg-[#C2A36E]'
+							: 'bg-opacity-40 bg-white'}"
 						aria-label="Zu {offer.title} navigieren"
 						on:click={() => goToSlide(offer.id - 1)}
 					></button>
@@ -377,14 +358,14 @@
 		animation-duration: 0.8s;
 		animation-delay: 0s;
 	}
-	
+
 	/* After initial load, make cards appear instantly */
 	.glassmorphic-card.no-animation {
 		animation: none !important;
 		opacity: 1 !important;
 		transform: translateY(0) scale(1) !important;
 	}
-	
+
 	/* Reduced staggered delays for faster initial load */
 	.flex-shrink-0:nth-child(1) .glassmorphic-card {
 		animation-delay: 0s;

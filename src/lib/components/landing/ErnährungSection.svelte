@@ -39,55 +39,98 @@
 	});
 </script>
 
-<section bind:this={sectionElement} class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-black py-16 lg:py-24">
+<section
+	bind:this={sectionElement}
+	class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-black py-16 lg:py-24"
+>
 	<div class="relative mx-auto max-w-7xl px-8">
 		<div class="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24">
 			<!-- Left: Artistic Collage -->
 			<div class="relative min-h-[600px] lg:min-h-[800px]">
 				<div class="collage-container relative h-full w-full" class:animate-in={isVisible}>
-					
 					<!-- Background geometric shapes -->
 					<div class="absolute inset-0 overflow-hidden">
 						<div class="shape-1 absolute bg-gradient-to-br from-red-500/20 to-red-600/30"></div>
 						<div class="shape-2 absolute bg-gradient-to-br from-green-500/20 to-green-600/30"></div>
 						<div class="shape-3 absolute bg-gradient-to-br from-[#C2A36E]/20 to-[#C2A36E]/30"></div>
-						<div class="shape-4 absolute bg-gradient-to-br from-purple-500/20 to-purple-600/30"></div>
+						<div
+							class="shape-4 absolute bg-gradient-to-br from-purple-500/20 to-purple-600/30"
+						></div>
 					</div>
 
 					<!-- Image 1 - Large central focus -->
-					<div class="collage-item-1 absolute overflow-hidden rounded-lg shadow-2xl transform transition-all duration-1000">
-						<img src={rawFoodImages[0]} alt="Raw food lifestyle" class="h-full w-full object-cover" loading="lazy" />
+					<div
+						class="collage-item-1 absolute transform overflow-hidden rounded-lg shadow-2xl transition-all duration-1000"
+					>
+						<img
+							src={rawFoodImages[0]}
+							alt="Raw food lifestyle"
+							class="h-full w-full object-cover"
+							loading="lazy"
+						/>
 						<div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
 					</div>
 
 					<!-- Image 2 - Top right -->
-					<div class="collage-item-2 absolute overflow-hidden rounded-lg shadow-xl transform transition-all duration-1000">
-						<img src={rawFoodImages[1]} alt="Raw food preparation" class="h-full w-full object-cover" loading="lazy" />
+					<div
+						class="collage-item-2 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
+					>
+						<img
+							src={rawFoodImages[1]}
+							alt="Raw food preparation"
+							class="h-full w-full object-cover"
+							loading="lazy"
+						/>
 						<div class="absolute inset-0 bg-red-500/20"></div>
 					</div>
 
 					<!-- Image 3 - Left side -->
-					<div class="collage-item-3 absolute overflow-hidden rounded-lg shadow-xl transform transition-all duration-1000">
-						<img src={rawFoodImages[2]} alt="Natural nutrition" class="h-full w-full object-cover" loading="lazy" />
+					<div
+						class="collage-item-3 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
+					>
+						<img
+							src={rawFoodImages[2]}
+							alt="Natural nutrition"
+							class="h-full w-full object-cover"
+							loading="lazy"
+						/>
 						<div class="absolute inset-0 bg-green-500/20"></div>
 					</div>
 
 					<!-- Image 4 - Bottom right -->
-					<div class="collage-item-4 absolute overflow-hidden rounded-lg shadow-xl transform transition-all duration-1000">
-						<img src={rawFoodImages[3]} alt="Healthy eating" class="h-full w-full object-cover" loading="lazy" />
+					<div
+						class="collage-item-4 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
+					>
+						<img
+							src={rawFoodImages[3]}
+							alt="Healthy eating"
+							class="h-full w-full object-cover"
+							loading="lazy"
+						/>
 						<div class="absolute inset-0 bg-purple-500/20"></div>
 					</div>
 
 					<!-- Image 5 - Small accent -->
-					<div class="collage-item-5 absolute overflow-hidden rounded-lg shadow-lg transform transition-all duration-1000">
-						<img src={rawFoodImages[4]} alt="Raw food details" class="h-full w-full object-cover" loading="lazy" />
+					<div
+						class="collage-item-5 absolute transform overflow-hidden rounded-lg shadow-lg transition-all duration-1000"
+					>
+						<img
+							src={rawFoodImages[4]}
+							alt="Raw food details"
+							class="h-full w-full object-cover"
+							loading="lazy"
+						/>
 						<div class="absolute inset-0 bg-[#C2A36E]/20"></div>
 					</div>
 
 					<!-- Text overlay integrated into collage -->
-					<div class="collage-text absolute bg-slate-900/90 backdrop-blur-sm p-6 rounded-lg shadow-xl">
-						<h3 class="text-sm font-bold text-[#C2A36E] mb-2 tracking-wider uppercase">20+ Jahre</h3>
-						<p class="text-lg font-semibold text-white leading-tight">
+					<div
+						class="collage-text absolute rounded-lg bg-slate-900/90 p-6 shadow-xl backdrop-blur-sm"
+					>
+						<h3 class="mb-2 text-sm font-bold tracking-wider text-[#C2A36E] uppercase">
+							20+ Jahre
+						</h3>
+						<p class="text-lg leading-tight font-semibold text-white">
 							Rohkost<br />
 							Erfahrung
 						</p>
@@ -97,13 +140,20 @@
 
 			<!-- Right: Content -->
 			<div class="flex flex-col justify-center space-y-8">
-				<div class="transform transition-all duration-1000 delay-300" class:translate-y-0={isVisible} class:opacity-100={isVisible} class:translate-y-8={!isVisible} class:opacity-0={!isVisible}>
-					
+				<div
+					class="transform transition-all delay-300 duration-1000"
+					class:translate-y-0={isVisible}
+					class:opacity-100={isVisible}
+					class:translate-y-8={!isVisible}
+					class:opacity-0={!isVisible}
+				>
 					<!-- Title -->
 					<div class="mb-8">
-						<h2 class="text-4xl font-bold leading-tight text-white lg:text-5xl xl:text-6xl">
+						<h2 class="text-4xl leading-tight font-bold text-white lg:text-5xl xl:text-6xl">
 							Unsere
-							<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#C2A36E] to-[#E6E6FA]">
+							<span
+								class="bg-gradient-to-r from-[#C2A36E] to-[#E6E6FA] bg-clip-text text-transparent"
+							>
 								Ernährung
 							</span>
 						</h2>
@@ -112,11 +162,13 @@
 					<!-- Main content -->
 					<div class="space-y-6">
 						<p class="text-xl leading-relaxed text-white/90 lg:text-2xl">
-							Seit über zwei Jahrzehnten leben wir rohköstlich und haben dadurch eine Transformation erlebt, die weit über das Körperliche hinausgeht.
+							Seit über zwei Jahrzehnten leben wir rohköstlich und haben dadurch eine Transformation
+							erlebt, die weit über das Körperliche hinausgeht.
 						</p>
 
 						<p class="text-lg leading-relaxed text-white/80">
-							Diese Lebensweise hat unsere Wahrnehmung geschärft, unsere Energie vervielfacht und unsere Fähigkeit verfeinert, Menschen bei ihrer inneren Heilung zu begleiten.
+							Diese Lebensweise hat unsere Wahrnehmung geschärft, unsere Energie vervielfacht und
+							unsere Fähigkeit verfeinert, Menschen bei ihrer inneren Heilung zu begleiten.
 						</p>
 					</div>
 
@@ -138,10 +190,17 @@
 
 					<!-- Subtle CTA -->
 					<div class="pt-8">
-						<div class="inline-flex items-center space-x-2 text-[#C2A36E] hover:text-[#E6E6FA] transition-colors duration-300 cursor-pointer">
+						<div
+							class="inline-flex cursor-pointer items-center space-x-2 text-[#C2A36E] transition-colors duration-300 hover:text-[#E6E6FA]"
+						>
 							<span class="text-sm font-medium">Erfahre mehr über unseren Ansatz</span>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 8l4 4m0 0l-4 4m4-4H3"
+								></path>
 							</svg>
 						</div>
 					</div>
@@ -339,4 +398,4 @@
 			min-height: 500px;
 		}
 	}
-</style> 
+</style>

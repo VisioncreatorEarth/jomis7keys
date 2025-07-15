@@ -6,7 +6,8 @@
 	let expandedCards = new Set(); // Track which cards are expanded
 
 	// Background image URL from Appwrite
-	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ab4002a3efa2954/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNhYmRjOTVhODM5MDVlNDgiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNhYjQwMDJhM2VmYTI5NTQiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjEzIiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.zl4mRZz4NR-WqoZdFuinT2Y3H133-tFW3dQfNdbiWIA";
+	const backgroundImageUrl =
+		'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ab4002a3efa2954/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNhYmRjOTVhODM5MDVlNDgiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNhYjQwMDJhM2VmYTI5NTQiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjEzIiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.zl4mRZz4NR-WqoZdFuinT2Y3H133-tFW3dQfNdbiWIA';
 
 	// Toggle expansion of a testimonial card
 	function toggleExpansion(index) {
@@ -90,7 +91,7 @@
 >
 	<!-- Background overlay for better readability -->
 	<div class="absolute inset-0 bg-black/40"></div>
-	
+
 	<!-- Subtle pattern overlay -->
 	<div class="absolute inset-0 opacity-10">
 		<div
@@ -177,7 +178,6 @@
 				</div>
 			{/each}
 		</div>
-
 	</div>
 </section>
 
