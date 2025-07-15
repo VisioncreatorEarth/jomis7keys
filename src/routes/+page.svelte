@@ -1,6 +1,7 @@
 <script>
 	import HeroSection from '$lib/components/landing/HeroSection.svelte';
 	import PhilosophySection from '$lib/components/landing/PhilosophySection.svelte';
+	import ErnährungSection from '$lib/components/landing/ErnährungSection.svelte';
 	import OffersSection from '$lib/components/landing/OffersSection.svelte';
 	import AktuellSection from '$lib/components/landing/AktuellSection.svelte';
 	import TestimonialSection from '$lib/components/landing/TestimonialSection.svelte';
@@ -17,14 +18,17 @@
 <!-- Philosophy Section -->
 <PhilosophySection />
 
-<!-- Offers Section -->
-<OffersSection />
-
 <!-- Aktuell Section -->
 <AktuellSection />
+
+<!-- Offers Section -->
+<OffersSection />
 
 <!-- Testimonial Section -->
 <TestimonialSection />
 
 <!-- Über Uns Section -->
 <UeberUnsSection />
+
+<!-- Ernährung Gallery Section -->
+<ErnährungSection />
