@@ -143,7 +143,9 @@
 
 <section
 	bind:this={sectionElement}
-	class="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white py-16 lg:py-24"
+	class="overflow-hidden relative py-16 bg-gradient-to-b from-gray-50 to-white lg:py-24"
+	role="region"
+	aria-label="Angebote Carousel"
 	on:mouseenter={pauseAutoPlay}
 	on:mouseleave={resumeAutoPlay}
 >
@@ -155,11 +157,11 @@
 		></div>
 	</div>
 
-	<div class="relative z-10 mx-auto max-w-7xl px-8">
+	<div class="relative z-10 px-8 mx-auto max-w-7xl">
 		<!-- Header -->
 		<div class="mb-16 text-center">
 			<!-- Tag -->
-			<div class="mb-6 inline-block">
+			<div class="inline-block mb-6">
 				<span
 					class="inline-flex items-center rounded-full border border-[#C2A36E]/20 bg-[#C2A36E]/10 px-4 py-2 text-sm font-semibold text-[#C2A36E]"
 				>
@@ -168,10 +170,10 @@
 			</div>
 
 			<!-- Title -->
-			<h2 class="mb-6 text-4xl leading-tight font-bold text-gray-900 lg:text-5xl xl:text-6xl">
+			<h2 class="mb-6 text-4xl font-bold leading-tight text-gray-900 lg:text-5xl xl:text-6xl">
 				Was wir
 				<span
-					class="block bg-gradient-to-r bg-clip-text text-transparent"
+					class="block text-transparent bg-clip-text bg-gradient-to-r"
 					style="background: linear-gradient(to right, #C2A36E, #8B7355); -webkit-background-clip: text; background-clip: text;"
 				>
 					anbieten
@@ -190,7 +192,7 @@
 			<!-- Main Carousel -->
 			<div
 				bind:this={carouselElement}
-				class="relative overflow-hidden rounded-3xl shadow-2xl"
+				class="overflow-hidden relative rounded-3xl shadow-2xl"
 				class:animate-in={isVisible}
 			>
 				<div
@@ -198,7 +200,7 @@
 					style="transform: translateX(-{currentSlide * 100}%)"
 				>
 					{#each offers as offer (offer.id)}
-						<div class="w-full flex-shrink-0">
+						<div class="flex-shrink-0 w-full">
 							<div
 								class="relative min-h-[600px] overflow-hidden rounded-3xl bg-white lg:min-h-[500px]"
 							>
@@ -210,7 +212,7 @@
 
 								<!-- Content Grid -->
 								<div
-									class="relative z-10 grid h-full items-center gap-8 p-8 lg:grid-cols-2 lg:p-12"
+									class="grid relative z-10 gap-8 items-center p-8 h-full lg:grid-cols-2 lg:p-12"
 								>
 									<!-- Left: Content -->
 									<div class="space-y-6">
@@ -218,7 +220,7 @@
 										{#if offer.badge}
 											<div class="inline-block">
 												<span
-													class="rounded-full px-3 py-1 text-sm font-semibold text-white"
+													class="px-3 py-1 text-sm font-semibold text-white rounded-full"
 													style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 												>
 													{offer.badge}
@@ -246,11 +248,11 @@
 											{#each offer.features as feature (feature)}
 												<div class="flex items-center space-x-3">
 													<div
-														class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
+														class="flex flex-shrink-0 justify-center items-center w-5 h-5 rounded-full"
 														style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 													>
 														<svg
-															class="h-3 w-3 text-white"
+															class="w-3 h-3 text-white"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -270,7 +272,7 @@
 									</div>
 
 									<!-- Right: Price & CTA -->
-									<div class="flex flex-col items-center justify-center space-y-8 text-center">
+									<div class="flex flex-col justify-center items-center space-y-8 text-center">
 										<!-- Price Display -->
 										<div class="space-y-2">
 											{#if offer.originalPrice}
@@ -279,14 +281,14 @@
 												</div>
 											{/if}
 											<div class="text-5xl font-bold text-gray-900 lg:text-6xl">
-												<span class="align-top text-3xl lg:text-4xl">{offer.currency}</span
+												<span class="text-3xl align-top lg:text-4xl">{offer.currency}</span
 												>{offer.price}
 											</div>
 										</div>
 
 										<!-- CTA Button -->
 										<button
-											class="transform rounded-full px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
+											class="px-8 py-4 text-lg font-bold text-white rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
 											style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo}); box-shadow: 0 8px 32px {offer.gradientFrom}40"
 										>
 											Jetzt buchen
@@ -306,33 +308,36 @@
 
 			<!-- Navigation Arrows -->
 			<button
-				class="absolute top-1/2 left-4 z-10 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
+				class="flex absolute left-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-gray-700 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/90 hover:scale-110 hover:bg-white"
+				aria-label="Vorheriges Angebot"
 				on:click={prevSlide}
 			>
-				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
 					></path>
 				</svg>
 			</button>
 
 			<button
-				class="absolute top-1/2 right-4 z-10 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white"
+				class="flex absolute right-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-gray-700 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/90 hover:scale-110 hover:bg-white"
+				aria-label="Nächstes Angebot"
 				on:click={nextSlide}
 			>
-				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
 					></path>
 				</svg>
 			</button>
 
 			<!-- Dot Indicators -->
-			<div class="mt-8 flex justify-center space-x-3">
+			<div class="flex justify-center mt-8 space-x-3">
 				{#each offers as offer (offer.id)}
 					<button
-						class="h-3 w-3 rounded-full transition-all duration-300"
+						class="w-3 h-3 rounded-full transition-all duration-300"
 						class:bg-[#C2A36E]={currentSlide === offer.id - 1}
 						class:bg-gray-300={currentSlide !== offer.id - 1}
 						class:scale-125={currentSlide === offer.id - 1}
+						aria-label="Zu {offer.title} navigieren"
 						on:click={() => goToSlide(offer.id - 1)}
 					></button>
 				{/each}
