@@ -3,10 +3,14 @@
 
 	let sectionElement;
 	let carouselElement;
-	let isVisible = false;
+	let isVisible = true;
 	let currentSlide = 0;
 	let autoPlayInterval;
 	let isPlaying = true;
+	let hasAnimated = false;
+
+	// Background image URL from Appwrite
+	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68763ebc000574f8c44f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjNlZDU2NmY1MDM4Nzg1NmUiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjNlYmMwMDA1NzRmOGM0NGYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjE0IiwiZXhwIjo5LjIyMzM3MjAzODYwNzM1NGUrMTh9.IZ7AYLMKGt8JiyZnZjbHXjV77PCvtbxxDBa84KQsPIU";
 
 	// Three main offers
 	const offers = [
@@ -76,13 +80,13 @@
 		}
 	];
 
-	// Auto-play functionality
+	// Auto-play functionality (much slower)
 	function startAutoPlay() {
 		autoPlayInterval = setInterval(() => {
 			if (isPlaying) {
 				nextSlide();
 			}
-		}, 5000);
+		}, 15000); // 15 seconds instead of 5
 	}
 
 	function stopAutoPlay() {
@@ -112,30 +116,16 @@
 	}
 
 	onMount(() => {
-		// Make carousel visible immediately as fallback
+		// Make carousel visible immediately
+		isVisible = true;
+		// No autoplay - let users control navigation manually
+		
+		// After initial animation completes, make future cards load instantly
 		setTimeout(() => {
-			isVisible = true;
-			startAutoPlay();
-		}, 100);
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					isVisible = true;
-					startAutoPlay();
-				} else {
-					stopAutoPlay();
-				}
-			},
-			{ threshold: 0.1 }
-		);
-
-		if (sectionElement) {
-			observer.observe(sectionElement);
-		}
-
+			hasAnimated = true;
+		}, 1000);
+		
 		return () => {
-			observer.disconnect();
 			stopAutoPlay();
 		};
 	});
@@ -143,17 +133,19 @@
 
 <section
 	bind:this={sectionElement}
-	class="overflow-hidden relative py-16 bg-gradient-to-b from-gray-50 to-white lg:py-24"
+	class="overflow-hidden relative py-16 lg:py-24"
+	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 	role="region"
 	aria-label="Angebote Carousel"
-	on:mouseenter={pauseAutoPlay}
-	on:mouseleave={resumeAutoPlay}
 >
-	<!-- Background Elements -->
-	<div class="absolute inset-0 opacity-5">
+	<!-- Background overlay for better readability -->
+	<div class="absolute inset-0 bg-black/50"></div>
+	
+	<!-- Subtle pattern overlay -->
+	<div class="absolute inset-0 opacity-10">
 		<div
 			class="absolute inset-0"
-			style="background-image: radial-gradient(circle at 2px 2px, rgba(194,163,110,0.2) 1px, transparent 0); background-size: 40px 40px;"
+			style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.3) 1px, transparent 0); background-size: 40px 40px;"
 		></div>
 	</div>
 
@@ -163,25 +155,25 @@
 			<!-- Tag -->
 			<div class="inline-block mb-6">
 				<span
-					class="inline-flex items-center rounded-full border border-[#C2A36E]/20 bg-[#C2A36E]/10 px-4 py-2 text-sm font-semibold text-[#C2A36E]"
+					class="inline-flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-[#C2A36E] backdrop-blur-sm"
 				>
 					Unsere Angebote
 				</span>
 			</div>
 
 			<!-- Title -->
-			<h2 class="mb-6 text-4xl font-bold leading-tight text-gray-900 lg:text-5xl xl:text-6xl">
+			<h2 class="mb-6 text-4xl font-bold leading-tight text-white lg:text-5xl xl:text-6xl">
 				Was wir
 				<span
 					class="block text-transparent bg-clip-text bg-gradient-to-r"
-					style="background: linear-gradient(to right, #C2A36E, #8B7355); -webkit-background-clip: text; background-clip: text;"
+					style="background: linear-gradient(to right, #C2A36E, #FFD700); -webkit-background-clip: text; background-clip: text;"
 				>
 					anbieten
 				</span>
 			</h2>
 
 			<!-- Subtitle -->
-			<p class="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600">
+			<p class="mx-auto max-w-3xl text-xl leading-relaxed text-white/90">
 				Wählen Sie den Weg zur Transformation, der am besten zu Ihnen passt. Alle Optionen führen zu
 				nachhaltiger Befreiung.
 			</p>
@@ -193,7 +185,6 @@
 			<div
 				bind:this={carouselElement}
 				class="overflow-hidden relative rounded-3xl shadow-2xl"
-				class:animate-in={isVisible}
 			>
 				<div
 					class="flex transition-transform duration-700 ease-out"
@@ -202,11 +193,11 @@
 					{#each offers as offer (offer.id)}
 						<div class="flex-shrink-0 w-full">
 							<div
-								class="relative min-h-[600px] overflow-hidden rounded-3xl bg-white lg:min-h-[500px]"
+								class="relative min-h-[450px] overflow-hidden rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl lg:min-h-[400px] glassmorphic-card {hasAnimated ? 'no-animation' : ''}"
 							>
 								<!-- Background Gradient -->
 								<div
-									class="absolute inset-0 opacity-10"
+									class="absolute inset-0 opacity-15"
 									style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 								></div>
 
@@ -230,16 +221,16 @@
 
 										<!-- Title & Subtitle -->
 										<div>
-											<h3 class="mb-2 text-3xl font-bold text-gray-900 lg:text-4xl">
+											<h3 class="mb-2 text-3xl font-bold text-white lg:text-4xl">
 												{offer.title}
 											</h3>
-											<p class="text-lg font-medium text-gray-600">
+											<p class="text-lg font-medium text-white/80">
 												{offer.subtitle}
 											</p>
 										</div>
 
 										<!-- Description -->
-										<p class="text-lg leading-relaxed text-gray-700">
+										<p class="text-lg leading-relaxed text-white/90">
 											{offer.description}
 										</p>
 
@@ -265,7 +256,7 @@
 															></path>
 														</svg>
 													</div>
-													<span class="text-gray-700">{feature}</span>
+													<span class="text-white/90">{feature}</span>
 												</div>
 											{/each}
 										</div>
@@ -276,11 +267,11 @@
 										<!-- Price Display -->
 										<div class="space-y-2">
 											{#if offer.originalPrice}
-												<div class="text-lg text-gray-500 line-through">
+												<div class="text-lg text-white/60 line-through">
 													{offer.originalPrice}{offer.currency}
 												</div>
 											{/if}
-											<div class="text-5xl font-bold text-gray-900 lg:text-6xl">
+											<div class="text-5xl font-bold text-white lg:text-6xl">
 												<span class="text-3xl align-top lg:text-4xl">{offer.currency}</span
 												>{offer.price}
 											</div>
@@ -295,7 +286,7 @@
 										</button>
 
 										<!-- Additional Info -->
-										<p class="max-w-xs text-sm text-gray-500">
+										<p class="max-w-xs text-sm text-white/70">
 											Unverbindliche Beratung möglich. Ratenzahlung auf Anfrage verfügbar.
 										</p>
 									</div>
@@ -308,24 +299,22 @@
 
 			<!-- Navigation Arrows -->
 			<button
-				class="flex absolute left-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-gray-700 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/90 hover:scale-110 hover:bg-white"
+				class="flex absolute left-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/20 hover:scale-110 hover:bg-white/30"
 				aria-label="Vorheriges Angebot"
 				on:click={prevSlide}
 			>
 				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
-					></path>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
 				</svg>
 			</button>
 
 			<button
-				class="flex absolute right-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-gray-700 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/90 hover:scale-110 hover:bg-white"
+				class="flex absolute right-4 top-1/2 z-10 justify-center items-center w-12 h-12 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 transform -translate-y-1/2 bg-white/20 hover:scale-110 hover:bg-white/30"
 				aria-label="Nächstes Angebot"
 				on:click={nextSlide}
 			>
 				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
-					></path>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
 				</svg>
 			</button>
 
@@ -333,10 +322,7 @@
 			<div class="flex justify-center mt-8 space-x-3">
 				{#each offers as offer (offer.id)}
 					<button
-						class="w-3 h-3 rounded-full transition-all duration-300"
-						class:bg-[#C2A36E]={currentSlide === offer.id - 1}
-						class:bg-gray-300={currentSlide !== offer.id - 1}
-						class:scale-125={currentSlide === offer.id - 1}
+						class="w-3 h-3 rounded-full transition-all duration-300 {currentSlide === offer.id - 1 ? 'bg-[#C2A36E] scale-125' : 'bg-white bg-opacity-40'}"
 						aria-label="Zu {offer.title} navigieren"
 						on:click={() => goToSlide(offer.id - 1)}
 					></button>
@@ -347,24 +333,66 @@
 </section>
 
 <style>
-	.animate-in {
-		animation: slideInUp 0.8s ease-out forwards;
-		opacity: 1; /* Ensure visibility */
+	/* Glassmorphic cards with cinematic entrance */
+	.glassmorphic-card {
+		backdrop-filter: blur(8px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		background: rgba(255, 255, 255, 0.05);
+		animation: cinematicEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		opacity: 0;
+		transform: translateY(40px) scale(0.95);
 	}
 
-	@keyframes slideInUp {
-		from {
-			opacity: 0.8;
-			transform: translateY(30px);
+	.glassmorphic-card:hover {
+		transform: translateY(-8px) scale(1.02);
+		border-color: rgba(194, 163, 110, 0.5);
+		background: rgba(255, 255, 255, 0.08);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+		transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	@keyframes cinematicEntrance {
+		0% {
+			opacity: 0;
+			transform: translateY(40px) scale(0.95);
 		}
-		to {
+		50% {
+			opacity: 0.6;
+			transform: translateY(10px) scale(0.98);
+		}
+		100% {
 			opacity: 1;
-			transform: translateY(0);
+			transform: translateY(0) scale(1);
 		}
 	}
 
-	/* Smooth transitions */
+	/* Fast carousel transitions for manual navigation */
 	.transition-transform {
-		transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	}
+
+	/* Only animate entrance once on page load */
+	.glassmorphic-card {
+		animation-duration: 0.8s;
+		animation-delay: 0s;
+	}
+	
+	/* After initial load, make cards appear instantly */
+	.glassmorphic-card.no-animation {
+		animation: none !important;
+		opacity: 1 !important;
+		transform: translateY(0) scale(1) !important;
+	}
+	
+	/* Reduced staggered delays for faster initial load */
+	.flex-shrink-0:nth-child(1) .glassmorphic-card {
+		animation-delay: 0s;
+	}
+	.flex-shrink-0:nth-child(2) .glassmorphic-card {
+		animation-delay: 0.1s;
+	}
+	.flex-shrink-0:nth-child(3) .glassmorphic-card {
+		animation-delay: 0.2s;
 	}
 </style>
