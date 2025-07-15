@@ -4,6 +4,9 @@
 	let sectionElement;
 	let isVisible = false;
 
+	// Background image URL from Appwrite
+	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68761c7a001687aae13f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjFmNDA2YTZlMDJmZWZmYjEiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjFjN2EwMDE2ODdhYWUxM2YiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjkiLCJleHAiOjkuMjIzMzcyMDM4NjA3MzU4ZSsxOH0._XTvsD1Ni-WO8Hw_kDhIFHZtFG_LzCYGpJWpkSbTcnE";
+
 	// Raw food images from Appwrite storage
 	const rawFoodImages = [
 		'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68761c500020134b1f03/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjFlYTk0NzQ0N2JhODE5MGEiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjFjNTAwMDIwMTM0YjFmMDMiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjYiLCJleHAiOjkuMjIzMzcyMDM4NjA3MzQ4ZSsxOH0.yBqBwNy1mSxRvSHj-FUg4y4RXEG0sFK12wA1p0IQsAM',
@@ -41,22 +44,16 @@
 
 <section
 	bind:this={sectionElement}
-	class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-black py-16 lg:py-24"
+	class="relative min-h-screen overflow-hidden py-16 lg:py-24"
+	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 >
-	<div class="relative mx-auto max-w-7xl px-8">
+	<!-- Background overlay for better readability -->
+	<div class="absolute inset-0 bg-black/60"></div>
+	<div class="relative z-10 mx-auto max-w-7xl px-8">
 		<div class="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24">
 			<!-- Left: Artistic Collage -->
 			<div class="relative min-h-[600px] lg:min-h-[800px]">
 				<div class="collage-container relative h-full w-full" class:animate-in={isVisible}>
-					<!-- Background geometric shapes -->
-					<div class="absolute inset-0 overflow-hidden">
-						<div class="shape-1 absolute bg-gradient-to-br from-red-500/20 to-red-600/30"></div>
-						<div class="shape-2 absolute bg-gradient-to-br from-green-500/20 to-green-600/30"></div>
-						<div class="shape-3 absolute bg-gradient-to-br from-[#C2A36E]/20 to-[#C2A36E]/30"></div>
-						<div
-							class="shape-4 absolute bg-gradient-to-br from-purple-500/20 to-purple-600/30"
-						></div>
-					</div>
 
 					<!-- Image 1 - Large central focus -->
 					<div
@@ -68,7 +65,6 @@
 							class="h-full w-full object-cover"
 							loading="lazy"
 						/>
-						<div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
 					</div>
 
 					<!-- Image 2 - Top right -->
@@ -81,7 +77,6 @@
 							class="h-full w-full object-cover"
 							loading="lazy"
 						/>
-						<div class="absolute inset-0 bg-red-500/20"></div>
 					</div>
 
 					<!-- Image 3 - Left side -->
@@ -94,7 +89,6 @@
 							class="h-full w-full object-cover"
 							loading="lazy"
 						/>
-						<div class="absolute inset-0 bg-green-500/20"></div>
 					</div>
 
 					<!-- Image 4 - Bottom right -->
@@ -107,7 +101,6 @@
 							class="h-full w-full object-cover"
 							loading="lazy"
 						/>
-						<div class="absolute inset-0 bg-purple-500/20"></div>
 					</div>
 
 					<!-- Image 5 - Small accent -->
@@ -115,17 +108,16 @@
 						class="collage-item-5 absolute transform overflow-hidden rounded-lg shadow-lg transition-all duration-1000"
 					>
 						<img
-							src={rawFoodImages[4]}
+							src={rawFoodImages[5]}
 							alt="Raw food details"
 							class="h-full w-full object-cover"
 							loading="lazy"
 						/>
-						<div class="absolute inset-0 bg-[#C2A36E]/20"></div>
 					</div>
 
 					<!-- Text overlay integrated into collage -->
 					<div
-						class="collage-text absolute rounded-lg bg-slate-900/90 p-6 shadow-xl backdrop-blur-sm"
+						class="collage-text absolute rounded-lg bg-black/80 p-6 shadow-xl backdrop-blur-sm border border-white/20"
 					>
 						<h3 class="mb-2 text-sm font-bold tracking-wider text-[#C2A36E] uppercase">
 							20+ Jahre
@@ -215,46 +207,7 @@
 		perspective: 1000px;
 	}
 
-	/* Geometric background shapes */
-	.shape-1 {
-		top: 10%;
-		left: 60%;
-		width: 200px;
-		height: 150px;
-		border-radius: 8px;
-		transform: rotate(12deg);
-		z-index: 1;
-	}
 
-	.shape-2 {
-		top: 50%;
-		left: 10%;
-		width: 180px;
-		height: 120px;
-		border-radius: 50%;
-		transform: rotate(-8deg);
-		z-index: 1;
-	}
-
-	.shape-3 {
-		bottom: 20%;
-		right: 5%;
-		width: 160px;
-		height: 200px;
-		border-radius: 8px;
-		transform: rotate(25deg);
-		z-index: 1;
-	}
-
-	.shape-4 {
-		top: 30%;
-		right: 30%;
-		width: 120px;
-		height: 120px;
-		border-radius: 50%;
-		transform: rotate(-15deg);
-		z-index: 1;
-	}
 
 	/* Collage items positioning */
 	.collage-item-1 {
