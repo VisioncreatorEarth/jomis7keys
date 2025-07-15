@@ -6,6 +6,7 @@
 	import AktuellSection from '$lib/components/landing/AktuellSection.svelte';
 	import TestimonialSection from '$lib/components/landing/TestimonialSection.svelte';
 	import UeberUnsSection from '$lib/components/landing/UeberUnsSection.svelte';
+	import ContactSection from '$lib/components/landing/ContactSection.svelte';
 	import { imageService } from '$lib/services/imageService.js';
 
 	// Use Appwrite image for hero section
@@ -32,3 +33,6 @@
 
 <!-- Ernährung Gallery Section -->
 <ErnährungSection />
+
+<!-- Contact Section -->
+<ContactSection />

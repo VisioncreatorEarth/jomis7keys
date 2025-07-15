@@ -44,6 +44,12 @@
 				<div class="space-y-3">
 					<button
 						class="glassmorphic-button hover:shadow-3xl transform rounded-full border border-white/30 px-16 py-6 text-2xl font-bold text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-105"
+						on:click={() => {
+							document.getElementById('contact')?.scrollIntoView({ 
+								behavior: 'smooth',
+								block: 'start'
+							});
+						}}
 					>
 						Beginne deine Transformation
 					</button>

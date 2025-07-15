@@ -258,6 +258,12 @@
 										<button
 											class="transform rounded-full px-8 py-4 text-lg font-bold text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
 											style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo}); box-shadow: 0 8px 32px {offer.gradientFrom}40"
+											on:click={() => {
+												document.getElementById('contact')?.scrollIntoView({ 
+													behavior: 'smooth',
+													block: 'start'
+												});
+											}}
 										>
 											Jetzt buchen
 										</button>

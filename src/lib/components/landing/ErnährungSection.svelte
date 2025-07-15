@@ -142,7 +142,7 @@
 					<!-- Title -->
 					<div class="mb-8">
 						<h2 class="text-4xl leading-tight font-bold text-white lg:text-5xl xl:text-6xl">
-							Unsere
+							Über Unsere
 							<span
 								class="bg-gradient-to-r from-[#C2A36E] to-[#E6E6FA] bg-clip-text text-transparent"
 							>

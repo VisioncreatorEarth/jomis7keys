@@ -102,6 +102,12 @@
 					<button
 						class="cta-button hover:shadow-3xl transform rounded-full border-2 border-white/20 px-12 py-4 text-xl font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105"
 						style="background: linear-gradient(135deg, #C2A36E, #E6E6FA, #C2A36E);"
+						on:click={() => {
+							document.getElementById('contact')?.scrollIntoView({ 
+								behavior: 'smooth',
+								block: 'start'
+							});
+						}}
 					>
 						Jetzt Platz sichern
 					</button>

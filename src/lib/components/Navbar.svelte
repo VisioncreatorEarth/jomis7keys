@@ -57,7 +57,18 @@
 				<a href="/" class="fullscreen-nav-link">Home</a>
 				<a href="/ueber-uns" class="fullscreen-nav-link">Über Uns</a>
 				<a href="/retreats" class="fullscreen-nav-link">Retreats</a>
-				<a href="/kontakt" class="fullscreen-nav-link">Kontakt</a>
+				<button 
+					class="fullscreen-nav-link"
+					on:click={() => {
+						toggleMenu();
+						document.getElementById('contact')?.scrollIntoView({ 
+							behavior: 'smooth',
+							block: 'start'
+						});
+					}}
+				>
+					Kontakt
+				</button>
 			</div>
 
 			<!-- Close Button -->
