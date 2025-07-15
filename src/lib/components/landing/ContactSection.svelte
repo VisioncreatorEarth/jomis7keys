@@ -39,8 +39,8 @@
 	role="region"
 	aria-label="Kontakt und Impressum"
 >
-	<!-- Background overlay for better readability -->
-	<div class="absolute inset-0 bg-black/40"></div>
+	<!-- Selective gradient overlay only in center area where content appears -->
+	<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-transparent"></div>
 
 	<div class="relative z-10 mx-auto max-w-4xl px-8">
 		<!-- Header -->

@@ -12,8 +12,8 @@
 			<source src={videoSource} type="video/quicktime" />
 			<source src={videoSource} type="video/mp4" />
 		</video>
-		<!-- Cinematic overlay -->
-		<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60"></div>
+		<!-- Selective gradient overlay only in center area where content appears -->
+		<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-transparent"></div>
 	</div>
 
 	<!-- Glassmorphic Content Overlay -->

@@ -47,85 +47,80 @@
 	class="relative min-h-screen overflow-hidden py-16 lg:py-24"
 	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 >
-	<!-- Background overlay for better readability -->
-	<div class="absolute inset-0 bg-black/60"></div>
+	<!-- Selective gradient overlay only where text appears (right side) -->
+	<div class="absolute inset-0 bg-gradient-to-l from-black/60 via-black/20 to-transparent"></div>
+
 	<div class="relative z-10 mx-auto max-w-7xl px-8">
 		<div class="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24">
-			<!-- Left: Artistic Collage -->
-			<div class="relative min-h-[600px] lg:min-h-[800px]">
-				<div class="collage-container relative h-full w-full" class:animate-in={isVisible}>
-
-					<!-- Image 1 - Large central focus -->
-					<div
-						class="collage-item-1 absolute transform overflow-hidden rounded-lg shadow-2xl transition-all duration-1000"
-					>
-						<img
-							src={rawFoodImages[0]}
-							alt="Raw food lifestyle"
-							class="h-full w-full object-cover"
-							loading="lazy"
-						/>
+			<!-- Left: Modern Image Grid -->
+			<div class="relative">
+				<div class="image-grid-container" class:animate-in={isVisible}>
+					<!-- Row 1: Two images -->
+					<div class="grid grid-cols-2 gap-4 mb-4">
+						<div class="image-card aspect-square overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[0]}
+								alt="Raw food lifestyle"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
+						<div class="image-card aspect-[4/5] overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[1]}
+								alt="Raw food preparation"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
 					</div>
 
-					<!-- Image 2 - Top right -->
-					<div
-						class="collage-item-2 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
-					>
-						<img
-							src={rawFoodImages[1]}
-							alt="Raw food preparation"
-							class="h-full w-full object-cover"
-							loading="lazy"
-						/>
+					<!-- Row 2: Three images -->
+					<div class="grid grid-cols-3 gap-4 mb-4">
+						<div class="image-card aspect-square overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[2]}
+								alt="Natural nutrition"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
+						<div class="image-card aspect-[3/4] overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[3]}
+								alt="Healthy eating"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
+						<div class="image-card aspect-square overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[4]}
+								alt="Raw food variety"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
 					</div>
 
-					<!-- Image 3 - Left side -->
-					<div
-						class="collage-item-3 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
-					>
-						<img
-							src={rawFoodImages[2]}
-							alt="Natural nutrition"
-							class="h-full w-full object-cover"
-							loading="lazy"
-						/>
-					</div>
-
-					<!-- Image 4 - Bottom right -->
-					<div
-						class="collage-item-4 absolute transform overflow-hidden rounded-lg shadow-xl transition-all duration-1000"
-					>
-						<img
-							src={rawFoodImages[3]}
-							alt="Healthy eating"
-							class="h-full w-full object-cover"
-							loading="lazy"
-						/>
-					</div>
-
-					<!-- Image 5 - Small accent -->
-					<div
-						class="collage-item-5 absolute transform overflow-hidden rounded-lg shadow-lg transition-all duration-1000"
-					>
-						<img
-							src={rawFoodImages[5]}
-							alt="Raw food details"
-							class="h-full w-full object-cover"
-							loading="lazy"
-						/>
-					</div>
-
-					<!-- Text overlay integrated into collage -->
-					<div
-						class="collage-text absolute rounded-lg bg-black/80 p-6 shadow-xl backdrop-blur-sm border border-white/20"
-					>
-						<h3 class="mb-2 text-sm font-bold tracking-wider text-[#C2A36E] uppercase">
-							20+ Jahre
-						</h3>
-						<p class="text-lg leading-tight font-semibold text-white">
-							Rohkost<br />
-							Erfahrung
-						</p>
+					<!-- Row 3: Two images -->
+					<div class="grid grid-cols-2 gap-4">
+						<div class="image-card aspect-[5/4] overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[5]}
+								alt="Raw food details"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
+						<div class="image-card aspect-square overflow-hidden rounded-xl shadow-2xl group">
+							<img
+								src={rawFoodImages[6]}
+								alt="Raw food experience"
+								class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+								loading="lazy"
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -203,109 +198,78 @@
 </section>
 
 <style>
-	.collage-container {
-		perspective: 1000px;
+	/* Image grid styles */
+	.image-grid-container {
+		opacity: 0;
+		transform: translateY(30px);
+		transition: all 0.8s ease-out;
 	}
 
-
-
-	/* Collage items positioning */
-	.collage-item-1 {
-		top: 20%;
-		left: 20%;
-		width: 280px;
-		height: 320px;
-		transform: rotate(2deg);
-		z-index: 5;
+	.image-grid-container.animate-in {
+		opacity: 1;
+		transform: translateY(0);
 	}
 
-	.collage-item-2 {
-		top: 5%;
-		right: 10%;
-		width: 200px;
-		height: 160px;
-		transform: rotate(-5deg);
-		z-index: 4;
+	.image-card {
+		position: relative;
+		overflow: hidden;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+		transition: all 0.3s ease;
 	}
 
-	.collage-item-3 {
-		top: 45%;
-		left: 5%;
-		width: 180px;
-		height: 220px;
-		transform: rotate(8deg);
-		z-index: 3;
+	.image-card:hover {
+		transform: translateY(-8px);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 	}
 
-	.collage-item-4 {
-		bottom: 15%;
-		right: 15%;
-		width: 240px;
-		height: 180px;
-		transform: rotate(-3deg);
-		z-index: 4;
+	/* Staggered animation for grid items */
+	.animate-in .image-card {
+		animation: fadeInUp 0.8s ease-out both;
 	}
 
-	.collage-item-5 {
-		bottom: 35%;
-		left: 35%;
-		width: 120px;
-		height: 120px;
-		transform: rotate(15deg);
-		z-index: 6;
+	.animate-in .image-card:nth-child(1) {
+		animation-delay: 0.1s;
 	}
 
-	.collage-text {
-		bottom: 10%;
-		left: 50%;
-		transform: translateX(-50%) rotate(-2deg);
-		z-index: 7;
+	.animate-in .image-card:nth-child(2) {
+		animation-delay: 0.2s;
 	}
 
-	/* Animations */
-	.animate-in .collage-item-1 {
-		animation: slideIn 1s ease-out 0.2s both;
+	.animate-in .image-card:nth-child(3) {
+		animation-delay: 0.3s;
 	}
 
-	.animate-in .collage-item-2 {
-		animation: slideIn 1s ease-out 0.4s both;
+	.animate-in .image-card:nth-child(4) {
+		animation-delay: 0.4s;
 	}
 
-	.animate-in .collage-item-3 {
-		animation: slideIn 1s ease-out 0.6s both;
+	.animate-in .image-card:nth-child(5) {
+		animation-delay: 0.5s;
 	}
 
-	.animate-in .collage-item-4 {
-		animation: slideIn 1s ease-out 0.8s both;
+	.animate-in .image-card:nth-child(6) {
+		animation-delay: 0.6s;
 	}
 
-	.animate-in .collage-item-5 {
-		animation: slideIn 1s ease-out 1s both;
+	.animate-in .image-card:nth-child(7) {
+		animation-delay: 0.7s;
 	}
 
-	.animate-in .collage-text {
-		animation: slideIn 1s ease-out 1.2s both;
-	}
-
-	@keyframes slideIn {
+	@keyframes fadeInUp {
 		from {
 			opacity: 0;
-			transform: translateY(30px) scale(0.9);
+			transform: translateY(30px);
 		}
 		to {
 			opacity: 1;
-			transform: translateY(0) scale(1);
+			transform: translateY(0);
 		}
 	}
 
-	/* Hover effects */
-	.collage-item-1:hover,
-	.collage-item-2:hover,
-	.collage-item-3:hover,
-	.collage-item-4:hover,
-	.collage-item-5:hover {
-		transform: scale(1.05);
-		z-index: 10;
+	/* Group hover effects */
+	.group:hover img {
+		transform: scale(1.1);
 	}
 
 	/* Text styling */
@@ -320,35 +284,45 @@
 
 	/* Responsive adjustments */
 	@media (max-width: 1024px) {
-		.collage-item-1 {
-			width: 240px;
-			height: 280px;
+		.image-grid-container {
+			padding: 0 1rem;
 		}
 
-		.collage-item-2 {
-			width: 160px;
-			height: 120px;
+		.grid {
+			gap: 0.75rem;
 		}
 
-		.collage-item-3 {
-			width: 140px;
-			height: 180px;
-		}
-
-		.collage-item-4 {
-			width: 200px;
-			height: 140px;
-		}
-
-		.collage-item-5 {
-			width: 100px;
-			height: 100px;
+		.mb-4 {
+			margin-bottom: 0.75rem;
 		}
 	}
 
 	@media (max-width: 768px) {
-		.collage-container {
-			min-height: 500px;
+		.image-grid-container {
+			padding: 0 0.5rem;
+		}
+
+		.grid {
+			gap: 0.5rem;
+		}
+
+		.mb-4 {
+			margin-bottom: 0.5rem;
+		}
+
+		/* Stack images vertically on mobile */
+		.grid-cols-3 {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 640px) {
+		.grid-cols-2 {
+			grid-template-columns: 1fr;
+		}
+
+		.grid-cols-3 {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

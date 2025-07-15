@@ -2,7 +2,7 @@
 	export let backgroundImage = null;
 </script>
 
-<section class="relative flex h-screen items-center justify-center overflow-hidden">
+<section id="hero" class="relative flex h-screen items-center justify-center overflow-hidden">
 	<!-- Background Image Container -->
 	<div class="absolute inset-0 bg-white">
 		{#if backgroundImage}
@@ -11,8 +11,8 @@
 				alt="Joachim & Michaela Andert - Retreat Leiter"
 				class="h-full w-full object-cover"
 			/>
-			<!-- Stronger dark overlay for better text readability -->
-			<div class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/50"></div>
+			<!-- Selective gradient overlay only where text appears (right side) -->
+			<div class="absolute inset-0 bg-gradient-to-l from-black/60 via-black/20 to-transparent"></div>
 		{/if}
 	</div>
 

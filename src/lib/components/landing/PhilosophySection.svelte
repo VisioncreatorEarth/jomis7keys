@@ -9,7 +9,8 @@
 	<!-- Background Image -->
 	<div class="absolute inset-0 z-0">
 		<img src={backgroundImage} alt="Background" class="h-full w-full object-cover" />
-		<div class="absolute inset-0 bg-black/40"></div>
+		<!-- Selective gradient overlay only in center area where content appears -->
+		<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-transparent"></div>
 	</div>
 
 	<!-- Content Container -->

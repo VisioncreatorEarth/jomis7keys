@@ -13,10 +13,7 @@
 			<!-- Logo -->
 			<div class="flex items-center">
 				<a href="/" class="flex flex-col items-start">
-					<div class="logo-gradient mb-2 flex h-16 w-16 items-center justify-center rounded-full">
-						<span class="text-2xl font-bold text-white drop-shadow-lg">Q</span>
-					</div>
-					<div class="logo-text text-sm font-bold tracking-wider text-white">QUANTENSPRUNG</div>
+					<div class="logo-text text-lg font-bold tracking-wider text-[#C2A36E] drop-shadow-lg">QUANTENSPRUNG</div>
 				</a>
 			</div>
 
@@ -53,23 +50,56 @@
 	<!-- Fullscreen Navigation Menu -->
 	{#if isMenuOpen}
 		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-lg">
-			<div class="space-y-8 text-center">
-				<a href="/" class="fullscreen-nav-link">Home</a>
-				<a href="/ueber-uns" class="fullscreen-nav-link">Über Uns</a>
-				<a href="/retreats" class="fullscreen-nav-link">Retreats</a>
-				<button 
-					class="fullscreen-nav-link"
-					on:click={() => {
-						toggleMenu();
-						document.getElementById('contact')?.scrollIntoView({ 
-							behavior: 'smooth',
-							block: 'start'
-						});
-					}}
-				>
-					Kontakt
-				</button>
-			</div>
+					<div class="space-y-8 text-center">
+			<button 
+				class="fullscreen-nav-link"
+				on:click={() => {
+					toggleMenu();
+					document.getElementById('hero')?.scrollIntoView({ 
+						behavior: 'smooth',
+						block: 'start'
+					});
+				}}
+			>
+				Home
+			</button>
+			<button 
+				class="fullscreen-nav-link"
+				on:click={() => {
+					toggleMenu();
+					document.getElementById('ueber-uns')?.scrollIntoView({ 
+						behavior: 'smooth',
+						block: 'start'
+					});
+				}}
+			>
+				Über Uns
+			</button>
+			<button 
+				class="fullscreen-nav-link"
+				on:click={() => {
+					toggleMenu();
+					document.getElementById('angebote')?.scrollIntoView({ 
+						behavior: 'smooth',
+						block: 'start'
+					});
+				}}
+			>
+				Retreats
+			</button>
+			<button 
+				class="fullscreen-nav-link"
+				on:click={() => {
+					toggleMenu();
+					document.getElementById('contact')?.scrollIntoView({ 
+						behavior: 'smooth',
+						block: 'start'
+					});
+				}}
+			>
+				Kontakt
+			</button>
+		</div>
 
 			<!-- Close Button -->
 			<button
@@ -97,9 +127,17 @@
 	}
 
 	.logo-text {
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
 		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		font-weight: 500;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		transition: all 0.3s ease;
+	}
+
+	.logo-text:hover {
+		color: #E6E6FA;
+		text-shadow: 0 0 20px rgba(194, 163, 110, 0.6);
+		transform: scale(1.05);
 	}
 
 	.login-btn {

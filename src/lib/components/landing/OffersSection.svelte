@@ -110,14 +110,15 @@
 </script>
 
 <section
+	id="angebote"
 	bind:this={sectionElement}
 	class="relative overflow-hidden py-16 lg:py-24"
 	style="background-image: url('{backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
 	role="region"
 	aria-label="Angebote Carousel"
 >
-	<!-- Background overlay for better readability -->
-	<div class="absolute inset-0 bg-black/50"></div>
+	<!-- Selective gradient overlay only in center area where content appears -->
+	<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-transparent"></div>
 
 	<!-- Subtle pattern overlay -->
 	<div class="absolute inset-0 opacity-10">
@@ -381,5 +382,10 @@
 	}
 	.flex-shrink-0:nth-child(3) .glassmorphic-card {
 		animation-delay: 0.2s;
+	}
+
+	/* Smooth scroll target */
+	#angebote {
+		scroll-margin-top: 80px;
 	}
 </style>

@@ -33,7 +33,7 @@
 	});
 </script>
 
-<section bind:this={sectionElement} class="relative min-h-screen overflow-hidden">
+<section id="ueber-uns" bind:this={sectionElement} class="relative min-h-screen overflow-hidden">
 	<!-- Background Image -->
 	<div class="absolute inset-0 z-0 bg-gray-900">
 		<img
@@ -41,7 +41,8 @@
 			alt="Joachim und Michaela Andert"
 			class="h-full w-full object-cover"
 		/>
-		<div class="absolute inset-0 bg-black/30"></div>
+		<!-- Selective gradient overlay only where text appears (left side) -->
+		<div class="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent"></div>
 	</div>
 
 	<!-- Content - Left Side -->
@@ -100,5 +101,10 @@
 		transform: translateY(-4px);
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 		border-color: rgba(194, 163, 110, 0.3);
+	}
+
+	/* Smooth scroll target */
+	#ueber-uns {
+		scroll-margin-top: 80px;
 	}
 </style>
