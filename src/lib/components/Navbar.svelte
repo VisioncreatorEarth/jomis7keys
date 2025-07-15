@@ -19,12 +19,13 @@
 
 			<!-- Right Side: Hamburger Menu + Login -->
 			<div class="flex items-center space-x-6">
-				<!-- Login Button -->
-				<button
-					class="login-btn rounded-full border border-white/40 bg-black/30 px-6 py-3 font-medium text-white backdrop-blur-md transition-all hover:bg-black/40"
-				>
-					Login
-				</button>
+							<!-- Login Button -->
+			<a
+				href="/membership"
+				class="login-btn rounded-full border border-white/40 bg-black/30 px-6 py-3 font-medium text-white backdrop-blur-md transition-all hover:bg-black/40 inline-block"
+			>
+				Login
+			</a>
 
 				<!-- Hamburger Menu -->
 				<button
@@ -145,12 +146,14 @@
 		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		font-weight: 500;
+		color: white !important;
 	}
 
 	.login-btn:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 8px 25px rgba(194, 163, 110, 0.3);
 		background: rgba(194, 163, 110, 0.4) !important;
+		color: white !important;
 	}
 
 	.hamburger-menu:hover .hamburger-line {

@@ -5,7 +5,7 @@
 	let isVisible = false;
 
 	// Background image URL from Appwrite
-	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68761c7a001687aae13f/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjFmNDA2YTZlMDJmZWZmYjEiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjFjN2EwMDE2ODdhYWUxM2YiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjkiLCJleHAiOjkuMjIzMzcyMDM4NjA3MzU4ZSsxOH0._XTvsD1Ni-WO8Hw_kDhIFHZtFG_LzCYGpJWpkSbTcnE";
+	const backgroundImageUrl = "https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/68765cbc001d37067419/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjVjYzM5MWZmOTk4ZjcwZjYiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjVjYmMwMDFkMzcwNjc0MTkiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjE1IiwiZXhwIjo5LjIyMzM3MjAzODYwNzM2NGUrMTh9.eT9K4slYlqvflRhAP-9qWHIu39UmR0p1DP2jkFZDWbg";
 
 	// Raw food images from Appwrite storage
 	const rawFoodImages = [
@@ -177,7 +177,8 @@
 
 					<!-- Subtle CTA -->
 					<div class="pt-8">
-						<div
+						<a
+							href="/membership"
 							class="inline-flex cursor-pointer items-center space-x-2 text-[#C2A36E] transition-colors duration-300 hover:text-[#E6E6FA]"
 						>
 							<span class="text-sm font-medium">Erfahre mehr über unseren Ansatz</span>
@@ -189,7 +190,7 @@
 									d="M17 8l4 4m0 0l-4 4m4-4H3"
 								></path>
 							</svg>
-						</div>
+						</a>
 					</div>
 				</div>
 			</div>

@@ -1,19 +1,26 @@
 <script>
-	import { imageService } from '$lib/services/imageService.js';
-
-	// Get video from Appwrite
-	const videoSource = imageService.getImageUrl('hero-video');
+	// Background image URL from Appwrite
+	const backgroundImageUrl = 'https://fra.cloud.appwrite.io/v1/storage/buckets/6872736b0021a5826ece/files/6876618c000790192776/preview?project=68357409002d8b46f512&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbklkIjoiNjg3NjYxOTFjY2ZmZjEwODY3YjQiLCJyZXNvdXJjZUlkIjoiNjg3MjczNmIwMDIxYTU4MjZlY2U6Njg3NjYxOGMwMDA3OTAxOTI3NzYiLCJyZXNvdXJjZVR5cGUiOiJmaWxlcyIsInJlc291cmNlSW50ZXJuYWxJZCI6IjI1MjQ0OjE4IiwiZXhwIjo5LjIyMzM3MjAzODYwNzM2NGUrMTh9.2nK1l0gb31Il0hAycoj32w7X9Tx987tzIAmKHOu8uaI';
+	
+	// Read more state for Beauty Challenge
+	let showMoreBeauty = false;
+	
+	function toggleBeautyReadMore(event) {
+		event.preventDefault();
+		showMoreBeauty = !showMoreBeauty;
+	}
 </script>
 
 <section class="relative flex h-screen items-center justify-center overflow-hidden">
-	<!-- Video Background -->
+	<!-- Background Image -->
 	<div class="absolute inset-0">
-		<video autoplay muted loop playsinline class="h-full w-full object-cover">
-			<source src={videoSource} type="video/quicktime" />
-			<source src={videoSource} type="video/mp4" />
-		</video>
+		<img
+			src={backgroundImageUrl}
+			alt="Retreat Location - Guntersberg mit Alpenblick im Chiemgau"
+			class="h-full w-full object-cover"
+		/>
 		<!-- Selective gradient overlay only in center area where content appears -->
-		<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-transparent"></div>
+		<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-transparent"></div>
 	</div>
 
 	<!-- Glassmorphic Content Overlay -->
@@ -39,81 +46,157 @@
 			</h2>
 		</div>
 
-		<!-- Glassmorphic Dates Container -->
-		<div
-			class="glassmorphic-container rounded-3xl border border-white/20 p-8 shadow-2xl backdrop-blur-xl"
-		>
-			<div class="space-y-8">
-				<!-- Location -->
-				<div class="mb-8 text-center">
-					<div class="mb-3 flex items-center justify-center space-x-3">
-						<svg
-							class="h-6 w-6"
-							style="color: #C2A36E;"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
+		<!-- Cards Container -->
+		<div class="grid gap-6 lg:grid-cols-2 lg:items-start">
+			<!-- Retreat Card -->
+			<div class="glassmorphic-container rounded-2xl border border-white/20 p-6 shadow-2xl backdrop-blur-xl">
+				<div class="space-y-6">
+					<!-- Location -->
+					<div class="text-center">
+						<div class="mb-2 flex items-center justify-center space-x-2">
+							<svg
+								class="h-5 w-5"
+								style="color: #C2A36E;"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+								></path>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+								></path>
+							</svg>
+							<p class="text-lg font-semibold text-white">Guntersberg mit Alpenblick im Chiemgau</p>
+						</div>
+						<p class="text-sm text-white/80">(4-8 Teilnehmer)</p>
+					</div>
+
+					<!-- Dates Grid -->
+					<div class="grid gap-4 md:grid-cols-2">
+						<div
+							class="date-card rounded-xl border border-white/10 p-4 backdrop-blur-sm"
+							style="background: rgba(194, 163, 110, 0.15);"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-							></path>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-							></path>
-						</svg>
-						<p class="text-xl font-semibold text-white">Guntersberg mit Alpenblick im Chiemgau</p>
-					</div>
-					<p class="text-base text-white/80">(4-8 Teilnehmer)</p>
-				</div>
+							<div class="text-center">
+								<p class="mb-1 text-sm font-medium text-white/80">Retreat 1</p>
+								<p class="mb-1 text-2xl font-bold text-white">24. - 27.</p>
+								<p class="text-lg font-semibold" style="color: #C2A36E;">Juli 2025</p>
+							</div>
+						</div>
 
-				<!-- Dates Grid -->
-				<div class="grid gap-6 md:grid-cols-2">
-					<div
-						class="date-card rounded-2xl border border-white/10 p-6 backdrop-blur-sm"
-						style="background: rgba(194, 163, 110, 0.15);"
-					>
-						<div class="text-center">
-							<p class="mb-2 text-base font-medium text-white/80">Retreat 1</p>
-							<p class="mb-2 text-3xl font-bold text-white">24. - 27.</p>
-							<p class="text-xl font-semibold" style="color: #C2A36E;">Juli 2025</p>
+						<div
+							class="date-card rounded-xl border border-white/10 p-4 backdrop-blur-sm"
+							style="background: rgba(194, 163, 110, 0.15);"
+						>
+							<div class="text-center">
+								<p class="mb-1 text-sm font-medium text-white/80">Retreat 2</p>
+								<p class="mb-1 text-2xl font-bold text-white">14. - 17.</p>
+								<p class="text-lg font-semibold" style="color: #C2A36E;">August 2025</p>
+							</div>
 						</div>
 					</div>
 
-					<div
-						class="date-card rounded-2xl border border-white/10 p-6 backdrop-blur-sm"
-						style="background: rgba(194, 163, 110, 0.15);"
-					>
-						<div class="text-center">
-							<p class="mb-2 text-base font-medium text-white/80">Retreat 2</p>
-							<p class="mb-2 text-3xl font-bold text-white">14. - 17.</p>
-							<p class="text-xl font-semibold" style="color: #C2A36E;">August 2025</p>
-						</div>
+					<!-- CTA Button -->
+					<div class="pt-2">
+						<button
+							class="glassmorphic-button w-full transform rounded-full border border-white/30 bg-white/10 px-8 py-3 text-lg font-bold text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white/20"
+							on:click={() => {
+								document.getElementById('contact')?.scrollIntoView({ 
+									behavior: 'smooth',
+									block: 'start'
+								});
+							}}
+						>
+							Jetzt Platz sichern
+						</button>
+						<p class="mt-2 text-center text-sm text-white/70">
+							Begrenzte Teilnehmerzahl - Frühe Anmeldung empfohlen
+						</p>
 					</div>
 				</div>
+			</div>
 
-				<!-- CTA Button -->
-				<div class="pt-6">
-					<button
-						class="cta-button hover:shadow-3xl transform rounded-full border-2 border-white/20 px-12 py-4 text-xl font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105"
-						style="background: linear-gradient(135deg, #C2A36E, #E6E6FA, #C2A36E);"
-						on:click={() => {
-							document.getElementById('contact')?.scrollIntoView({ 
-								behavior: 'smooth',
-								block: 'start'
-							});
-						}}
-					>
-						Jetzt Platz sichern
-					</button>
-					<p class="mt-3 text-base text-white/70">
-						Begrenzte Teilnehmerzahl - Frühe Anmeldung empfohlen
-					</p>
+			<!-- Beauty Challenge Card -->
+			<div class="glassmorphic-container rounded-2xl border border-white/20 p-6 shadow-2xl backdrop-blur-xl">
+				<div class="space-y-4">
+					<!-- Title -->
+					<div class="text-center">
+						<h3 class="mb-2 text-xl font-bold text-white">Beauty Challenge</h3>
+						<p class="text-sm font-medium" style="color: #C2A36E;">Bereit für eine Veränderung?</p>
+					</div>
+
+					<!-- Description -->
+					<div class="space-y-3">
+						<p class="text-sm leading-relaxed text-white/90">
+							4-monatige Beauty Challenge für mehr Strahlen, Frische und natürliche Schönheit von innen!
+						</p>
+						
+						{#if showMoreBeauty}
+							<div class="space-y-3 animate-fade-in">
+								<p class="text-sm leading-relaxed text-white/90">
+									Mach mit und entfalte Deine natürliche Strahlkraft mit Superfoods & Vitalstoffpower aus der Natur.
+								</p>
+								
+								<!-- Benefits -->
+								<div class="space-y-2">
+									<p class="text-sm font-semibold text-white">Was du bekommst:</p>
+									<ul class="space-y-1 text-sm text-white/80">
+										<li>• Superfoods & natürliche Vitalstoffpower</li>
+										<li>• Wow-Effekte (Vorher-Nachher-Fotos)</li>
+										<li>• Motivation in exklusiver Community</li>
+										<li>• Unterstützende Tipps für Ernährung & Pflege</li>
+									</ul>
+								</div>
+							</div>
+						{/if}
+						
+						<!-- Read More Toggle -->
+						<button
+							type="button"
+							class="text-sm font-medium text-[#C2A36E] hover:text-[#E6E6FA] transition-colors duration-200 underline"
+							on:click={toggleBeautyReadMore}
+						>
+							{showMoreBeauty ? 'Weniger anzeigen' : 'Mehr erfahren'}
+						</button>
+					</div>
+
+					<!-- Details -->
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<span class="text-sm font-semibold text-white">Start:</span>
+							<span class="text-sm font-bold" style="color: #C2A36E;">1. August 2025</span>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-sm font-semibold text-white">Format:</span>
+							<span class="text-sm text-white/80">14-tägige Zooms</span>
+						</div>
+					</div>
+
+					<!-- CTA Button -->
+					<div class="pt-2">
+						<button
+							class="glassmorphic-button w-full transform rounded-full border border-white/30 bg-white/10 px-8 py-3 text-lg font-bold text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white/20"
+							on:click={() => {
+								document.getElementById('contact')?.scrollIntoView({ 
+									behavior: 'smooth',
+									block: 'start'
+								});
+							}}
+						>
+							Jetzt anmelden
+						</button>
+						<p class="mt-2 text-center text-sm text-white/70">
+							🌸 Natürlich - Wirkungsvoll - Schön 🌸
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -197,21 +280,43 @@
 		animation-delay: 0.2s;
 	}
 
-	/* CTA Button */
-	.cta-button {
+	/* Glassmorphic Button */
+	.glassmorphic-button {
 		animation: fadeInUp 1.6s ease-out;
 		text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 		font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		backdrop-filter: blur(20px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 	}
 
-	.cta-button:hover {
+	.glassmorphic-button:hover {
 		box-shadow:
 			0 20px 40px rgba(0, 0, 0, 0.4),
 			0 0 30px rgba(194, 163, 110, 0.6) !important;
+		border-color: rgba(194, 163, 110, 0.5);
 	}
 
-	/* Video background styling */
-	video {
-		filter: brightness(0.7) contrast(1.1);
+	/* Background image styling */
+	img {
+		filter: brightness(0.8) contrast(1.1);
 	}
+
+	/* Smooth expansion animation */
+	.animate-fade-in {
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+
 </style>

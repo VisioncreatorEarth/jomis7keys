@@ -169,19 +169,19 @@
 					{#each offers as offer (offer.id)}
 						<div class="w-full flex-shrink-0">
 							<div
-								class="glassmorphic-card relative min-h-[450px] overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl backdrop-blur-xl lg:min-h-[400px] {hasAnimated
+								class="glassmorphic-card relative min-h-[350px] overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md lg:min-h-[320px] {hasAnimated
 									? 'no-animation'
 									: ''}"
 							>
 								<!-- Background Gradient -->
 								<div
-									class="absolute inset-0 opacity-15"
+									class="absolute inset-0 opacity-10"
 									style="background: linear-gradient(135deg, {offer.gradientFrom}, {offer.gradientTo})"
 								></div>
 
 								<!-- Content Grid -->
 								<div
-									class="relative z-10 grid h-full items-center gap-8 p-8 lg:grid-cols-2 lg:p-12"
+									class="relative z-10 grid h-full items-center gap-6 p-6 lg:grid-cols-2 lg:p-8"
 								>
 									<!-- Left: Content -->
 									<div class="space-y-6">
@@ -199,16 +199,16 @@
 
 										<!-- Title & Subtitle -->
 										<div>
-											<h3 class="mb-2 text-3xl font-bold text-white lg:text-4xl">
+											<h3 class="mb-2 text-2xl font-bold text-white lg:text-3xl">
 												{offer.title}
 											</h3>
-											<p class="text-lg font-medium text-white/80">
+											<p class="text-base font-medium text-white/80">
 												{offer.subtitle}
 											</p>
 										</div>
 
 										<!-- Description -->
-										<p class="text-lg leading-relaxed text-white/90">
+										<p class="text-base leading-relaxed text-white/90">
 											{offer.description}
 										</p>
 
@@ -234,7 +234,7 @@
 															></path>
 														</svg>
 													</div>
-													<span class="text-white/90">{feature}</span>
+													<span class="text-sm text-white/90">{feature}</span>
 												</div>
 											{/each}
 										</div>
@@ -323,20 +323,20 @@
 <style>
 	/* Glassmorphic cards with cinematic entrance */
 	.glassmorphic-card {
-		backdrop-filter: blur(8px);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(4px);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		background: rgba(255, 255, 255, 0.03);
 		animation: cinematicEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 		opacity: 0;
 		transform: translateY(40px) scale(0.95);
 	}
 
 	.glassmorphic-card:hover {
-		transform: translateY(-8px) scale(1.02);
-		border-color: rgba(194, 163, 110, 0.5);
-		background: rgba(255, 255, 255, 0.08);
-		backdrop-filter: blur(10px);
-		box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+		transform: translateY(-6px) scale(1.01);
+		border-color: rgba(194, 163, 110, 0.3);
+		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(6px);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 		transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
